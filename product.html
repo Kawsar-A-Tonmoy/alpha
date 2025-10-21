@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product — The Geek Shop</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link id="canonicalLink" rel="canonical" href="">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">The Geek Shop</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html">Shop</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="product-detail" class="product-detail section">
+      <div class="product-gallery">
+        <img id="featured-img" alt="Featured image" />
+        <div id="thumbs" class="thumbs"></div>
+      </div>
+      <div class="product-info">
+        <h1 id="p-name"></h1>
+        <p id="p-category" class="muted"></p>
+        <p id="p-price" class="price"></p>
+        <div id="p-desc"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© All rights reserved by The Geek Shop</p>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-init.js"></script>
+  <script src="assets/js/product.js"></script>
+</body>
+</html>

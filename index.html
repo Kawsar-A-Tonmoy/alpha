@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Geek Shop — Home</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- Header (keeps original color/design) -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">The Geek Shop</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html">Shop</a>
+        <a href="admin.html">Admin</a>
+        <a href="order-status.html">Order Status</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Mid Section -->
+  <main class="container">
+    <!-- May interest you (random 5 products) -->
+    <section id="may-interest" class="section">
+      <h2>May interest you</h2>
+      <div id="interest-list" class="grid-cards"></div>
+    </section>
+
+    <!-- Categories -->
+    <section id="categories" class="section">
+      <h2>Categories</h2>
+      <div class="categories-grid">
+        <!-- Buttons generated client-side. Admin decides product categories on product data -->
+        <button class="cat-card" data-cat="Keycaps">
+          <div class="cat-bg" style="background-image: url('assets/img/categories/keycaps.jpg')"></div>
+          <span>Keycaps</span>
+        </button>
+
+        <button class="cat-card" data-cat="Switches">
+          <div class="cat-bg" style="background-image: url('assets/img/categories/switches.jpg')"></div>
+          <span>Switches</span>
+        </button>
+
+        <button class="cat-card" data-cat="Keyboard & BareBones">
+          <div class="cat-bg" style="background-image: url('assets/img/categories/keyboard.jpg')"></div>
+          <span>Keyboard & BareBones</span>
+        </button>
+
+        <button class="cat-card" data-cat="Collectables">
+          <div class="cat-bg" style="background-image: url('assets/img/categories/collectables.jpg')"></div>
+          <span>Collectables</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="socials">
+        <a href="https://www.facebook.com">Facebook</a>
+        <a href="https://www.instagram.com">Instagram</a>
+        <a href="https://wa.me/01960788862">WhatsApp</a>
+      </div>
+      <p>© All rights reserved by The Geek Shop</p>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-init.js"></script>
+  <script src="assets/js/home.js"></script>
+</body>
+</html>
