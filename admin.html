@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
@@ -14,7 +15,7 @@
 </head>
 <body>
   <header class="site-header">
-     <nav>
+    <nav>
       <a href="index.html" class="logo">
         <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
@@ -26,53 +27,43 @@
     </nav>
   </header>
 
-  <main class="container">
-    <div id="login-panel" class="card" style="display: none;">
-      <h2>Admin Login</h2>
-      <form id="login-form" class="form">
-        <div>
+  <main class="container" style="padding-bottom: 100px;">
+    <div id="login-panel">
+      <div class="card" style="max-width: 400px; margin: 40px auto;">
+        <h2 style="text-align: center;">Admin Login</h2>
+        <form id="login-form" class="form">
           <label>Email</label>
-          <input id="admin-email" type="email" required>
-        </div>
-        <div>
+          <input id="admin-email" type="email" required placeholder="admin@example.com">
           <label>Password</label>
           <input id="admin-pass" type="password" required>
-        </div>
-        <button type="submit">Login</button>
-      </form>
+          <button type="submit">Login</button>
+        </form>
+      </div>
     </div>
 
-    <div id="admin-panel" class="card" style="display: none;">
-      <div class="panel-header">
-        <h2>Admin Panel</h2>
-        <button onclick="logoutAdmin()">Logout</button>
-      </div>
-
-      <h2>Add Product</h2>
-      <form id="add-product-form" class="form">
-        <div class="row">
-          <div>
-            <label>Name</label>
-            <input id="add-name" required>
+    <div id="admin-panel" style="display: none;">
+      <div class="card" style="margin-bottom: 20px;">
+        <h2>Add New Product</h2>
+        <form id="add-product-form" class="form">
+          <div class="row">
+            <div><label>Name</label><input id="add-name" required></div>
+            <div><label>Color</label><input id="add-color"></div>
           </div>
-          <div>
-            <label>Price (tk)</label>
-            <input id="add-price" required>
+          <div class="row">
+            <div><label>Price (tk)</label><input id="add-price" type="number" min="0" required></div>
+            <div><label>Discount (tk)</label><input id="add-discount" type="number" min="0" value="0"></div>
           </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>Discount (tk)</label>
-            <input id="add-discount" value="0">
+          <div class="row">
+            <div><label>Stock</label><input id="add-stock" type="number" min="0" required></div>
+            <div><label>Availability</label>
+              <select id="add-availability" required>
+                <option value="Ready">Ready</option>
+                <option value="Pre Order">Pre Order</option>
+                <option value="Upcoming">Upcoming</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label>Image URLs (comma separated)</label>
-            <textarea id="add-images" required placeholder="https://...jpg, https://...png"></textarea>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>Category</label>
+          <div><label>Category</label>
             <select id="add-category" required>
               <option value="keycaps">Keycaps</option>
               <option value="switches">Switches</option>
@@ -80,45 +71,28 @@
               <option value="collectables">Collectables</option>
             </select>
           </div>
-          <div>
-            <label>Color</label>
-            <input id="add-color">
+          <div><label>Image URLs (comma separated)</label>
+            <textarea id="add-images" required placeholder="https://...jpg, https://...png"></textarea>
           </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>Stock</label>
-            <input id="add-stock" type="number" value="0">
+          <div><label>Description</label>
+            <textarea id="add-description"></textarea>
           </div>
-          <div>
-            <label>Availability</label>
-            <select id="add-availability" required>
-              <option value="Ready">Ready to Order</option>
-              <option value="Pre Order">Pre Order</option>
-              <option value="Upcoming">Upcoming</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label>Description</label>
-          <textarea id="add-desc"></textarea>
-        </div>
-        <button type="submit">Add Product</button>
-      </form>
+          <button type="submit">Add Product</button>
+        </form>
+      </div>
 
       <h2>Products</h2>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th></th>
               <th>Name</th>
-              <th>Price</th>
-              <th>Category</th>
               <th>Color</th>
-              <th>Discount (tk)</th>
+              <th>Price</th>
+              <th>Discount</th>
               <th>Stock</th>
               <th>Availability</th>
+              <th>Category</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -127,7 +101,7 @@
         </table>
       </div>
 
-      <h2>Orders</h2>
+      <h2 style="margin-top: 40px;">Orders</h2>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
@@ -137,13 +111,13 @@
               <th>Product</th>
               <th>Color</th>
               <th>Qty</th>
-              <th>Delivery</th>
               <th>Paid</th>
               <th>Due</th>
+              <th>Total</th>
               <th>Name</th>
               <th>Phone</th>
               <th>Address</th>
-              <th>Payment</th>
+              <th>Method</th>
               <th>Txn ID</th>
               <th>Status</th>
             </tr>
@@ -151,7 +125,24 @@
           <tbody id="orders-body"></tbody>
         </table>
       </div>
+
+      <button onclick="logoutAdmin()" style="margin-top: 20px;">Logout</button>
     </div>
   </main>
+
+  <footer>
+    <div>
+      <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+      </a>
+      <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+      </a>
+      <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
+      </a>
+    </div>
+    <p>© All rights reserved by The Geek Shop</p>
+  </footer>
 </body>
 </html>
