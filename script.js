@@ -1,15 +1,12 @@
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction, limit } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { firebaseConfig, BKASH_NUMBER, COD_NUMBER, DELIVERY_FEE } from './config.js';
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Status explanations
 const statusExplanations = {
   Pending: 'Order received, waiting for processing.',
   Processing: 'Your order is being prepared.',
@@ -17,7 +14,6 @@ const statusExplanations = {
   Delivered: 'Your order has been delivered.',
   Cancelled: 'Your order has been cancelled.'
 };
-
 const statusColors = {
   Pending: '#eab308',
   Processing: '#3b82f6',
@@ -26,14 +22,27 @@ const statusColors = {
   Cancelled: '#ef4444'
 };
 
-// ====== UTIL ======
-async function loadProducts() {
+async function loadProducts(filterCategory = null) {
   try {
-    const snapshot = await getDocs(collection(db, 'products'));
+    let q = query(collection(db, 'products'));
+    if (filterCategory) q = query(q, where('category', '==', filterCategory));
+    const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (err) {
     console.error('Error loading products:', err);
     return [];
+  }
+}
+
+async function loadProductBySlug(slug) {
+  try {
+    const q = query(collection(db, 'products'), where('slug', '==', slug), limit(1));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+  } catch (err) {
+    console.error('Error loading product by slug:', err);
+    return null;
   }
 }
 
@@ -48,186 +57,152 @@ async function loadOrders() {
   }
 }
 
-function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
+async function generateUniqueSlug(name, color, existingId = null) {
+  let baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  if (color) baseSlug += '-' + color.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  let slug = baseSlug;
+  let counter = 1;
+  while (true) {
+    const q = query(collection(db, 'products'), where('slug', '==', slug));
+    const snapshot = await getDocs(q);
+    const exists = snapshot.docs.some(d => d.id !== existingId);
+    if (!exists) return slug;
+    slug = baseSlug + '-' + counter++;
+  }
 }
 
-// ====== HOME PAGE ======
-async function loadHome() {
-  const interest = document.getElementById('interest-products');
-  const categoriesDiv = document.getElementById('categories');
-  if (!interest || !categoriesDiv) return;
-
-  const products = await loadProducts();
-  const randomProducts = shuffle([...products]).slice(0, 4);
-  randomProducts.forEach(p => interest.appendChild(createProductCard(p)));
-
-  const categories = ['Keycaps', 'Switches', 'Keyboard and Barebones', 'Collectables'];
-  categories.forEach(cat => {
-    const btn = document.createElement('div');
-    btn.className = 'category-button';
-    btn.style.backgroundImage = `url('images/categories/${cat.toLowerCase().replace(/ and /g, '-').replace(/ /g, '-')}.jpg')`;
-    btn.textContent = cat;
-    btn.addEventListener('click', () => {
-      location.href = `products.html?category=${encodeURIComponent(cat)}`;
-    });
-    categoriesDiv.appendChild(btn);
-  });
-
-  bindImageViewers();
-}
-
-// ====== PRODUCTS PAGE ======
-async function loadProductsPage() {
-  const allProductsDiv = document.getElementById('all-products');
-  if (!allProductsDiv) return;
-
-  const params = new URLSearchParams(location.search);
-  const cat = params.get('category');
-
-  let q = collection(db, 'products');
-  if (cat) {
-    q = query(q, where('category', '==', cat));
-    document.querySelector('h1').textContent = cat;
-  } else {
-    document.querySelector('h1').textContent = 'All Products';
-  }
-
-  const snapshot = await getDocs(q);
-  const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  products.forEach(p => allProductsDiv.appendChild(createProductCard(p)));
-
-  bindImageViewers();
-}
-
-// ====== PRODUCT DETAIL PAGE ======
-async function loadProductDetail() {
-  const detailDiv = document.getElementById('product-detail');
-  if (!detailDiv) return;
-
-  const params = new URLSearchParams(location.search);
-  const slug = params.get('slug');
-  if (!slug) {
-    detailDiv.innerHTML = '<h2>Product not found</h2>';
-    return;
-  }
-
-  const q = query(collection(db, 'products'), where('slug', '==', slug));
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) {
-    detailDiv.innerHTML = '<h2>Product not found</h2>';
-    return;
-  }
-
-  const docSnap = snapshot.docs[0];
-  const p = { id: docSnap.id, ...docSnap.data() };
-  document.title = p.name;
-
-  let html = `<h1>${p.name}</h1>
-    <div class="product-images">`;
-  if (p.images && p.images.length > 0) {
-    html += `<img src="${p.images[0]}" alt="${p.name}" class="featured-img">`;
-    if (p.images.length > 1) {
-      html += '<div class="gallery">';
-      p.images.slice(1).forEach(src => {
-        html += `<img src="${src}" alt="${p.name} additional">`;
-      });
-      html += '</div>';
-    }
-  }
-  html += `</div>
-    <p class="price">${p.price === 'TBA' ? 'TBA' : `৳${(Number(p.price) - Number(p.discount || 0)).toFixed(2)}`}</p>
-    <p>${p.description || ''}</p>
-    <div>Color: ${p.color || '-'}</div>
-    <div>Category: ${p.category || '-'}</div>
-    <div>Stock: ${computeStatus(p)}</div>
-    <button class="order-btn" data-id="${p.id}">Order</button>`;
-
-  detailDiv.innerHTML = html;
-
-  detailDiv.querySelector('.order-btn').addEventListener('click', (e) => {
-    openCheckoutModal(p.id);
-  });
-
-  detailDiv.querySelectorAll('img').forEach(img => {
-    img.addEventListener('click', () => {
-      const viewerImg = document.getElementById('viewer-img');
-      viewerImg.src = img.src;
-      viewerImg.alt = img.alt;
-      document.getElementById('image-viewer').classList.add('show');
-    });
-  });
-}
-
-// ====== PRODUCT CARD ======
 function createProductCard(p) {
-  const isUpcoming = p.price === 'TBA';
-  const isOOS = !isUpcoming && Number(p.stock) <= 0 && Number(p.stock) !== -1;
-  const isPreOrder = Number(p.stock) === -1;
+  const images = p.images || [];
+  const featuredImage = images[0] || '';
+  const isUpcoming = p.availability === 'Upcoming';
+  const isOOS = !isUpcoming && Number(p.stock) <= 0 && p.availability !== 'Pre Order';
+  const isPreOrder = p.availability === 'Pre Order';
   const hasDiscount = Number(p.discount) > 0;
   const price = Number(p.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
-
   const card = document.createElement('div');
   card.className = 'card product-card';
-
+  card.style.cursor = 'pointer';
+  card.addEventListener('click', () => {
+    window.location.href = `product.html?slug=${p.slug}`;
+  });
   card.innerHTML = `
-    <img src="${p.images ? p.images[0] : ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
+    <img src="${featuredImage}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
     <div class="badges">
-      ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
-      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
-      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
-      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
-      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
+      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
+      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
+      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ''}
     </div>
     <h3>${p.name}</h3>
     <div class="muted">Color: ${p.color || '-'}</div>
     <div class="price">
-      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ``}৳${finalPrice.toFixed(2)}`}
-    </div>
-    <div class="order-row">
-      ${isPreOrder ? `<button class="preorder-btn">Pre Order</button>` : `<button ${isOOS || isUpcoming ? 'disabled' : ''} data-id="${p.id}" class="order-btn">Order</button>`}
+      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`}
     </div>
   `;
-
-  card.addEventListener('click', (e) => {
-    if (!p.slug || e.target.tagName === 'BUTTON' || e.target.classList.contains('badge') || e.target.tagName === 'IMG') return;
-    location.href = `product.html?slug=${p.slug}`;
-  });
-
-  if (!isOOS && !isUpcoming && !isPreOrder) {
-    card.querySelector('.order-btn').addEventListener('click', (e) => {
-      const id = e.currentTarget.getAttribute('data-id');
-      openCheckoutModal(id);
-    });
-  } else if (isPreOrder) {
-    card.querySelector('.preorder-btn').addEventListener('click', () => {
-      window.location.href = 'https://facebook.com/thegeek.shop0';
-    });
-  }
-
   return card;
 }
 
-function bindImageViewers() {
-  document.querySelectorAll('.product-card img').forEach(img => {
-    img.addEventListener('click', () => {
-      const viewerImg = document.getElementById('viewer-img');
-      viewerImg.src = img.src;
-      viewerImg.alt = img.alt;
-      document.getElementById('image-viewer').classList.add('show');
-    });
-  });
+async function displayInterestProducts() {
+  const section = document.getElementById('interest-products');
+  if (!section) return;
+  let products = await loadProducts();
+  products = shuffle(products).slice(0, 4);
+  products.forEach(p => section.appendChild(createProductCard(p)));
 }
 
-// ====== DELIVERY CHARGE LOGIC ======
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+async function displayFilteredProducts() {
+  const section = document.getElementById('product-list');
+  if (!section) return;
+  const params = new URLSearchParams(window.location.search);
+  const category = params.get('category');
+  const products = await loadProducts(category);
+  if (category) {
+    document.querySelector('h1').textContent = `Products - ${category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ')}`;
+  }
+  products.forEach(p => section.appendChild(createProductCard(p)));
+}
+
+async function displayProductDetail() {
+  const detail = document.getElementById('product-detail');
+  if (!detail) return;
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug');
+  if (!slug) {
+    detail.innerHTML = '<p>Product not found.</p>';
+    return;
+  }
+  const p = await loadProductBySlug(slug);
+  if (!p) {
+    detail.innerHTML = '<p>Product not found.</p>';
+    return;
+  }
+  document.title = `${p.name} - The Geek Shop`;
+  const images = p.images || [];
+  const featuredImage = images[0] || '';
+  const isUpcoming = p.availability === 'Upcoming';
+  const isOOS = !isUpcoming && Number(p.stock) <= 0 && p.availability !== 'Pre Order';
+  const isPreOrder = p.availability === 'Pre Order';
+  const hasDiscount = Number(p.discount) > 0;
+  const price = Number(p.price) || 0;
+  const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
+  const html = `
+    <div class="images">
+      <img id="main-image" src="${featuredImage}" alt="${p.name}">
+      <div class="thumbs">
+        ${images.map(img => `<img src="${img}" alt="${p.name}" onclick="document.getElementById('main-image').src = this.src;">`).join('')}
+      </div>
+    </div>
+    <div class="info">
+      <h1>${p.name}</h1>
+      <div class="badges">
+        ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
+        ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
+        ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ''}
+      </div>
+      <div class="price">
+        ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`}
+      </div>
+      <div class="muted">Color: ${p.color || '-'}</div>
+      <div>Availability: ${p.availability}</div>
+      <div class="description">${p.description || ''}</div>
+      <button ${isOOS || isUpcoming ? 'disabled' : ''} id="order-btn" class="${isPreOrder ? 'preorder-btn' : 'order-btn'}">${isPreOrder ? 'Pre Order' : 'Order'}</button>
+    </div>
+  `;
+  detail.innerHTML = html;
+  if (!isOOS && !isUpcoming) {
+    document.getElementById('order-btn').addEventListener('click', () => openCheckoutModal(p.id, isPreOrder));
+  }
+  const viewer = document.getElementById('image-viewer');
+  const viewerImg = document.getElementById('viewer-img');
+  const closeViewer = document.getElementById('close-viewer');
+  if (viewer && viewerImg && closeViewer) {
+    document.querySelectorAll('.images img').forEach(img => {
+      img.addEventListener('click', () => {
+        viewerImg.src = img.src;
+        viewerImg.alt = img.alt;
+        viewer.classList.add('show');
+      });
+    });
+    viewer.addEventListener('click', e => {
+      if (e.target === viewer) viewer.classList.remove('show', 'zoomed');
+    });
+    closeViewer.addEventListener('click', () => viewer.classList.remove('show', 'zoomed'));
+    viewerImg.addEventListener('dblclick', () => viewer.classList.toggle('zoomed'));
+  }
+}
+
 function calculateDeliveryFee(address) {
   const lowerAddr = address.toLowerCase();
-  if (lowerAddr.includes("savar")) {
-    return 70;
-  } else if (lowerAddr.includes("dhaka")) {
-    return 110;
-  }
+  if (lowerAddr.includes("savar")) return 70;
+  else if (lowerAddr.includes("dhaka")) return 110;
   return 150;
 }
 
@@ -239,269 +214,203 @@ function updateDeliveryCharge() {
   updateTotalInModal();
 }
 
-// ====== CHECKOUT MODAL FLOW ======
-async function openCheckoutModal(productId) {
-  const products = await loadProducts();
-  const p = products.find(x => x.id === productId);
-  if (!p) return;
-
-  const price = p.price === 'TBA' ? 0 : Number(p.price) || 0;
-  const discount = Number(p.discount) || 0;
+async function openCheckoutModal(productId, isPreOrder = false) {
+  const p = await getDoc(doc(db, 'products', productId));
+  if (!p.exists()) return;
+  const data = p.data();
+  const price = data.price === 'TBA' ? 0 : Number(data.price) || 0;
+  const discount = Number(data.discount) || 0;
   const unit = price - discount;
-
-  document.getElementById('co-product-id').value = p.id;
-  document.getElementById('co-product-name').value = p.name;
-  document.getElementById('co-color').value = p.color || '';
+  document.getElementById('co-product-id').value = productId;
+  document.getElementById('co-product-name').value = data.name;
+  document.getElementById('co-color').value = data.color || '';
   document.getElementById('co-price').value = unit.toFixed(2);
   document.getElementById('co-unit-price-raw').value = unit.toString();
-  document.getElementById('co-available-stock').value = String(p.stock);
+  document.getElementById('co-available-stock').value = String(data.stock);
   document.getElementById('co-qty').value = 1;
-  document.getElementById('co-qty').max = p.stock;
-  document.getElementById('co-payment').value = '';
+  document.getElementById('co-qty').max = data.stock;
+  document.getElementById('co-payment').value = isPreOrder ? 'Bkash' : '';
+  document.getElementById('co-payment').disabled = isPreOrder;
   document.getElementById('co-payment-number').value = '';
   document.getElementById('co-txn').value = '';
   document.getElementById('co-name').value = '';
   document.getElementById('co-phone').value = '';
   document.getElementById('co-address').value = '';
   document.getElementById('co-note').textContent = '';
-
+  document.getElementById('co-policy').checked = false;
+  document.getElementById('co-pay-now').style.display = 'none';
+  document.getElementById('co-due-amount').style.display = 'none';
   document.getElementById('co-delivery').value = `Delivery Charge = ${DELIVERY_FEE}`;
   document.getElementById('co-delivery').dataset.fee = DELIVERY_FEE;
-
+  if (isPreOrder) {
+    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
+    const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
+    document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
+    document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
+    document.getElementById('co-payment-number').value = BKASH_NUMBER;
+    document.getElementById('co-note').textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    document.getElementById('co-pay-now').style.display = 'block';
+    document.getElementById('co-due-amount').style.display = 'block';
+  }
   updateTotalInModal();
-
-  const modal = document.getElementById('checkout-modal');
-  modal.classList.add('show');
+  document.getElementById('checkout-modal').classList.add('show');
 }
 
 function closeCheckoutModal() {
-  const modal = document.getElementById('checkout-modal');
-  modal.classList.remove('show');
+  document.getElementById('checkout-modal').classList.remove('show');
 }
 
 function updateTotalInModal() {
   const qty = Number(document.getElementById('co-qty').value) || 1;
   const unit = Number(document.getElementById('co-unit-price-raw').value) || 0;
   const delivery = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
-  const total = (qty * unit) + delivery;
+  const subtotal = qty * unit;
+  const total = subtotal + delivery;
   document.getElementById('co-total').value = total.toFixed(2);
+  const paymentMethod = document.getElementById('co-payment').value;
+  const isPreOrderMode = paymentMethod === 'Bkash' && document.getElementById('co-payment').disabled;
+  const payNowEl = document.getElementById('co-pay-now');
+  const dueEl = document.getElementById('co-due-amount');
+  if (isPreOrderMode) {
+    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
+    payNowEl.value = (qty * preOrderPrice).toFixed(2);
+    dueEl.value = (total - qty * preOrderPrice).toFixed(2);
+  }
 }
 
 function handlePaymentChange(e) {
   const method = e.target.value;
+  const txn = document.getElementById('co-txn');
+  const number = document.getElementById('co-payment-number');
   const note = document.getElementById('co-note');
-  const paymentNumberInput = document.getElementById('co-payment-number');
+  const payNow = document.getElementById('co-pay-now');
+  const due = document.getElementById('co-due-amount');
   if (method === 'Bkash') {
+    number.value = BKASH_NUMBER;
     note.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
-    paymentNumberInput.value = BKASH_NUMBER;
+    txn.required = true;
+    payNow.style.display = 'block';
+    due.style.display = 'block';
+    const total = Number(document.getElementById('co-total').value) || 0;
+    payNow.value = total.toFixed(2);
+    due.value = '0.00';
   } else if (method === 'Cash on Delivery') {
-    note.textContent = `Send the delivery charge to ${COD_NUMBER} and provide transaction ID.`;
-    paymentNumberInput.value = COD_NUMBER;
-  } else {
+    number.value = COD_NUMBER;
     note.textContent = '';
-    paymentNumberInput.value = '';
+    txn.required = false;
+    payNow.style.display = 'block';
+    due.style.display = 'block';
+    payNow.value = '0.00';
+    due.value = document.getElementById('co-total').value;
+  } else {
+    number.value = '';
+    note.textContent = '';
+    txn.required = false;
+    payNow.style.display = 'none';
+    due.style.display = 'none';
   }
 }
 
 async function submitCheckoutOrder(e) {
   e.preventDefault();
-  const btn = document.getElementById('place-order-btn');
-  btn.disabled = true;
-
-  const productId = document.getElementById('co-product-id').value;
+  const id = document.getElementById('co-product-id').value;
   const qty = Number(document.getElementById('co-qty').value);
   const available = Number(document.getElementById('co-available-stock').value);
-
-  if (!productId) {
-    alert('Product ID is missing.');
-    btn.disabled = false;
-    return;
-  }
-  if (qty <= 0) {
-    alert('Quantity must be at least 1.');
-    btn.disabled = false;
-    return;
-  }
-  if (qty > available) {
-    alert(`Quantity exceeds available stock of ${available}.`);
-    btn.disabled = false;
-    return;
-  }
-
+  if (qty > available) return alert('Quantity exceeds available stock.');
+  if (!document.getElementById('co-policy').checked) return alert('You must agree to the order policy.');
+  const paymentMethod = document.getElementById('co-payment').value;
+  const txnId = paymentMethod === 'Cash on Delivery' ? Math.random().toString(36).substring(2, 10).toUpperCase() : document.getElementById('co-txn').value.trim();
+  if (paymentMethod === 'Bkash' && !txnId) return alert('Transaction ID is required for Bkash.');
+  const p = await getDoc(doc(db, 'products', id));
+  if (!p.exists()) return;
+  const data = p.data();
   const unit = Number(document.getElementById('co-unit-price-raw').value);
-  if (isNaN(unit)) {
-    alert('Invalid unit price.');
-    btn.disabled = false;
-    return;
+  const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee);
+  const subtotal = qty * unit;
+  const total = subtotal + deliveryFee;
+  let paid = 0;
+  let due = total;
+  const isPreOrder = data.availability === 'Pre Order';
+  if (isPreOrder) {
+    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
+    paid = qty * preOrderPrice;
+    due = total - paid;
+  } else if (paymentMethod === 'Bkash') {
+    paid = total;
+    due = 0;
   }
-  const delivery = Number(document.getElementById('co-delivery').dataset.fee);
-  if (isNaN(delivery)) {
-    alert('Invalid delivery fee.');
-    btn.disabled = false;
-    return;
-  }
-  const total = (qty * unit) + delivery;
-
-  const orderData = {
-    timeISO: new Date().toISOString(),
-    productId,
-    productName: document.getElementById('co-product-name').value,
-    color: document.getElementById('co-color').value,
+  const order = {
+    productId: id,
+    productName: data.name,
+    color: data.color || '',
     unitPrice: unit,
     quantity: qty,
-    deliveryFee: delivery,
-    total,
+    deliveryFee,
+    paid,
+    due,
     customerName: document.getElementById('co-name').value.trim(),
     phone: document.getElementById('co-phone').value.trim(),
     address: document.getElementById('co-address').value.trim(),
-    paymentMethod: document.getElementById('co-payment').value,
-    paymentNumber: document.getElementById('co-payment-number').value.trim(),
-    transactionId: document.getElementById('co-txn').value.trim().toUpperCase(),
-    status: 'Pending'
+    paymentMethod,
+    transactionId: txnId,
+    status: 'Pending',
+    timeISO: new Date().toISOString()
   };
-
-  console.log('Order Data:', orderData); // Debug log
-
-  if (!orderData.customerName || !orderData.phone || !orderData.address || !orderData.paymentMethod) {
-    alert('Please fill all required fields.');
-    btn.disabled = false;
-    return;
-  }
-
-  if (orderData.paymentMethod === 'Bkash' && (!orderData.paymentNumber || !orderData.transactionId)) {
-    alert('Please provide payment number and transaction ID for Bkash.');
-    btn.disabled = false;
-    return;
-  }
-
   try {
     await runTransaction(db, async (transaction) => {
-      const productRef = doc(db, 'products', productId);
-      const productSnap = await transaction.get(productRef);
-
-      if (!productSnap.exists()) {
-        throw new Error('Product not found.');
-      }
-
-      const currentStock = Number(productSnap.data().stock);
-      if (currentStock !== -1 && currentStock < qty) { // Allow pre-orders (stock = -1) to bypass stock check
-        throw new Error(`Insufficient stock. Only ${currentStock} available.`);
-      }
-
-      if (currentStock !== -1) { // Only update stock if not a pre-order
-        const newStock = currentStock - qty;
-        console.log('Updating stock for product:', productId, 'New stock:', newStock); // Debug log
-        transaction.update(productRef, { stock: Number(newStock) });
-      }
-
-      // Create order
-      const orderRef = await addDoc(collection(db, 'orders'), orderData);
-      console.log('Order placed:', orderRef.id); // Debug log
+      const freshP = transaction.get(doc(db, 'products', id));
+      if (!freshP.exists()) throw new Error('Product not found');
+      const freshData = freshP.data();
+      if (freshData.stock < qty) throw new Error('Insufficient stock');
+      transaction.update(doc(db, 'products', id), { stock: freshData.stock - qty });
+      transaction.set(doc(collection(db, 'orders')), order);
     });
-
-    alert('Order placed successfully!');
+    alert(`Order placed! Transaction ID: ${txnId}`);
     closeCheckoutModal();
   } catch (err) {
-    console.error('Error placing order: ', err);
+    console.error('Order error:', err);
     alert('Error placing order: ' + err.message);
-  } finally {
-    btn.disabled = false;
   }
 }
 
-// ====== ADMIN: ADD PRODUCT ======
 async function addProduct(e) {
   e.preventDefault();
-  const form = e.target;
-  const stockStr = form['add-stock'].value.trim() || '0';
-  const discountStr = form['add-discount'].value.trim() || '0';
-  const priceStr = form['add-price'].value.trim();
-
-  if (isNaN(Number(stockStr))) {
-    alert('Stock must be a number.');
-    return;
-  }
-  if (isNaN(Number(discountStr))) {
-    alert('Discount must be a number.');
-    return;
-  }
-
-  const data = {
-    name: form['add-name'].value.trim(),
-    price: priceStr === 'TBA' ? 'TBA' : Number(priceStr),
-    discount: Number(discountStr),
-    images: form['add-images'].value.split(',').map(u => u.trim()).filter(u => u),
-    category: form['add-category'].value,
-    color: form['add-color'].value.trim(),
-    stock: Number(stockStr),
-    description: form['add-desc'].value.trim()
+  const name = document.getElementById('add-name').value.trim();
+  const price = document.getElementById('add-price').value.trim();
+  const discount = Number(document.getElementById('add-discount').value) || 0;
+  const imagesStr = document.getElementById('add-images').value.trim();
+  const images = imagesStr.split(',').map(s => s.trim()).filter(Boolean);
+  if (!images.length) return alert('At least one image URL is required.');
+  const category = document.getElementById('add-category').value;
+  const color = document.getElementById('add-color').value.trim();
+  const stock = Number(document.getElementById('add-stock').value) || 0;
+  const availability = document.getElementById('add-availability').value;
+  const description = document.getElementById('add-desc').value.trim();
+  const slug = await generateUniqueSlug(name, color);
+  const product = {
+    name, price: price === 'TBA' ? 'TBA' : Number(price), discount, images, category, color, stock, availability, description, slug
   };
-
-  if (!data.name || (typeof data.price === 'undefined' || data.price === null) || data.images.length === 0 || !data.category) {
-    alert('Please fill required fields.');
-    return;
-  }
-
-  if (data.price !== 'TBA' && isNaN(data.price)) {
-    alert('Price must be a number or "TBA".');
-    return;
-  }
-
   try {
-    const docRef = await addDoc(collection(db, 'products'), data);
-    const id = docRef.id;
-
-    // Generate unique slug
-    let baseSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    let slug = baseSlug;
-    let q = query(collection(db, 'products'), where('slug', '==', slug));
-    let snap = await getDocs(q);
-    if (!snap.empty) {
-      const colorPart = data.color ? '-' + data.color.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '';
-      slug = baseSlug + colorPart;
-      q = query(collection(db, 'products'), where('slug', '==', slug));
-      snap = await getDocs(q);
-      if (!snap.empty) {
-        slug = baseSlug + '-' + id.substring(0, 8);
-      }
-    }
-    await updateDoc(docRef, { slug });
-
-    form.reset();
+    await addDoc(collection(db, 'products'), product);
+    e.target.reset();
     renderDataTable();
-    alert('Product added successfully!');
   } catch (err) {
-    console.error('Error adding product:', err);
+    console.error('Add product error:', err);
     alert('Error adding product: ' + err.message);
   }
 }
 
-// ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
   if (!tbody) return;
-
   const products = await loadProducts();
   tbody.innerHTML = '';
-
-  const cols = [
-    { key: 'name', editable: true },
-    { key: 'price', editable: true },
-    { key: 'category', editable: true },
-    { key: 'color', editable: true },
-    { key: 'discount', editable: true },
-    { key: 'stock', editable: true }
-  ];
-
   products.forEach(p => {
-    // Main row
     const tr = document.createElement('tr');
-
-    // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
     tdToggle.innerHTML = '▼';
-    tdToggle.addEventListener('click', (e) => {
+    tdToggle.addEventListener('click', e => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
@@ -509,15 +418,22 @@ async function renderDataTable() {
     });
     tr.appendChild(tdToggle);
 
-    // Main columns
+    const cols = [
+      { key: 'name' },
+      { key: 'price' },
+      { key: 'category' },
+      { key: 'color' },
+      { key: 'discount' },
+      { key: 'stock' },
+      { key: 'availability' }
+    ];
     cols.forEach(col => {
       const td = document.createElement('td');
-      td.contentEditable = col.editable;
-      td.textContent = p[col.key] != null ? p[col.key] : '';
-      td.addEventListener('blur', async (e) => {
-        let val = e.target.textContent.trim();
+      td.contentEditable = true;
+      td.textContent = p[col.key] != null ? String(p[col.key]) : '';
+      td.addEventListener('blur', async e => {
+        const val = e.target.textContent.trim();
         if (val === (p[col.key] != null ? String(p[col.key]) : '')) return;
-
         let updateValue = val;
         if (col.key === 'price') {
           if (val !== 'TBA' && isNaN(Number(val))) {
@@ -533,10 +449,20 @@ async function renderDataTable() {
             return;
           }
           updateValue = Number(val);
+        } else if (col.key === 'availability') {
+          if (!['Ready', 'Pre Order', 'Upcoming'].includes(val)) {
+            alert('Availability must be Ready, Pre Order, or Upcoming.');
+            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
+            return;
+          }
         }
-
         await updateProductField(p.id, col.key, updateValue);
-        if (col.key === 'stock' || col.key === 'price') {
+        if (col.key === 'name' || col.key === 'color') {
+          const updatedP = (await loadProducts()).find(x => x.id === p.id);
+          const newSlug = await generateUniqueSlug(updatedP.name, updatedP.color, p.id);
+          if (newSlug !== updatedP.slug) await updateProductField(p.id, 'slug', newSlug);
+        }
+        if (col.key === 'stock' || col.key === 'price' || col.key === 'availability') {
           const cur = (await loadProducts()).find(x => x.id === p.id);
           tr.querySelector('td[data-status="1"]').textContent = computeStatus(cur);
         }
@@ -544,13 +470,11 @@ async function renderDataTable() {
       tr.appendChild(td);
     });
 
-    // Status column
     const tdStatus = document.createElement('td');
     tdStatus.dataset.status = '1';
     tdStatus.textContent = computeStatus(p);
     tr.appendChild(tdStatus);
 
-    // Actions column
     const tdActions = document.createElement('td');
     const del = document.createElement('button');
     del.className = 'danger';
@@ -560,35 +484,34 @@ async function renderDataTable() {
     });
     tdActions.appendChild(del);
     tr.appendChild(tdActions);
-
     tbody.appendChild(tr);
 
-    // Details row for Image URLs and Description
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
-    detailsCell.colSpan = cols.length + 3; // Span across toggle, cols, status, and actions
+    detailsCell.colSpan = cols.length + 3;
     detailsCell.className = 'details-content';
-
     const imagesCell = document.createElement('div');
     imagesCell.contentEditable = true;
     imagesCell.textContent = p.images ? p.images.join(', ') : '';
-    imagesCell.addEventListener('blur', async (e) => {
+    imagesCell.addEventListener('blur', async e => {
       const val = e.target.textContent.trim();
-      if (val === (p.images ? p.images.join(', ') : '')) return;
-      const newImages = val.split(',').map(u => u.trim()).filter(u => u);
+      const newImages = val.split(',').map(s => s.trim()).filter(Boolean);
+      if (newImages.length === 0) {
+        alert('At least one image URL is required.');
+        e.target.textContent = p.images ? p.images.join(', ') : '';
+        return;
+      }
       await updateProductField(p.id, 'images', newImages);
     });
-
     const descCell = document.createElement('div');
     descCell.contentEditable = true;
     descCell.textContent = p.description != null ? p.description : '';
-    descCell.addEventListener('blur', async (e) => {
+    descCell.addEventListener('blur', async e => {
       const val = e.target.textContent.trim();
       if (val === (p.description != null ? String(p.description) : '')) return;
       await updateProductField(p.id, 'description', val);
     });
-
     detailsCell.innerHTML = `<strong>Image URLs (comma separated):</strong> `;
     detailsCell.appendChild(imagesCell);
     detailsCell.innerHTML += `<br><strong>Description:</strong> `;
@@ -598,10 +521,10 @@ async function renderDataTable() {
   });
 }
 
-function computeStatus(p) { 
-  if (p.price === 'TBA') return 'Upcoming';
-  if (Number(p.stock) === -1) return 'Pre Order';
-  return Number(p.stock) > 0 ? 'In Stock' : 'Out of Stock'; 
+function computeStatus(p) {
+  if (p.availability === 'Upcoming') return 'Upcoming';
+  if (p.availability === 'Pre Order') return 'Pre Order';
+  return Number(p.stock) > 0 ? 'In Stock' : 'Out of Stock';
 }
 
 async function updateProductField(id, field, value) {
@@ -623,37 +546,31 @@ async function deleteProductById(id) {
   }
 }
 
-// ====== ADMIN: ORDERS TABLE ======
 async function renderOrdersTable() {
   const tbody = document.getElementById('orders-body');
   if (!tbody) return;
-
   const orders = await loadOrders();
   tbody.innerHTML = '';
-
   orders.forEach(o => {
     const tr = document.createElement('tr');
-    
-    // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
     tdToggle.innerHTML = '▼';
-    tdToggle.addEventListener('click', (e) => {
+    tdToggle.addEventListener('click', e => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
       e.target.textContent = isVisible ? '▼' : '▲';
     });
     tr.appendChild(tdToggle);
-
-    // Main columns
     const tds = [
       new Date(o.timeISO).toLocaleString(),
       o.productName,
       o.color,
       o.quantity,
-      '৳' + Number(o.deliveryFee).toFixed(2),
-      '৳' + Number(o.total).toFixed(2),
+      '৳' + Number(o.due).toFixed(2),
+      '৳' + Number(o.paid).toFixed(2),
+      '৳' + Number(o.due).toFixed(2),
       o.customerName,
       o.phone,
       o.address,
@@ -665,8 +582,6 @@ async function renderOrdersTable() {
       td.textContent = v;
       tr.appendChild(td);
     });
-
-    // Status dropdown
     const tdStatus = document.createElement('td');
     const select = document.createElement('select');
     ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'].forEach(opt => {
@@ -677,7 +592,7 @@ async function renderOrdersTable() {
       select.appendChild(option);
     });
     select.style.backgroundColor = statusColors[o.status || 'Pending'];
-    select.addEventListener('change', async (e) => {
+    select.addEventListener('change', async e => {
       try {
         const newStatus = e.target.value;
         await updateDoc(doc(db, 'orders', o.id), { status: newStatus });
@@ -689,54 +604,43 @@ async function renderOrdersTable() {
     });
     tdStatus.appendChild(select);
     tr.appendChild(tdStatus);
-
     tbody.appendChild(tr);
 
-    // Details row for Unit Price
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
-    detailsCell.colSpan = 12; // Span across toggle, main columns, and status
+    detailsCell.colSpan = 14;
     detailsCell.className = 'details-content';
-
     const unitPriceCell = document.createElement('div');
     unitPriceCell.textContent = `Unit Price: ৳${Number(o.unitPrice).toFixed(2)}`;
     detailsCell.appendChild(unitPriceCell);
-
     detailsRow.appendChild(detailsCell);
     tbody.appendChild(detailsRow);
   });
 }
 
-// ====== AUTH ======
 function logoutAdmin() {
   try {
     signOut(auth);
-    console.log('Logged out successfully');
   } catch (err) {
     console.error('Logout error:', err);
     alert('Error logging out: ' + err.message);
   }
 }
 
-// ====== ORDER STATUS PAGE ======
 function setupStatusForm() {
   const form = document.getElementById('status-form');
   if (!form) return;
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const txn = document.getElementById('txn-id').value.trim();
     if (!txn) return;
     try {
       const q = query(collection(db, 'orders'), where('transactionId', '==', txn));
       const snapshot = await getDocs(q);
-      if (snapshot.empty) {
-        alert('Order not found.');
-        return;
-      }
+      if (snapshot.empty) return alert('Order not found.');
       const order = snapshot.docs[0].data();
-      const status = order.status;
-      alert(`Status: ${status}\n${statusExplanations[status] || 'Unknown status.'}`);
+      alert(`Status: ${order.status}\n${statusExplanations[order.status] || 'Unknown status.'}`);
     } catch (err) {
       console.error('Error fetching status:', err);
       alert('Error fetching status: ' + err.message);
@@ -744,59 +648,11 @@ function setupStatusForm() {
   });
 }
 
-// ====== INIT ======
 document.addEventListener('DOMContentLoaded', async () => {
-  // Page-specific init
-  const path = location.pathname;
-  if (path.endsWith('index.html') || path === '/') {
-    loadHome();
-  } else if (path.endsWith('products.html')) {
-    loadProductsPage();
-  } else if (path.endsWith('product.html')) {
-    loadProductDetail();
-  } else if (path.endsWith('admin.html')) {
-    const loginPanel = document.getElementById('login-panel');
-    const adminPanel = document.getElementById('admin-panel');
-    const addForm = document.getElementById('add-product-form');
-    if (addForm) addForm.addEventListener('submit', addProduct);
+  displayInterestProducts();
+  displayFilteredProducts();
+  displayProductDetail();
 
-    if (loginPanel && adminPanel) {
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          console.log('User logged in:', user.email);
-          loginPanel.style.display = 'none';
-          adminPanel.style.display = 'block';
-          await renderDataTable();
-          await renderOrdersTable();
-        } else {
-          console.log('No user logged in');
-          loginPanel.style.display = 'block';
-          adminPanel.style.display = 'none';
-        }
-      });
-
-      const loginForm = document.getElementById('login-form');
-      if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const email = document.getElementById('admin-email').value;
-          const pass = document.getElementById('admin-pass').value;
-          console.log('Attempting login with email:', email);
-          try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            console.log('Login successful');
-          } catch (err) {
-            console.error('Login failed:', err);
-            alert('Login failed: ' + err.message);
-          }
-        });
-      }
-    }
-  } else if (path.endsWith('status.html')) {
-    setupStatusForm();
-  }
-
-  // Common bindings
   const modal = document.getElementById('checkout-modal');
   if (modal) {
     document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
@@ -807,22 +663,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('co-address').addEventListener('input', updateDeliveryCharge);
   }
 
-  const viewer = document.getElementById('image-viewer');
-  if (viewer) {
-    const viewerImg = document.getElementById('viewer-img');
-    const closeViewer = document.getElementById('close-viewer');
-    viewer.addEventListener('click', (e) => {
-      if (e.target === viewer) {
-        viewer.classList.remove('show');
-        viewer.classList.remove('zoomed');
+  const loginPanel = document.getElementById('login-panel');
+  const adminPanel = document.getElementById('admin-panel');
+  const addForm = document.getElementById('add-product-form');
+  if (addForm) addForm.addEventListener('submit', addProduct);
+  if (loginPanel && adminPanel) {
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        loginPanel.style.display = 'none';
+        adminPanel.style.display = 'block';
+        await renderDataTable();
+        await renderOrdersTable();
+      } else {
+        loginPanel.style.display = 'block';
+        adminPanel.style.display = 'none';
       }
     });
-    closeViewer.addEventListener('click', () => {
-      viewer.classList.remove('show');
-      viewer.classList.remove('zoomed');
-    });
-    viewerImg.addEventListener('dblclick', () => {
-      viewer.classList.toggle('zoomed');
-    });
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = document.getElementById('admin-email').value;
+        const pass = document.getElementById('admin-pass').value;
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+        } catch (err) {
+          console.error('Login failed:', err);
+          alert('Login failed: ' + err.message);
+        }
+      });
+    }
   }
+
+  setupStatusForm();
 });
