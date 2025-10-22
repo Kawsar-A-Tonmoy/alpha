@@ -94,3 +94,39 @@ button.preorder-btn:hover { background: #7c3aed; }
   .category-button { height: 120px; font-size: 1.2rem; }
   .product-detail { flex-direction: column; }
 }
+.category-card {
+  position: relative;
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .2s;
+}
+.category-card:hover { transform: scale(1.03); }
+.category-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.4rem;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+
+.product-card button {
+  margin-top: auto;
+  width: 100%;
+}
+
+.big-img { cursor: zoom-in; }
+
+.modal-content .row { grid-template-columns: 1fr 1fr; }
+.modal-content .row > div { display: flex; flex-direction: column; }
+.modal-content textarea { min-height: 80px; }
+
+#other-products { margin-top: 2rem; }
