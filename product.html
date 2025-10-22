@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">Keyboard Shop</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="cart.html">Cart</a>
+      <a href="login.html">Login/Register</a>
+      <a id="adminLink" href="admin.html" style="display:none;">Admin</a>
+    </nav>
+  </header>
+  <section id="productDetail">
+    <div style="display: flex;">
+      <div id="images" style="width: 50%;"></div>
+      <div id="info" style="width: 50%; padding: 20px;">
+        <h2 id="name"></h2>
+        <p id="color"></p>
+        <p id="price"></p>
+        <p id="description"></p>
+        <button id="orderBtn" class="button"></button>
+        <button id="addToCartBtn" class="button">Add to Cart</button>
+      </div>
+    </div>
+    <h3>Other Products</h3>
+    <div id="related" style="display: flex; justify-content: space-around;"></div>
+  </section>
+  <footer>© 2025 Keyboard Shop</footer>
+  <div id="popup" class="popup" style="display:none;"></div>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/products.js"></script>
+  <script type="module" src="js/cart.js"></script>
+  <script type="module">
+    import { loadProduct } from './js/products.js';
+    loadProduct();
+  </script>
+</body>
+</html>

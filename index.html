@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">Keyboard Shop</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="cart.html">Cart</a>
+      <a href="login.html">Login/Register</a>
+      <a id="adminLink" href="admin.html" style="display:none;">Admin</a>
+    </nav>
+  </header>
+  <section id="mid">
+    <h2>May Interest You</h2>
+    <div id="mayInterest" style="display: flex; justify-content: space-around;"></div>
+    <h2>Categories</h2>
+    <div id="categories" style="display: flex; justify-content: space-around;">
+      <div class="category-button" style="background-image: url('images/keycaps-bg.jpg');" onclick="location.href='category.html?cat=keycaps'">Keycaps</div>
+      <div class="category-button" style="background-image: url('images/switches-bg.jpg');" onclick="location.href='category.html?cat=switches'">Switches</div>
+      <div class="category-button" style="background-image: url('images/keyboards-bg.jpg');" onclick="location.href='category.html?cat=keyboards and barebones'">Keyboards and Barebones</div>
+      <div class="category-button" style="background-image: url('images/collectibles-bg.jpg');" onclick="location.href='category.html?cat=collectibles and accessories'">Collectibles and Accessories</div>
+    </div>
+  </section>
+  <footer>© 2025 Keyboard Shop</footer>
+  <div id="popup" class="popup" style="display:none;"></div>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/products.js"></script>
+  <script type="module" src="js/cart.js"></script>
+  <script type="module">
+    import { auth } from './js/firebase.js';
+    import { loadProducts } from './js/products.js';
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.data().isAdmin) document.getElementById('adminLink').style.display = 'block';
+      }
+      loadProducts(); // Load may interest you
+    });
+  </script>
+</body>
+</html>

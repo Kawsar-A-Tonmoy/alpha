@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">Keyboard Shop</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="cart.html">Cart</a>
+      <a href="login.html">Login/Register</a>
+    </nav>
+  </header>
+  <section>
+    <h2>Add/Edit Product</h2>
+    <form id="addProductForm">
+      <input id="name" placeholder="Name" required>
+      <input id="color" placeholder="Color" required>
+      <input id="price" type="number" placeholder="Price" required>
+      <input id="discount" type="number" placeholder="Discount">
+      <input id="featureImage" placeholder="Feature Image URL" required>
+      <input id="showcaseImages" placeholder="Showcase Images URLs (comma separated)">
+      <input id="stock" type="number" placeholder="Stock" required>
+      <select id="availability" required>
+        <option value="upcoming">Upcoming</option>
+        <option value="preorder">Pre Order</option>
+        <option value="instock">In Stock</option>
+      </select>
+      <select id="category" required>
+        <option value="keycaps">Keycaps</option>
+        <option value="switches">Switches</option>
+        <option value="keyboards and barebones">Keyboards and Barebones</option>
+        <option value="collectibles and accessories">Collectibles and Accessories</option>
+      </select>
+      <textarea id="description" placeholder="Description" required></textarea>
+      <button type="submit" class="button">Add Product</button>
+    </form>
+    <h2>Products List</h2>
+    <div id="productList"></div>
+  </section>
+  <footer>© 2025 Keyboard Shop</footer>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/products.js"></script>
+</body>
+</html>
