@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
   <script type="module" src="script.js"></script>
 </head>
 <body>
   <header class="site-header">
-    <nav>
+     <nav>
       <a href="index.html" class="logo">
-        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px" />
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
       <div class="nav-links">
         <a href="products.html">Products</a>
@@ -26,32 +31,37 @@
     <h1>Welcome to The Geek Shop</h1>
 
     <h2>May Interest You</h2>
-    <div id="interest-products" class="product-list new-hot-list"></div>
+    <div id="interest-products" class="product-list">
+      <div class="shimmer-card"></div>
+      <div class="shimmer-card"></div>
+      <div class="shimmer-card"></div>
+      <div class="shimmer-card"></div>
+    </div>
 
     <h2>Categories</h2>
     <div class="categories-grid">
-      <a href="products.html?category=keycaps" class="category-button" style="background-image: url('keycaps.jpg')">Keycaps</a>
-      <a href="products.html?category=switches" class="category-button" style="background-image: url('switches.jpg')">Switches</a>
-      <a href="products.html?category=keyboard-barebones" class="category-button" style="background-image: url('keyboards.jpg')">Keyboard & Barebones</a>
-      <a href="products.html?category=collectables" class="category-button" style="background-image: url('collectables.jpg')">Collectables</a>
+      <a href="products.html?category=keycaps" class="category-button keycaps" style="background-image: url('keycaps.jpg'); background-size: cover; background-position: center;">Keycaps</a>
+      <a href="products.html?category=switches" class="category-button switches" style="background-image: url('switches.jpg'); background-size: cover; background-position: center;">Switches</a>
+      <a href="products.html?category=keyboard-barebones" class="category-button keyboard-barebones" style="background-image: url('keyboards.jpg'); background-size: cover; background-position: center;">Keyboard and Barebones</a>
+      <a href="products.html?category=collectables" class="category-button collectables" style="background-image: url('collectables.jpg'); background-size: cover; background-position: center;">Collectables</a>
     </div>
   </main>
 
   <div id="image-viewer" class="image-viewer">
     <button id="close-viewer" class="close-viewer">×</button>
-    <img id="viewer-img" src="" alt="" />
+    <img id="viewer-img" src="" alt="">
   </div>
 
   <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
     <div>
       <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px" />
+        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
       </a>
       <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px" />
+        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
       </a>
       <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
-        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px" />
+        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
       </a>
     </div>
     <p>© All rights reserved by The Geek Shop</p>
