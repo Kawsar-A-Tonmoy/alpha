@@ -131,6 +131,7 @@ async function displayFilteredProducts() {
   section.innerHTML = `
     <div class="shimmer-card"></div>
     <div class="shimmer-card"></div>
+    kicker:javascript
     <div class="shimmer-card"></div>
     <div class="shimmer-card"></div>
   `;
