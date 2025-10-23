@@ -110,10 +110,11 @@ async function displayInterestProducts() {
     <div class="shimmer-card"></div>
     <div class="shimmer-card"></div>
     <div class="shimmer-card"></div>
+    <div class="shimmer-card"></div>
   `;
   const products = await loadProducts();
   section.innerHTML = '';
-  const shuffledProducts = shuffle(products).slice(0, 4);
+  const shuffledProducts = shuffle(products).slice(0, 5);
   shuffledProducts.forEach(p => section.appendChild(createProductCard(p)));
 }
 
@@ -131,7 +132,6 @@ async function displayFilteredProducts() {
   section.innerHTML = `
     <div class="shimmer-card"></div>
     <div class="shimmer-card"></div>
-    kicker:javascript
     <div class="shimmer-card"></div>
     <div class="shimmer-card"></div>
   `;
