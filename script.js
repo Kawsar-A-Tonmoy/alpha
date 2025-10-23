@@ -83,9 +83,6 @@ function createProductCard(p) {
   const card = document.createElement('div');
   card.className = 'card product-card';
   card.style.cursor = 'pointer';
-  card.addEventListener('click', () => {
-    window.location.href = `product.html?slug=${p.slug}`;
-  });
   card.innerHTML = `
     <img src="${featuredImage}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
     <div class="badges">
@@ -98,7 +95,14 @@ function createProductCard(p) {
     <div class="price">
       ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`}
     </div>
+    <button ${isOOS || isUpcoming ? 'disabled' : ''} class="${isPreOrder ? 'preorder-btn' : 'order-btn'}" data-product-id="${p.id}">${isPreOrder ? 'Pre Order' : 'Order'}</button>
   `;
+  if (!isOOS && !isUpcoming) {
+    card.querySelector('button').addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent card click from navigating
+      openCheckoutModal(p.id, isPreOrder);
+    });
+  }
   return card;
 }
 
@@ -197,6 +201,14 @@ async function displayProductDetail() {
     closeViewer.addEventListener('click', () => viewer.classList.remove('show', 'zoomed'));
     viewerImg.addEventListener('dblclick', () => viewer.classList.toggle('zoomed'));
   }
+  // Display Other Products
+  const otherSection = document.getElementById('other-products');
+  if (otherSection) {
+    let otherProducts = await loadProducts();
+    otherProducts = otherProducts.filter(product => product.id !== p.id);
+    otherProducts = shuffle(otherProducts).slice(0, 4);
+    otherProducts.forEach(product => otherSection.appendChild(createProductCard(product)));
+  }
 }
 
 function calculateDeliveryFee(address) {
@@ -229,146 +241,105 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   document.getElementById('co-available-stock').value = String(data.stock);
   document.getElementById('co-qty').value = 1;
   document.getElementById('co-qty').max = data.stock;
-  document.getElementById('co-payment').value = isPreOrder ? 'Bkash' : '';
-  document.getElementById('co-payment').disabled = isPreOrder;
-  document.getElementById('co-payment-number').value = '';
-  document.getElementById('co-txn').value = '';
-  document.getElementById('co-name').value = '';
-  document.getElementById('co-phone').value = '';
+  document.getElementById('co-payment').value = '';
+  document.getElementById('co-delivery').value = '';
+  document.getElementById('co-delivery').dataset.fee = '0';
   document.getElementById('co-address').value = '';
-  document.getElementById('co-note').textContent = '';
+  document.getElementById('co-payment-number').value = '';
+  document.getElementById('co-pay-now').value = '';
+  document.getElementById('co-due-amount').value = '';
+  document.getElementById('co-txn').value = '';
   document.getElementById('co-policy').checked = false;
-  document.getElementById('co-pay-now').style.display = 'none';
-  document.getElementById('co-due-amount').style.display = 'none';
-  document.getElementById('co-delivery').value = `Delivery Charge = ${DELIVERY_FEE}`;
-  document.getElementById('co-delivery').dataset.fee = DELIVERY_FEE;
-  if (isPreOrder) {
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
-    document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
-    document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
-    document.getElementById('co-payment-number').value = BKASH_NUMBER;
-    document.getElementById('co-note').textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
-    document.getElementById('co-pay-now').style.display = 'block';
-    document.getElementById('co-due-amount').style.display = 'block';
-  }
+  document.getElementById('co-note').textContent = isPreOrder ? 'Note: This is a pre-order. Products will be shipped once available.' : '';
   updateTotalInModal();
-  document.getElementById('checkout-modal').classList.add('show');
+  document.getElementById('checkout-modal').style.display = 'block';
 }
 
 function closeCheckoutModal() {
-  document.getElementById('checkout-modal').classList.remove('show');
+  document.getElementById('checkout-modal').style.display = 'none';
 }
 
 function updateTotalInModal() {
   const qty = Number(document.getElementById('co-qty').value) || 1;
-  const unit = Number(document.getElementById('co-unit-price-raw').value) || 0;
-  const delivery = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
-  const subtotal = qty * unit;
-  const total = subtotal + delivery;
+  const unitPrice = Number(document.getElementById('co-unit-price-raw').value) || 0;
+  const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || 0;
+  const total = (unitPrice * qty) + deliveryFee;
   document.getElementById('co-total').value = total.toFixed(2);
   const paymentMethod = document.getElementById('co-payment').value;
-  const isPreOrderMode = paymentMethod === 'Bkash' && document.getElementById('co-payment').disabled;
-  const payNowEl = document.getElementById('co-pay-now');
-  const dueEl = document.getElementById('co-due-amount');
-  if (isPreOrderMode) {
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    payNowEl.value = (qty * preOrderPrice).toFixed(2);
-    dueEl.value = (total - qty * preOrderPrice).toFixed(2);
+  if (paymentMethod === 'Bkash') {
+    document.getElementById('co-pay-now').value = total.toFixed(2);
+    document.getElementById('co-due-amount').value = '0.00';
+  } else if (paymentMethod === 'Cash on Delivery') {
+    document.getElementById('co-pay-now').value = '0.00';
+    document.getElementById('co-due-amount').value = total.toFixed(2);
   }
 }
 
-function handlePaymentChange(e) {
-  const method = e.target.value;
-  const txn = document.getElementById('co-txn');
-  const number = document.getElementById('co-payment-number');
-  const note = document.getElementById('co-note');
-  const payNow = document.getElementById('co-pay-now');
-  const due = document.getElementById('co-due-amount');
-  if (method === 'Bkash') {
-    number.value = BKASH_NUMBER;
-    note.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
-    txn.required = true;
-    payNow.style.display = 'block';
-    due.style.display = 'block';
-    const total = Number(document.getElementById('co-total').value) || 0;
-    payNow.value = total.toFixed(2);
-    due.value = '0.00';
-  } else if (method === 'Cash on Delivery') {
-    number.value = COD_NUMBER;
-    note.textContent = '';
-    txn.required = false;
-    payNow.style.display = 'block';
-    due.style.display = 'block';
-    payNow.value = '0.00';
-    due.value = document.getElementById('co-total').value;
-  } else {
-    number.value = '';
-    note.textContent = '';
-    txn.required = false;
-    payNow.style.display = 'none';
-    due.style.display = 'none';
-  }
+function handlePaymentChange() {
+  const paymentMethod = document.getElementById('co-payment').value;
+  document.getElementById('co-payment-number').value = paymentMethod === 'Bkash' ? BKASH_NUMBER : (paymentMethod === 'Cash on Delivery' ? COD_NUMBER : '');
+  updateTotalInModal();
 }
 
 async function submitCheckoutOrder(e) {
   e.preventDefault();
-  const id = document.getElementById('co-product-id').value;
+  const productId = document.getElementById('co-product-id').value;
   const qty = Number(document.getElementById('co-qty').value);
-  const available = Number(document.getElementById('co-available-stock').value);
-  if (qty > available) return alert('Quantity exceeds available stock.');
-  if (!document.getElementById('co-policy').checked) return alert('You must agree to the order policy.');
+  const address = document.getElementById('co-address').value.trim();
   const paymentMethod = document.getElementById('co-payment').value;
-  const txnId = paymentMethod === 'Cash on Delivery' ? Math.random().toString(36).substring(2, 10).toUpperCase() : document.getElementById('co-txn').value.trim();
-  if (paymentMethod === 'Bkash' && !txnId) return alert('Transaction ID is required for Bkash.');
-  const p = await getDoc(doc(db, 'products', id));
-  if (!p.exists()) return;
-  const data = p.data();
-  const unit = Number(document.getElementById('co-unit-price-raw').value);
+  const transactionId = document.getElementById('co-txn').value.trim();
+  const name = document.getElementById('co-name').value.trim();
+  const phone = document.getElementById('co-phone').value.trim();
+  const unitPrice = Number(document.getElementById('co-unit-price-raw').value);
   const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee);
-  const subtotal = qty * unit;
-  const total = subtotal + deliveryFee;
-  let paid = 0;
-  let due = total;
-  const isPreOrder = data.availability === 'Pre Order';
-  if (isPreOrder) {
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    paid = qty * preOrderPrice;
-    due = total - paid;
-  } else if (paymentMethod === 'Bkash') {
-    paid = total;
-    due = 0;
+  const total = Number(document.getElementById('co-total').value);
+  const availableStock = Number(document.getElementById('co-available-stock').value);
+  
+  if (qty > availableStock) {
+    alert('Requested quantity exceeds available stock.');
+    return;
   }
-  const order = {
-    productId: id,
-    productName: data.name,
-    color: data.color || '',
-    unitPrice: unit,
-    quantity: qty,
-    deliveryFee,
-    paid,
-    due,
-    customerName: document.getElementById('co-name').value.trim(),
-    phone: document.getElementById('co-phone').value.trim(),
-    address: document.getElementById('co-address').value.trim(),
-    paymentMethod,
-    transactionId: txnId,
-    status: 'Pending',
-    timeISO: new Date().toISOString()
-  };
+  if (paymentMethod === 'Bkash' && !transactionId) {
+    alert('Transaction ID is required for Bkash payments.');
+    return;
+  }
+  if (!document.getElementById('co-policy').checked) {
+    alert('You must agree to the order policy.');
+    return;
+  }
+
   try {
     await runTransaction(db, async (transaction) => {
-      const freshP = transaction.get(doc(db, 'products', id));
-      if (!freshP.exists()) throw new Error('Product not found');
-      const freshData = freshP.data();
-      if (freshData.stock < qty) throw new Error('Insufficient stock');
-      transaction.update(doc(db, 'products', id), { stock: freshData.stock - qty });
-      transaction.set(doc(collection(db, 'orders')), order);
+      const productRef = doc(db, 'products', productId);
+      const productSnap = await transaction.get(productRef);
+      if (!productSnap.exists()) throw new Error('Product not found.');
+      const productData = productSnap.data();
+      const newStock = Number(productData.stock) - qty;
+      if (newStock < 0) throw new Error('Insufficient stock.');
+      transaction.update(productRef, { stock: newStock });
+      const orderData = {
+        productId,
+        productName: productData.name,
+        color: productData.color || '',
+        quantity: qty,
+        unitPrice,
+        delivery: deliveryFee,
+        paid: paymentMethod === 'Bkash' ? total : 0,
+        due: paymentMethod === 'Cash on Delivery' ? total : 0,
+        customerName: name,
+        phone,
+        address,
+        paymentMethod,
+        transactionId: transactionId || '',
+        status: 'Pending',
+        timeISO: new Date().toISOString()
+      };
+      await transaction.set(doc(collection(db, 'orders')), orderData);
     });
-    alert(`Order placed! Transaction ID: ${txnId}`);
+    alert('Order placed successfully!');
     closeCheckoutModal();
   } catch (err) {
-    console.error('Order error:', err);
+    console.error('Error placing order:', err);
     alert('Error placing order: ' + err.message);
   }
 }
@@ -377,25 +348,51 @@ async function addProduct(e) {
   e.preventDefault();
   const name = document.getElementById('add-name').value.trim();
   const price = document.getElementById('add-price').value.trim();
-  const discount = Number(document.getElementById('add-discount').value) || 0;
-  const imagesStr = document.getElementById('add-images').value.trim();
-  const images = imagesStr.split(',').map(s => s.trim()).filter(Boolean);
-  if (!images.length) return alert('At least one image URL is required.');
+  const discount = document.getElementById('add-discount').value.trim();
+  const images = document.getElementById('add-images').value.split(',').map(s => s.trim()).filter(Boolean);
   const category = document.getElementById('add-category').value;
   const color = document.getElementById('add-color').value.trim();
-  const stock = Number(document.getElementById('add-stock').value) || 0;
+  const stock = document.getElementById('add-stock').value;
   const availability = document.getElementById('add-availability').value;
   const description = document.getElementById('add-desc').value.trim();
-  const slug = await generateUniqueSlug(name, color);
-  const product = {
-    name, price: price === 'TBA' ? 'TBA' : Number(price), discount, images, category, color, stock, availability, description, slug
-  };
+
+  if (images.length === 0) {
+    alert('At least one image URL is required.');
+    return;
+  }
+  if (isNaN(price) || Number(price) <= 0) {
+    alert('Price must be a valid number greater than 0.');
+    return;
+  }
+  if (isNaN(discount) || Number(discount) < 0) {
+    alert('Discount must be a valid number.');
+    return;
+  }
+  if (isNaN(stock) || Number(stock) < 0) {
+    alert('Stock must be a valid number.');
+    return;
+  }
+
   try {
-    await addDoc(collection(db, 'products'), product);
+    const slug = await generateUniqueSlug(name, color);
+    const productData = {
+      name,
+      price,
+      discount: Number(discount) || 0,
+      images,
+      category,
+      color: color || '',
+      stock: Number(stock) || 0,
+      availability,
+      description: description || '',
+      slug
+    };
+    await addDoc(collection(db, 'products'), productData);
+    alert('Product added successfully!');
     e.target.reset();
     renderDataTable();
   } catch (err) {
-    console.error('Add product error:', err);
+    console.error('Error adding product:', err);
     alert('Error adding product: ' + err.message);
   }
 }
@@ -405,6 +402,15 @@ async function renderDataTable() {
   if (!tbody) return;
   const products = await loadProducts();
   tbody.innerHTML = '';
+  const cols = [
+    { key: 'name', editable: true },
+    { key: 'price', editable: true, numeric: true },
+    { key: 'category', editable: true },
+    { key: 'color', editable: true },
+    { key: 'discount', editable: true, numeric: true },
+    { key: 'stock', editable: true, numeric: true },
+    { key: 'availability', editable: true }
+  ];
   products.forEach(p => {
     const tr = document.createElement('tr');
     const tdToggle = document.createElement('td');
@@ -418,55 +424,40 @@ async function renderDataTable() {
     });
     tr.appendChild(tdToggle);
 
-    const cols = [
-      { key: 'name' },
-      { key: 'price' },
-      { key: 'category' },
-      { key: 'color' },
-      { key: 'discount' },
-      { key: 'stock' },
-      { key: 'availability' }
-    ];
     cols.forEach(col => {
       const td = document.createElement('td');
-      td.contentEditable = true;
       td.textContent = p[col.key] != null ? String(p[col.key]) : '';
-      td.addEventListener('blur', async e => {
-        const val = e.target.textContent.trim();
-        if (val === (p[col.key] != null ? String(p[col.key]) : '')) return;
-        let updateValue = val;
-        if (col.key === 'price') {
-          if (val !== 'TBA' && isNaN(Number(val))) {
-            alert('Price must be a number or "TBA".');
-            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
-            return;
+      if (col.editable) {
+        td.contentEditable = true;
+        td.addEventListener('blur', async e => {
+          const val = e.target.textContent.trim();
+          let updateValue = val;
+          if (col.numeric) {
+            if (isNaN(val) || (col.key !== 'discount' && Number(val) <= 0) || (col.key === 'discount' && Number(val) < 0)) {
+              alert(`${col.key.charAt(0).toUpperCase() + col.key.slice(1)} must be a valid number.`);
+              e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
+              return;
+            }
+            updateValue = Number(val);
+          } else if (col.key === 'availability') {
+            if (!['Ready', 'Pre Order', 'Upcoming'].includes(val)) {
+              alert('Availability must be Ready, Pre Order, or Upcoming.');
+              e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
+              return;
+            }
           }
-          updateValue = val === 'TBA' ? 'TBA' : Number(val);
-        } else if (col.key === 'discount' || col.key === 'stock') {
-          if (isNaN(Number(val))) {
-            alert(`${col.key.charAt(0).toUpperCase() + col.key.slice(1)} must be a number.`);
-            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
-            return;
+          await updateProductField(p.id, col.key, updateValue);
+          if (col.key === 'name' || col.key === 'color') {
+            const updatedP = (await loadProducts()).find(x => x.id === p.id);
+            const newSlug = await generateUniqueSlug(updatedP.name, updatedP.color, p.id);
+            if (newSlug !== updatedP.slug) await updateProductField(p.id, 'slug', newSlug);
           }
-          updateValue = Number(val);
-        } else if (col.key === 'availability') {
-          if (!['Ready', 'Pre Order', 'Upcoming'].includes(val)) {
-            alert('Availability must be Ready, Pre Order, or Upcoming.');
-            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
-            return;
+          if (col.key === 'stock' || col.key === 'price' || col.key === 'availability') {
+            const cur = (await loadProducts()).find(x => x.id === p.id);
+            tr.querySelector('td[data-status="1"]').textContent = computeStatus(cur);
           }
-        }
-        await updateProductField(p.id, col.key, updateValue);
-        if (col.key === 'name' || col.key === 'color') {
-          const updatedP = (await loadProducts()).find(x => x.id === p.id);
-          const newSlug = await generateUniqueSlug(updatedP.name, updatedP.color, p.id);
-          if (newSlug !== updatedP.slug) await updateProductField(p.id, 'slug', newSlug);
-        }
-        if (col.key === 'stock' || col.key === 'price' || col.key === 'availability') {
-          const cur = (await loadProducts()).find(x => x.id === p.id);
-          tr.querySelector('td[data-status="1"]').textContent = computeStatus(cur);
-        }
-      });
+        });
+      }
       tr.appendChild(td);
     });
 
