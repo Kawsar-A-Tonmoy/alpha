@@ -1,12 +1,13 @@
-```javascript
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { firebaseConfig, BKASH_NUMBER, COD_NUMBER, DELIVERY_FEE } from './config.js';
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 // Status explanations
 const statusExplanations = {
   Pending: 'Order received, waiting for processing.',
@@ -15,6 +16,8 @@ const statusExplanations = {
   Delivered: 'Your order has been delivered.',
   Cancelled: 'Your order has been cancelled.'
 };
+
+// Status colors
 const statusColors = {
   Pending: '#eab308',
   Processing: '#3b82f6',
@@ -22,6 +25,7 @@ const statusColors = {
   Delivered: '#22c55e',
   Cancelled: '#ef4444'
 };
+
 // Categories for home
 const categories = [
   { name: 'Keycaps', bg: 'keycaps-bg.png' },
@@ -29,6 +33,7 @@ const categories = [
   { name: 'Keyboards and Barebones', bg: 'keyboards-bg.png' },
   { name: 'Accessories and Collectables', bg: 'accessories-bg.png' }
 ];
+
 // ====== UTIL ======
 async function loadProducts() {
   try {
@@ -39,6 +44,7 @@ async function loadProducts() {
     return [];
   }
 }
+
 async function loadOrders() {
   try {
     const q = query(collection(db, 'orders'), orderBy('timeISO', 'desc'));
@@ -49,82 +55,130 @@ async function loadOrders() {
     return [];
   }
 }
+
 function shuffle(array) {
   return array.slice().sort(() => Math.random() - 0.5);
 }
-// ====== PAGE INIT ======
-function showShimmer(container, isDetail = false) {
-  container.innerHTML = '';
-  if (isDetail) {
-    const shimmerDetail = document.createElement('div');
-    shimmerDetail.className = 'shimmer-product-detail';
-    shimmerDetail.innerHTML = `
-      <div class="shimmer-image"></div>
-      <div class="shimmer-info">
-        <div class="shimmer-line"></div>
-        <div class="shimmer-line short"></div>
-        <div class="shimmer-line medium"></div>
-        <div class="shimmer-line"></div>
-      </div>
-    `;
-    container.appendChild(shimmerDetail);
-  } else {
-    const shimmerContainer = document.createElement('div');
-    shimmerContainer.className = 'shimmer-container';
-    for (let i = 0; i < 16; i++) {
-      const shimmerCard = document.createElement('div');
-      shimmerCard.className = 'shimmer-card';
-      shimmerContainer.appendChild(shimmerCard);
-    }
-    container.appendChild(shimmerContainer);
-  }
+
+// ====== SHIMMER PLACEHOLDER ======
+function createShimmerCard() {
+  const card = document.createElement('div');
+  card.className = 'card product-card shimmer-placeholder';
+  card.innerHTML = `
+    <div class="shimmer-image"></div>
+    <div class="shimmer-badges">
+      <div class="shimmer-badge"></div>
+      <div class="shimmer-badge"></div>
+    </div>
+    <div class="shimmer-title"></div>
+    <div class="shimmer-muted"></div>
+    <div class="shimmer-price"></div>
+    <div class="shimmer-button"></div>
+  `;
+  return card;
 }
+
+// ====== PRODUCT CARD ======
+function createProductCard(p) {
+  const isUpcoming = p.availability === 'Upcoming';
+  const isOOS = !isUpcoming && Number(p.stock) <= 0 && p.availability !== 'Pre Order';
+  const isPreOrder = p.availability === 'Pre Order';
+  const hasDiscount = Number(p.discount) > 0;
+  const price = Number(p.price) || 0;
+  const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
+  const images = p.images || [];
+  const card = document.createElement('div');
+  card.className = 'card product-card';
+  card.innerHTML = `
+    <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
+    <div class="badges">
+      ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
+      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
+      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
+      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
+      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
+    </div>
+    <h3>${p.name}</h3>
+    <div class="muted">Color: ${p.color || '-'}</div>
+    <div class="price">
+      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ``}৳${finalPrice.toFixed(2)}`}
+    </div>
+    <button class="view-details-btn">View Details</button>
+  `;
+  card.querySelector('.view-details-btn').addEventListener('click', () => {
+    window.location.href = `product.html?id=${p.id}`;
+  });
+  return card;
+}
+
+function createCategoryCard(c) {
+  const card = document.createElement('div');
+  card.className = 'card category-card';
+  card.style.backgroundImage = `url(${c.bg})`;
+  card.innerHTML = `<h3>${c.name}</h3>`;
+  card.addEventListener('click', () => {
+    window.location.href = `products.html?category=${encodeURIComponent(c.name)}`;
+  });
+  return card;
+}
+
+// ====== PAGE INIT ======
 async function initHomePage() {
   const interestSection = document.getElementById('interest-products');
   const categoriesSection = document.getElementById('categories');
   if (!interestSection || !categoriesSection) return;
-  showShimmer(interestSection);
+
   // Render categories
   categories.forEach(c => categoriesSection.appendChild(createCategoryCard(c)));
+
+  // Show shimmer placeholders
+  for (let i = 0; i < 4; i++) {
+    interestSection.appendChild(createShimmerCard());
+  }
+
   // Render interest products
   const products = await loadProducts();
-  interestSection.innerHTML = '';
+  interestSection.innerHTML = ''; // Clear placeholders
   const eligible = products.filter(p => p.availability !== 'Upcoming');
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => interestSection.appendChild(createProductCard(p)));
   setupImageViewer();
 }
+
 async function initProductsPage() {
   const title = document.getElementById('products-title');
   const list = document.getElementById('product-list');
   if (!list) return;
-  showShimmer(list);
+
   const urlParams = new URLSearchParams(window.location.search);
   const category = urlParams.get('category');
   if (category) title.innerText = category;
   else title.innerText = 'All Products';
+
+  // Show shimmer placeholders (assuming up to 8 products for a balanced loading effect)
+  for (let i = 0; i < 8; i++) {
+    list.appendChild(createShimmerCard());
+  }
+
+  // Load and render products
   const products = await loadProducts();
-  list.innerHTML = '';
+  list.innerHTML = ''; // Clear placeholders
   const filtered = category ? products.filter(p => p.category === category) : products;
   filtered.forEach(p => list.appendChild(createProductCard(p)));
   setupImageViewer();
 }
+
 async function initProductPage() {
-  const productSection = document.getElementById('product-section');
-  const otherSection = document.getElementById('other-products');
-  if (!productSection || !otherSection) return;
-  showShimmer(productSection, true);
-  showShimmer(otherSection);
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
   if (!id) {
-    productSection.innerHTML = '<p>Product not found.</p>';
+    alert('Product not found');
     return;
   }
   const products = await loadProducts();
   const product = products.find(p => p.id === id);
   if (!product) {
-    productSection.innerHTML = '<p>Product not found.</p>';
+    alert('Product not found');
     return;
   }
   // Set title and canonical
@@ -136,24 +190,6 @@ async function initProductPage() {
   }
   document.getElementById('canonical-link').href = `/product/${slug}`;
   // Fill product details
-  productSection.innerHTML = '';
-  const detailDiv = document.createElement('div');
-  detailDiv.className = 'product-detail';
-  detailDiv.innerHTML = `
-    <div class="product-images">
-      <img id="main-image" src="" alt="">
-      <div id="thumbnail-gallery" class="thumbnail-gallery"></div>
-    </div>
-    <div class="product-info">
-      <h1 id="product-name"></h1>
-      <div id="product-color" class="muted"></div>
-      <div id="product-price" class="price"></div>
-      <div id="product-badges" class="badges"></div>
-      <p id="product-desc"></p>
-      <div id="order-row" class="order-row"></div>
-    </div>
-  `;
-  productSection.appendChild(detailDiv);
   const mainImg = document.getElementById('main-image');
   const thumbnailGallery = document.getElementById('thumbnail-gallery');
   const nameEl = document.getElementById('product-name');
@@ -208,7 +244,7 @@ async function initProductPage() {
   }
   orderRow.appendChild(button);
   // Other products
-  otherSection.innerHTML = '';
+  const otherSection = document.getElementById('other-products');
   const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== id);
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => otherSection.appendChild(createProductCard(p)));
@@ -225,48 +261,7 @@ async function initProductPage() {
     document.getElementById('image-viewer').classList.add('show');
   });
 }
-// ====== PRODUCT CARD ======
-function createProductCard(p) {
-  const isUpcoming = p.availability === 'Upcoming';
-  const isOOS = !isUpcoming && Number(p.stock) <= 0 && p.availability !== 'Pre Order';
-  const isPreOrder = p.availability === 'Pre Order';
-  const hasDiscount = Number(p.discount) > 0;
-  const price = Number(p.price) || 0;
-  const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
-  const images = p.images || [];
-  const card = document.createElement('div');
-  card.className = 'card product-card';
-  card.innerHTML = `
-    <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
-    <div class="badges">
-      ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
-      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
-      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
-      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
-      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
-    </div>
-    <h3>${p.name}</h3>
-    <div class="muted">Color: ${p.color || '-'}</div>
-    <div class="price">
-      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ``}৳${finalPrice.toFixed(2)}`}
-    </div>
-    <button class="view-details-btn">View Details</button>
-  `;
-  card.querySelector('.view-details-btn').addEventListener('click', () => {
-    window.location.href = `product.html?id=${p.id}`;
-  });
-  return card;
-}
-function createCategoryCard(c) {
-  const card = document.createElement('div');
-  card.className = 'card category-card';
-  card.style.backgroundImage = `url(${c.bg})`;
-  card.innerHTML = `<h3>${c.name}</h3>`;
-  card.addEventListener('click', () => {
-    window.location.href = `products.html?category=${encodeURIComponent(c.name)}`;
-  });
-  return card;
-}
+
 // ====== IMAGE VIEWER ======
 function setupImageViewer() {
   const viewer = document.getElementById('image-viewer');
@@ -295,6 +290,7 @@ function setupImageViewer() {
     });
   }
 }
+
 // ====== DELIVERY CHARGE LOGIC ======
 function calculateDeliveryFee(address) {
   const lowerAddr = address.toLowerCase();
@@ -305,6 +301,7 @@ function calculateDeliveryFee(address) {
   }
   return 150;
 }
+
 function updateDeliveryCharge() {
   const address = document.getElementById('co-address').value.trim();
   const deliveryFee = calculateDeliveryFee(address);
@@ -312,6 +309,7 @@ function updateDeliveryCharge() {
   document.getElementById('co-delivery').dataset.fee = deliveryFee;
   updateTotalInModal();
 }
+
 // ====== CHECKOUT MODAL FLOW ======
 async function openCheckoutModal(productId, isPreOrder = false) {
   const products = await loadProducts();
@@ -355,10 +353,12 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   const modal = document.getElementById('checkout-modal');
   modal.classList.add('show');
 }
+
 function closeCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
   modal.classList.remove('show');
 }
+
 function updateTotalInModal() {
   const qty = Number(document.getElementById('co-qty').value) || 1;
   const unit = Number(document.getElementById('co-unit-price-raw').value) || 0;
@@ -376,6 +376,7 @@ function updateTotalInModal() {
     dueEl.value = (total - preOrderPrice * qty).toFixed(2);
   }
 }
+
 function handlePaymentChange(e) {
   const method = e.target.value;
   const numberEl = document.getElementById('co-payment-number');
@@ -405,6 +406,7 @@ function handlePaymentChange(e) {
     dueEl.style.display = 'none';
   }
 }
+
 async function submitCheckoutOrder(e) {
   e.preventDefault();
   const productId = document.getElementById('co-product-id').value;
@@ -461,6 +463,7 @@ async function submitCheckoutOrder(e) {
     alert('Error placing order: ' + err.message);
   }
 }
+
 // ====== ADMIN: ADD PRODUCT ======
 async function addProduct(e) {
   e.preventDefault();
@@ -484,6 +487,7 @@ async function addProduct(e) {
     alert('Error adding product: ' + err.message);
   }
 }
+
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
@@ -597,11 +601,13 @@ async function renderDataTable() {
     tbody.appendChild(detailsRow);
   });
 }
+
 function computeStatus(p) {
   if (p.availability === 'Upcoming') return 'Upcoming';
   if (p.availability === 'Pre Order') return 'Pre Order';
   return Number(p.stock) > 0 ? 'In Stock' : 'Out of Stock';
 }
+
 async function updateProductField(id, field, value) {
   try {
     await updateDoc(doc(db, 'products', id), { [field]: value });
@@ -610,6 +616,7 @@ async function updateProductField(id, field, value) {
     alert('Error updating product: ' + err.message);
   }
 }
+
 async function deleteProductById(id) {
   try {
     await deleteDoc(doc(db, 'products', id));
@@ -619,6 +626,7 @@ async function deleteProductById(id) {
     alert('Error deleting product: ' + err.message);
   }
 }
+
 // ====== ADMIN: ORDERS TABLE ======
 async function renderOrdersTable() {
   const tbody = document.getElementById('orders-body');
@@ -696,6 +704,7 @@ async function renderOrdersTable() {
     tbody.appendChild(detailsRow);
   });
 }
+
 // ====== AUTH ======
 function logoutAdmin() {
   try {
@@ -706,6 +715,7 @@ function logoutAdmin() {
     alert('Error logging out: ' + err.message);
   }
 }
+
 // ====== ORDER STATUS PAGE ======
 function setupStatusForm() {
   const form = document.getElementById('status-form');
@@ -730,6 +740,7 @@ function setupStatusForm() {
     }
   });
 }
+
 // ====== INIT ======
 document.addEventListener('DOMContentLoaded', async () => {
   const isHome = !!document.getElementById('interest-products');
