@@ -52,7 +52,7 @@ function shuffle(array) {
   return array.slice().sort(() => Math.random() - 0.5);
 }
 // ====== PAGE INIT ======
-function showShimmer(container, count = 4, isDetail = false) {
+function showShimmer(container, isDetail = false) {
   container.innerHTML = '';
   if (isDetail) {
     const shimmerDetail = document.createElement('div');
@@ -70,7 +70,7 @@ function showShimmer(container, count = 4, isDetail = false) {
   } else {
     const shimmerContainer = document.createElement('div');
     shimmerContainer.className = 'shimmer-container';
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < 16; i++) { // Fixed 16 cards for 4x4 grid
       const shimmerCard = document.createElement('div');
       shimmerCard.className = 'shimmer-card';
       shimmerContainer.appendChild(shimmerCard);
@@ -78,21 +78,7 @@ function showShimmer(container, count = 4, isDetail = false) {
     container.appendChild(shimmerContainer);
   }
 }
-async function initHomePage() {
-  const interestSection = document.getElementById('interest-products');
-  const categoriesSection = document.getElementById('categories');
-  if (!interestSection || !categoriesSection) return;
-  showShimmer(interestSection);
-  // Render categories
-  categories.forEach(c => categoriesSection.appendChild(createCategoryCard(c)));
-  // Render interest products
-  const products = await loadProducts();
-  interestSection.innerHTML = '';
-  const eligible = products.filter(p => p.availability !== 'Upcoming');
-  const random4 = shuffle(eligible).slice(0, 4);
-  random4.forEach(p => interestSection.appendChild(createProductCard(p)));
-  setupImageViewer();
-}
+
 async function initProductsPage() {
   const title = document.getElementById('products-title');
   const list = document.getElementById('product-list');
@@ -108,24 +94,6 @@ async function initProductsPage() {
   filtered.forEach(p => list.appendChild(createProductCard(p)));
   setupImageViewer();
 }
-async function initProductPage() {
-  const productSection = document.getElementById('product-section');
-  const otherSection = document.getElementById('other-products');
-  if (!productSection || !otherSection) return;
-  showShimmer(productSection, 1, true);
-  showShimmer(otherSection);
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-  if (!id) {
-    productSection.innerHTML = '<p>Product not found.</p>';
-    return;
-  }
-  const products = await loadProducts();
-  const product = products.find(p => p.id === id);
-  if (!product) {
-    productSection.innerHTML = '<p>Product not found.</p>';
-    return;
-  }
   // Set title and canonical
   document.title = product.name;
   const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());

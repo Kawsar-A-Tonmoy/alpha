@@ -456,7 +456,8 @@ font-size: 0.85rem;
 /* Shimmer Animation */
 .shimmer-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(4, 1fr); /* Fixed 4 columns */
+  grid-template-rows: repeat(4, auto); /* 4 rows, auto height */
   gap: 16px;
 }
 .shimmer-card {
@@ -505,3 +506,26 @@ font-size: 0.85rem;
 }
 .shimmer-line.short { width: 60%; }
 .shimmer-line.medium { width: 80%; }
+
+/* Responsive adjustments for shimmer grid */
+@media (max-width: 1200px) {
+  .shimmer-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on medium screens */
+    grid-template-rows: repeat(6, auto); /* Adjust rows to fit 16 cards (6 rows ~ ceil(16/3)) */
+  }
+}
+@media (max-width: 800px) {
+  .shimmer-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on smaller screens */
+    grid-template-rows: repeat(8, auto); /* 8 rows for 16 cards */
+  }
+}
+@media (max-width: 600px) {
+  .shimmer-container {
+    grid-template-columns: 1fr; /* 1 column on mobile */
+    grid-template-rows: repeat(16, auto); /* 16 rows for 16 cards */
+  }
+  .shimmer-product-detail {
+    flex-direction: column;
+  }
+}
