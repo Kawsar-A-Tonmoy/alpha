@@ -1,3 +1,510 @@
+Thought for 1m 42shtml<DOCUMENT filename="index.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
+  <script type="module" src="script.js"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '655776497078930');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+</head>
+<body>
+  <header class="site-header">
+     <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+ <main class="container">
+    <h1>Welcome to The Geek Shop</h1>
+
+    <h2>May Interest You</h2>
+    <div id="interest-products" class="product-list new-hot-list"></div>
+
+    <h2>Categories</h2>
+    <div id="categories" class="product-list new-hot-list"></div>
+  </main>
+
+  <div id="image-viewer" class="image-viewer">
+    <button id="close-viewer" class="close-viewer">&times;</button>
+    <img id="viewer-img" src="" alt="">
+  </div>
+
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
+</footer>
+</body>
+</html>
+</DOCUMENT>
+
+<DOCUMENT filename="products.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
+  <script type="module" src="script.js"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '655776497078930');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+</head>
+<body>
+  <header class="site-header">
+     <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+ <main class="container">
+    <h1 id="products-title">Products</h1>
+    <div id="product-list" class="product-list"></div>
+  </main>
+
+  <div id="image-viewer" class="image-viewer">
+    <button id="close-viewer" class="close-viewer">&times;</button>
+    <img id="viewer-img" src="" alt="">
+  </div>
+
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
+</footer>
+</body>
+</html>
+</DOCUMENT>
+
+<DOCUMENT filename="product.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="canonical" id="canonical-link" href="">
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
+  <script type="module" src="script.js"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '655776497078930');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+</head>
+<body>
+  <header class="site-header">
+     <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+ <main class="container">
+    <div id="product-section" class="product-detail">
+      <div class="product-images">
+        <img id="main-image" src="" alt="">
+        <div id="thumbnail-gallery" class="thumbnail-gallery"></div>
+      </div>
+      <div class="product-info">
+        <h1 id="product-name"></h1>
+        <div id="product-color" class="muted"></div>
+        <div id="product-price" class="price"></div>
+        <div id="product-badges" class="badges"></div>
+        <p id="product-desc"></p>
+        <div id="order-row" class="order-row"></div>
+      </div>
+    </div>
+
+    <h2>Other Products</h2>
+    <div id="other-products" class="product-list new-hot-list"></div>
+  </main>
+
+  <div id="image-viewer" class="image-viewer">
+    <button id="close-viewer" class="close-viewer">&times;</button>
+    <img id="viewer-img" src="" alt="">
+  </div>
+
+  <div id="checkout-modal" class="modal">
+    <div class="card modal-content">
+      <div class="modal-header">
+        <h2>Checkout</h2>
+        <button id="close-modal-btn">Close</button>
+      </div>
+      <form id="checkout-form" class="form">
+        <input type="hidden" id="co-product-id">
+        <div class="row">
+          <div>
+            <label>Product Name</label>
+            <input id="co-product-name" readonly>
+          </div>
+          <div>
+            <label>Color</label>
+            <input id="co-color" readonly>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Price (tk)</label>
+            <input id="co-price" readonly>
+            <input type="hidden" id="co-unit-price-raw">
+            <input type="hidden" id="co-available-stock">
+          </div>
+          <div>
+            <label>Quantity</label>
+            <input id="co-qty" type="number" min="1" value="1">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Delivery</label>
+            <input id="co-delivery" readonly>
+          </div>
+          <div>
+            <label>Total (tk)</label>
+            <input id="co-total" readonly>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Name</label>
+            <input id="co-name" required>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="co-phone" type="tel" required>
+          </div>
+        </div>
+        <div>
+          <label>Address</label>
+          <textarea id="co-address" required></textarea>
+        </div>
+        <div class="row">
+          <div>
+            <label>Payment Method</label>
+            <select id="co-payment" required>
+              <option value="">Select</option>
+              <option value="Cash on Delivery">Cash on Delivery</option>
+              <option value="Bkash">Bkash</option>
+            </select>
+          </div>
+          <div>
+            <label>Pay to (Send money)</label>
+            <input id="co-payment-number" readonly>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Pay Now (tk)</label>
+            <input id="co-pay-now" readonly>
+          </div>
+          <div>
+            <label>Due Amount (tk)</label>
+            <input id="co-due-amount" readonly>
+          </div>
+        </div>
+        <div>
+          <label>Transaction ID</label>
+          <input id="co-txn">
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" id="co-policy" required>
+            I agree to the <a href="status.html">Order Policy</a>
+          </label>
+        </div>
+        <div>
+          <p id="co-note" class="muted"></p>
+        </div>
+        <button id="place-order-btn" type="submit">Place Order</button>
+      </form>
+    </div>
+  </div>
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
+</footer>
+</body>
+</html>
+</DOCUMENT>
+
+<DOCUMENT filename="admin.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+     <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+ 
+  <main class="container">
+    <div id="login-panel" class="card" style="display: none;">
+      <h2>Admin Login</h2>
+      <form id="login-form" class="form">
+        <div>
+          <label>Email</label>
+          <input id="admin-email" type="email" required>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="admin-pass" type="password" required>
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <div id="admin-panel" class="card" style="display: none;">
+      <div class="panel-header">
+        <h2>Admin Panel</h2>
+        <button onclick="logoutAdmin()">Logout</button>
+      </div>
+
+      <h2>Add Product</h2>
+      <form id="add-product-form" class="form">
+        <div class="row">
+          <div>
+            <label>Name</label>
+            <input id="add-name" required>
+          </div>
+          <div>
+            <label>Price (tk)</label>
+            <input id="add-price" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Discount (tk)</label>
+            <input id="add-discount" value="0">
+          </div>
+          <div>
+            <label>Image URLs (comma-separated)</label>
+            <input id="add-images" required>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Category</label>
+            <select id="add-category" required>
+              <option value="Keycaps">Keycaps</option>
+              <option value="Switches">Switches</option>
+              <option value="Keyboards and Barebones">Keyboards and Barebones</option>
+              <option value="Accessories and Collectables">Accessories and Collectables</option>
+            </select>
+          </div>
+          <div>
+            <label>Color</label>
+            <input id="add-color">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Stock</label>
+            <input id="add-stock" type="number" value="0">
+          </div>
+          <div>
+            <label>Availability</label>
+            <select id="add-availability" required>
+              <option value="Ready">Ready to Order</option>
+              <option value="Pre Order">Pre Order</option>
+              <option value="Upcoming">Upcoming</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Description</label>
+          <textarea id="add-desc"></textarea>
+        </div>
+        <button type="submit">Add Product</button>
+      </form>
+
+      <h2>Products</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Category</th>
+              <th>Color</th>
+              <th>Discount (tk)</th>
+              <th>Stock</th>
+              <th>Availability</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </div>
+
+      <h2>Orders</h2>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Time</th>
+              <th>Product</th>
+              <th>Color</th>
+              <th>Qty</th>
+              <th>Delivery</th>
+              <th>Paid</th>
+              <th>Due</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Payment</th>
+              <th>Txn ID</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>
+</DOCUMENT>
+
+<DOCUMENT filename="status.html">
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +527,7 @@
         <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
       <div class="nav-links">
-        <a href="index.html">Products</a>
+        <a href="products.html">Products</a>
         <a href="status.html">Order Status</a>
         <a href="admin.html">Admin</a>
       </div>
@@ -128,8 +635,3 @@
 </body>
 
 </html>
-
-
-
-
-

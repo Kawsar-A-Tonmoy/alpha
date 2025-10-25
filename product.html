@@ -1,10 +1,12 @@
+<DOCUMENT filename="product.html">
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Detail</title>
+  <title>Product</title>
   <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="canonical" id="canonical-link" href="">
   <link rel="stylesheet" href="style.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
@@ -12,10 +14,11 @@
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
   <script type="module" src="script.js"></script>
+
 </head>
 <body>
   <header class="site-header">
-     < hostage:javascript
+     <nav>
       <a href="index.html" class="logo">
         <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
@@ -27,21 +30,28 @@
     </nav>
   </header>
 
-  <main class="container">
-    <div id="product-detail" class="product-detail">
-      <div class="shimmer-detail"></div>
+ <main class="container">
+    <div id="product-section" class="product-detail">
+      <div class="product-images">
+        <img id="main-image" src="" alt="">
+        <div id="thumbnail-gallery" class="thumbnail-gallery"></div>
+      </div>
+      <div class="product-info">
+        <h1 id="product-name"></h1>
+        <div id="product-color" class="muted"></div>
+        <div id="product-price" class="price"></div>
+        <div id="product-badges" class="badges"></div>
+        <p id="product-desc"></p>
+        <div id="order-row" class="order-row"></div>
+      </div>
     </div>
+
     <h2>Other Products</h2>
-    <div id="other-products" class="product-list">
-      <div class="shimmer-card"></div>
-      <div class="shimmer-card"></div>
-      <div class="shimmer-card"></div>
-      <div class="shimmer-card"></div>
-    </div>
+    <div id="other-products" class="product-list new-hot-list"></div>
   </main>
 
   <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">×</button>
+    <button id="close-viewer" class="close-viewer">&times;</button>
     <img id="viewer-img" src="" alt="">
   </div>
 
@@ -140,20 +150,20 @@
       </form>
     </div>
   </div>
-
-  <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
-    <div>
-      <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
-      </a>
-      <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
-      </a>
-      <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
-        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
-      </a>
-    </div>
-    <p>© All rights reserved by The Geek Shop</p>
-  </footer>
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
+</footer>
 </body>
 </html>
