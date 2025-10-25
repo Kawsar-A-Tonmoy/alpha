@@ -191,7 +191,6 @@ async function initProductsPage() {
     document.getElementById('viewer-img').src = mainImg.src;
     document.getElementById('image-viewer').classList.add('show');
   });
-}
 // ====== PRODUCT CARD ======
 function createProductCard(p) {
   const isUpcoming = p.availability === 'Upcoming';
@@ -744,4 +743,5 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   }
+
 });
