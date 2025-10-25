@@ -8,58 +8,97 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 // Status explanations
 const statusExplanations = {
-  Pending: 'Order received, waiting for processing.',
-  Processing: 'Your order is being prepared.',
-  Dispatched: 'Your order has been shipped.',
-  Delivered: 'Your order has been delivered.',
-  Cancelled: 'Your order has been cancelled.'
+Pending: 'Order received, waiting for processing.',
+Processing: 'Your order is being prepared.',
+Dispatched: 'Your order has been shipped.',
+Delivered: 'Your order has been delivered.',
+Cancelled: 'Your order has been cancelled.'
 };
 const statusColors = {
-  Pending: '#eab308',
-  Processing: '#3b82f6',
-  Dispatched: '#eab308',
-  Delivered: '#22c55e',
-  Cancelled: '#ef4444'
+Pending: '#eab308',
+Processing: '#3b82f6',
+Dispatched: '#eab308',
+Delivered: '#22c55e',
+Cancelled: '#ef4444'
 };
 // Categories for home
 const categories = [
-  { name: 'Keycaps', bg: 'keycaps-bg.png' },
-  { name: 'Switches', bg: 'switches-bg.png' },
-  { name: 'Keyboards and Barebones', bg: 'keyboards-bg.png' },
-  { name: 'Accessories and Collectables', bg: 'accessories-bg.png' }
+{ name: 'Keycaps', bg: 'keycaps-bg.png' },
+{ name: 'Switches', bg: 'switches-bg.png' },
+{ name: 'Keyboards and Barebones', bg: 'keyboards-bg.png' },
+{ name: 'Accessories and Collectables', bg: 'accessories-bg.png' }
 ];
 // ====== UTIL ======
 async function loadProducts() {
-  try {
-    const snapshot = await getDocs(collection(db, 'products'));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (err) {
-    console.error('Error loading products:', err);
-    return [];
-  }
+try {
+const snapshot = await getDocs(collection(db, 'products'));
+return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+} catch (err) {
+console.error('Error loading products:', err);
+return [];
+}
 }
 async function loadOrders() {
-  try {
-    const q = query(collection(db, 'orders'), orderBy('timeISO', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (err) {
-    console.error('Error loading orders:', err);
-    return [];
-  }
+try {
+const q = query(collection(db, 'orders'), orderBy('timeISO', 'desc'));
+const snapshot = await getDocs(q);
+return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+} catch (err) {
+console.error('Error loading orders:', err);
+return [];
+}
 }
 function shuffle(array) {
-  return array.slice().sort(() => Math.random() - 0.5);
+return array.slice().sort(() => Math.random() - 0.5);
+}
+// Fuzzy search function
+function fuzzyMatch(str, pattern) {
+str = str.toLowerCase();
+pattern = pattern.toLowerCase();
+let i = 0, j = 0;
+while (i < str.length && j < pattern.length) {
+if (str[i] === pattern[j]) j++;
+i++;
+}
+return j === pattern.length;
 }
 // ====== PAGE INIT ======
+function showShimmer(container, count = 4, isDetail = false) {
+container.innerHTML = '';
+if (isDetail) {
+const shimmerDetail = document.createElement('div');
+shimmerDetail.className = 'shimmer-product-detail';
+shimmerDetail.innerHTML = `
+      
+      
+        
+        
+        
+        
+      
+    `;
+    container.appendChild(shimmerDetail);
+  } else {
+    const shimmerContainer = document.createElement('div');
+    shimmerContainer.className = 'shimmer-container';
+    for (let i = 0; i < count; i++) {
+      const shimmerCard = document.createElement('div');
+      shimmerCard.className = 'shimmer-card';
+      shimmerContainer.appendChild(shimmerCard);
+    }
+    container.appendChild(shimmerContainer);
+  }
+}
 async function initHomePage() {
   const interestSection = document.getElementById('interest-products');
   const categoriesSection = document.getElementById('categories');
   if (!interestSection || !categoriesSection) return;
+  showShimmer(interestSection);
   // Render categories
   categories.forEach(c => categoriesSection.appendChild(createCategoryCard(c)));
   // Render interest products
   const products = await loadProducts();
+  interestSection.innerHTML = '';
   const eligible = products.filter(p => p.availability !== 'Upcoming');
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => interestSection.appendChild(createProductCard(p)));
@@ -68,27 +107,46 @@ async function initHomePage() {
 async function initProductsPage() {
   const title = document.getElementById('products-title');
   const list = document.getElementById('product-list');
+  const searchInput = document.getElementById('product-search');
   if (!list) return;
+  showShimmer(list);
   const urlParams = new URLSearchParams(window.location.search);
   const category = urlParams.get('category');
   if (category) title.innerText = category;
   else title.innerText = 'All Products';
   const products = await loadProducts();
-  const filtered = category ? products.filter(p => p.category === category) : products;
+  list.innerHTML = '';
+  let filtered = category ? products.filter(p => p.category === category) : products;
   filtered.forEach(p => list.appendChild(createProductCard(p)));
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      list.innerHTML = '';
+      const searched = query ? products.filter(p => fuzzyMatch(p.name, query)) : filtered;
+      if (searched.length === 0) {
+        list.innerHTML = 'No products found.';
+      } else {
+        searched.forEach(p => list.appendChild(createProductCard(p)));
+      }
+    });
+  }
   setupImageViewer();
 }
 async function initProductPage() {
+  const productSection = document.getElementById('product-section');
+  const otherSection = document.getElementById('other-products');
+  if (!productSection || !otherSection) return;
+  showShimmer(productSection, 1, true);
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
   if (!id) {
-    alert('Product not found');
+    productSection.innerHTML = 'Product not found.';
     return;
   }
   const products = await loadProducts();
   const product = products.find(p => p.id === id);
   if (!product) {
-    alert('Product not found');
+    productSection.innerHTML = 'Product not found.';
     return;
   }
   // Set title and canonical
@@ -100,6 +158,24 @@ async function initProductPage() {
   }
   document.getElementById('canonical-link').href = `/product/${slug}`;
   // Fill product details
+  productSection.innerHTML = '';
+  const detailDiv = document.createElement('div');
+  detailDiv.className = 'product-detail';
+  detailDiv.innerHTML = `
+    
+      <img id="main-image" src="" alt="">
+      
+    
+    
+      
+      
+      
+      
+      
+      
+    
+  `;
+  productSection.appendChild(detailDiv);
   const mainImg = document.getElementById('main-image');
   const thumbnailGallery = document.getElementById('thumbnail-gallery');
   const nameEl = document.getElementById('product-name');
@@ -127,13 +203,13 @@ async function initProductPage() {
   const hasDiscount = Number(product.discount) > 0;
   const price = Number(product.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
-  priceEl.innerHTML = isUpcoming ? 'TBA' : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`;
+  priceEl.innerHTML = isUpcoming ? 'TBA' : `${hasDiscount ? `৳${price.toFixed(2)} ` : ''}৳${finalPrice.toFixed(2)}`;
   badgesEl.innerHTML = `
-    ${product.category === 'new' ? `<span class="badge new">NEW</span>` : ''}
-    ${product.category === 'hot' ? `<span class="badge hot">HOT</span>` : ''}
-    ${!isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order' ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
-    ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
-    ${product.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
+    ${product.category === 'new' ? `NEW` : ''}
+    ${product.category === 'hot' ? `HOT` : ''}
+    ${!isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order' ? `OUT OF STOCK` : ''}
+    ${isUpcoming ? `UPCOMING` : ''}
+    ${product.availability === 'Pre Order' ? `PRE ORDER` : ''}
   `;
   descEl.innerText = product.description || '';
   // Order button
@@ -154,9 +230,10 @@ async function initProductPage() {
   }
   orderRow.appendChild(button);
   // Other products
-  const otherSection = document.getElementById('other-products');
+  showShimmer(otherSection);
   const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== id);
   const random4 = shuffle(eligible).slice(0, 4);
+  otherSection.innerHTML = '';
   random4.forEach(p => otherSection.appendChild(createProductCard(p)));
   // Setup modal and viewer
   document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
@@ -183,19 +260,19 @@ function createProductCard(p) {
   const card = document.createElement('div');
   card.className = 'card product-card';
   card.innerHTML = `
-    <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
-    <div class="badges">
-      ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
-      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
-      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
-      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
-      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
-    </div>
-    <h3>${p.name}</h3>
-    <div class="muted">Color: ${p.color || '-'}</div>
-    <div class="price">
-      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ``}৳${finalPrice.toFixed(2)}`}
-    </div>
+    <img src="${images[0] || &#x27;&#x27;}" alt="${p.name}" onerror="this.src=&#x27;&#x27;; this.alt=&#x27;Image not available&#x27;;">
+    
+      ${p.category === 'new' ? `NEW` : ``}
+      ${p.category === 'hot' ? `HOT` : ``}
+      ${isOOS ? `OUT OF STOCK` : ``}
+      ${isUpcoming ? `UPCOMING` : ``}
+      ${isPreOrder ? `PRE ORDER` : ``}
+    
+    ${p.name}
+    Color: ${p.color || '-'}
+    
+      ${isUpcoming ? `TBA` : `${hasDiscount ? `৳${price.toFixed(2)} ` : ``}৳${finalPrice.toFixed(2)}`}
+    
     <button class="view-details-btn">View Details</button>
   `;
   card.querySelector('.view-details-btn').addEventListener('click', () => {
@@ -207,7 +284,7 @@ function createCategoryCard(c) {
   const card = document.createElement('div');
   card.className = 'card category-card';
   card.style.backgroundImage = `url(${c.bg})`;
-  card.innerHTML = `<h3>${c.name}</h3>`;
+  card.innerHTML = `${c.name}`;
   card.addEventListener('click', () => {
     window.location.href = `products.html?category=${encodeURIComponent(c.name)}`;
   });
@@ -535,9 +612,10 @@ async function renderDataTable() {
       if (val === (p.description != null ? String(p.description) : '')) return;
       await updateProductField(p.id, 'description', val);
     });
-    detailsCell.innerHTML = `<strong>Image URLs (comma-separated):</strong> `;
+    detailsCell.innerHTML = `Image URLs (comma-separated): `;
     detailsCell.appendChild(imagesCell);
-    detailsCell.innerHTML += `<br><strong>Description:</strong> `;
+    detailsCell.innerHTML += `
+Description: `;
     detailsCell.appendChild(descCell);
     detailsRow.appendChild(detailsCell);
     tbody.appendChild(detailsRow);
@@ -573,7 +651,6 @@ async function renderOrdersTable() {
   tbody.innerHTML = '';
   orders.forEach(o => {
     const tr = document.createElement('tr');
-   
     // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
