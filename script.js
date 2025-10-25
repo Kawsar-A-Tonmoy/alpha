@@ -1,3 +1,4 @@
+```javascript
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
@@ -52,7 +53,7 @@ function shuffle(array) {
   return array.slice().sort(() => Math.random() - 0.5);
 }
 // ====== PAGE INIT ======
-function showShimmer(container, count = 4, isDetail = false) {
+function showShimmer(container, isDetail = false) {
   container.innerHTML = '';
   if (isDetail) {
     const shimmerDetail = document.createElement('div');
@@ -70,7 +71,7 @@ function showShimmer(container, count = 4, isDetail = false) {
   } else {
     const shimmerContainer = document.createElement('div');
     shimmerContainer.className = 'shimmer-container';
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < 16; i++) {
       const shimmerCard = document.createElement('div');
       shimmerCard.className = 'shimmer-card';
       shimmerContainer.appendChild(shimmerCard);
@@ -112,7 +113,7 @@ async function initProductPage() {
   const productSection = document.getElementById('product-section');
   const otherSection = document.getElementById('other-products');
   if (!productSection || !otherSection) return;
-  showShimmer(productSection, 1, true);
+  showShimmer(productSection, true);
   showShimmer(otherSection);
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
