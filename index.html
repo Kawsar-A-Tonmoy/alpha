@@ -6,16 +6,13 @@
   <title>Home</title>
   <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
-  <!-- Tailwind CSS CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Font Awesome CDN for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
     import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
   <script type="module" src="script.js"></script>
+
 </head>
 <body>
   <header class="site-header">
@@ -31,7 +28,7 @@
     </nav>
   </header>
 
-  <main class="container">
+ <main class="container">
     <h1>Welcome to The Geek Shop</h1>
 
     <h2>May Interest You</h2>
@@ -46,19 +43,20 @@
     <img id="viewer-img" src="" alt="">
   </div>
 
-  <footer class="bg-[#e8e8ff] text-black py-6 px-4 flex flex-col items-center justify-center space-y-4">
-    <div class="flex space-x-6">
-      <a href="https://www.facebook.com/thegeek.shop0" target="_blank" class="hover:text-indigo-600 transition-colors duration-300" aria-label="Facebook">
-        <i class="fab fa-facebook-f text-2xl"></i>
-      </a>
-      <a href="https://www.instagram.com/thegeek.shop0" target="_blank" class="hover:text-indigo-600 transition-colors duration-300" aria-label="Instagram">
-        <i class="fab fa-instagram text-2xl"></i>
-      </a>
-      <a href="https://wa.me/01960788862" target="_blank" class="hover:text-indigo-600 transition-colors duration-300" aria-label="WhatsApp">
-        <i class="fab fa-whatsapp text-2xl"></i>
-      </a>
-    </div>
-    <p class="text-sm font-sans">&copy; 2025 All rights reserved by The Geek Shop</p>
-  </footer>
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
+</footer>
 </body>
 </html>
