@@ -28,10 +28,10 @@ const statusColors = {
 
 // Categories for home
 const categories = [
-  { name: 'Keycaps', bg: '/k.png' },
-  { name: 'Switches', bg: '/s.png' },
-  { name: 'Keyboards and Barebones', bg: '/k&b.png' },
-  { name: 'Accessories and Collectables', bg: '/a&s.png' }
+  { name: 'Keycaps', bg: 'k.png' },
+  { name: 'Switches', bg: 's.png' },
+  { name: 'Keyboards and Barebones', bg: 'k&b.png' },
+  { name: 'Accessories and Collectables', bg: 'c&a.png' }
 ];
 
 // ====== UTIL ======
@@ -827,4 +827,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
+
 
