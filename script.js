@@ -371,96 +371,135 @@ function updateTotalInModal() {
   const payNowEl = document.getElementById('co-pay-now');
   const dueEl = document.getElementById('co-due-amount');
   if (isPreOrderMode) {
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    payNowEl.value = (preOrderPrice * qty).toFixed(2);
-    dueEl.value = (total - preOrderPrice * qty).toFixed(2);
-  }
-}
-
-function handlePaymentChange(e) {
-  const method = e.target.value;
-  const numberEl = document.getElementById('co-payment-number');
-  const txnEl = document.getElementById('co-txn');
-  const noteEl = document.getElementById('co-note');
-  const payNowEl = document.getElementById('co-pay-now').parentElement;
-  const dueEl = document.getElementById('co-due-amount').parentElement;
-  if (method === 'Bkash') {
-    numberEl.value = BKASH_NUMBER;
-    txnEl.required = true;
-    noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    const upfrontPercent = 0.25;
+    const upfront = Math.round((subtotal * upfrontPercent) / 5) * 5;
+    payNowEl.value = upfront.toFixed(2);
+    dueEl.value = (subtotal + delivery - upfront).toFixed(2);
     payNowEl.style.display = 'block';
     dueEl.style.display = 'block';
-    const unit = Number(document.getElementById('co-unit-price-raw').value) || 0;
-    const qty = Number(document.getElementById('co-qty').value) || 1;
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    const delivery = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
-    const subtotal = qty * unit;
-    const total = subtotal + delivery;
-    document.getElementById('co-pay-now').value = (preOrderPrice * qty).toFixed(2);
-    document.getElementById('co-due-amount').value = (total - preOrderPrice * qty).toFixed(2);
+  } else if (paymentMethod) {
+    const payNow = paymentMethod === 'Bkash' ? total : delivery;
+    const dueAmount = paymentMethod === 'Bkash' ? 0 : subtotal;
+    payNowEl.value = payNow.toFixed(2);
+    dueEl.value = dueAmount.toFixed(2);
+    payNowEl.style.display = 'block';
+    dueEl.style.display = 'block';
   } else {
-    numberEl.value = COD_NUMBER;
-    txnEl.required = false;
-    noteEl.textContent = '';
     payNowEl.style.display = 'none';
     dueEl.style.display = 'none';
   }
 }
 
+function handlePaymentChange(e) {
+  const method = e.target.value;
+  const note = document.getElementById('co-note');
+  const paymentNumberInput = document.getElementById('co-payment-number');
+  if (method === 'Bkash') {
+    note.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    paymentNumberInput.value = BKASH_NUMBER;
+  } else if (method === 'Cash on Delivery') {
+    note.textContent = `Send the delivery charge to ${COD_NUMBER} and provide transaction ID.`;
+    paymentNumberInput.value = COD_NUMBER;
+  } else {
+    note.textContent = '';
+    paymentNumberInput.value = '';
+  }
+  updateTotalInModal();
+}
+
 async function submitCheckoutOrder(e) {
   e.preventDefault();
-  const productId = document.getElementById('co-product-id').value;
-  const qty = Number(document.getElementById('co-qty').value) || 1;
-  const paymentMethod = document.getElementById('co-payment').value;
-  const txn = document.getElementById('co-txn').value.trim();
-  const isPreOrder = paymentMethod === 'Bkash' && document.getElementById('co-payment').disabled;
-  if (isPreOrder && !txn) {
-    alert('Transaction ID required for pre-order.');
+  const btn = document.getElementById('place-order-btn');
+  btn.disabled = true;
+  if (!document.getElementById('co-policy').checked) {
+    alert('Please agree to the order policy.');
+    btn.disabled = false;
     return;
   }
-  const unit = Number(document.getElementById('co-unit-price-raw').value) || 0;
-  const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
-  const subtotal = qty * unit;
-  const total = subtotal + deliveryFee;
-  let paid = 0;
-  let due = total;
-  if (paymentMethod === 'Bkash') {
-    const preOrderPrice = isPreOrder ? Math.round((unit * 0.25) / 5) * 5 * qty : total;
-    paid = preOrderPrice;
-    due = total - preOrderPrice;
+  const productId = document.getElementById('co-product-id').value;
+  const qty = Number(document.getElementById('co-qty').value);
+  const available = Number(document.getElementById('co-available-stock').value);
+  if (!productId) {
+    alert('Product ID is missing.');
+    btn.disabled = false;
+    return;
   }
-  const data = {
+  if (qty <= 0) {
+    alert('Quantity must be at least 1.');
+    btn.disabled = false;
+    return;
+  }
+  if (qty > available && available !== -1) {
+    alert(`Quantity exceeds available stock of ${available}.`);
+    btn.disabled = false;
+    return;
+  }
+  const unit = Number(document.getElementById('co-unit-price-raw').value);
+  if (isNaN(unit)) {
+    alert('Invalid unit price.');
+    btn.disabled = false;
+    return;
+  }
+  const delivery = Number(document.getElementById('co-delivery').dataset.fee);
+  if (isNaN(delivery)) {
+    alert('Invalid delivery fee.');
+    btn.disabled = false;
+    return;
+  }
+  const total = (qty * unit) + delivery;
+  const orderData = {
     timeISO: new Date().toISOString(),
     productId,
     productName: document.getElementById('co-product-name').value,
     color: document.getElementById('co-color').value,
-    quantity: qty,
     unitPrice: unit,
-    deliveryFee,
-    paid,
-    due,
+    quantity: qty,
+    deliveryFee: delivery,
+    total,
+    paid: Number(document.getElementById('co-pay-now').value) || 0,
+    due: Number(document.getElementById('co-due-amount').value) || 0,
     customerName: document.getElementById('co-name').value.trim(),
     phone: document.getElementById('co-phone').value.trim(),
     address: document.getElementById('co-address').value.trim(),
-    paymentMethod,
-    transactionId: txn || '',
+    paymentMethod: document.getElementById('co-payment').value,
+    paymentNumber: document.getElementById('co-payment-number').value.trim(),
+    transactionId: document.getElementById('co-txn').value.trim().toUpperCase(),
     status: 'Pending'
   };
+  if (!orderData.customerName || !orderData.phone || !orderData.address || !orderData.paymentMethod) {
+    alert('Please fill all required fields.');
+    btn.disabled = false;
+    return;
+  }
+  if (orderData.paymentMethod === 'Bkash' && (!orderData.paymentNumber || !orderData.transactionId)) {
+    alert('Please provide payment number and transaction ID for Bkash.');
+    btn.disabled = false;
+    return;
+  }
   try {
     await runTransaction(db, async (transaction) => {
       const productRef = doc(db, 'products', productId);
       const productSnap = await transaction.get(productRef);
-      if (!productSnap.exists()) throw new Error('Product not found');
-      const stock = productSnap.data().stock || 0;
-      if (stock < qty && !isPreOrder) throw new Error('Insufficient stock');
-      transaction.update(productRef, { stock: stock - qty });
-      await addDoc(collection(db, 'orders'), data);
+      if (!productSnap.exists()) {
+        throw new Error('Product not found.');
+      }
+      const currentStock = Number(productSnap.data().stock);
+      if (currentStock !== -1 && currentStock < qty && productSnap.data().availability !== 'Pre Order') {
+        throw new Error(`Insufficient stock. Only ${currentStock} available.`);
+      }
+      if (currentStock !== -1 && productSnap.data().availability !== 'Pre Order') {
+        const newStock = currentStock - qty;
+        transaction.update(productRef, { stock: Number(newStock) });
+      }
+      await addDoc(collection(db, 'orders'), orderData);
     });
     alert('Order placed successfully!');
     closeCheckoutModal();
   } catch (err) {
-    console.error('Order error:', err);
+    console.error('Error placing order:', err);
     alert('Error placing order: ' + err.message);
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -635,7 +674,6 @@ async function renderOrdersTable() {
   tbody.innerHTML = '';
   orders.forEach(o => {
     const tr = document.createElement('tr');
-   
     // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
