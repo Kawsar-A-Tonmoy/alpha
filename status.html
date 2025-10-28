@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Status</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+ <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
@@ -12,123 +12,36 @@
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
   <script type="module" src="script.js"></script>
-
-  <style>
-    /* Order Result Cards */
-    .order-result {
-      display: none;
-      margin-top: 24px;
-      gap: 16px;
-    }
-    .order-result.show {
-      display: flex;
-      flex-direction: column;
-    }
-    .order-card {
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      border: 1px solid var(--glass-border);
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    .order-card-header {
-      display: flex;
-      cursor: pointer;
-      padding: 12px;
-      background: #f9fafb;
-      border-bottom: 1px solid #e5e7eb;
-      align-items: center;
-      gap: 12px;
-    }
-    .order-card-header .toggle-icon {
-      font-weight: bold;
-      transition: transform 0.2s ease;
-    }
-    .order-card-header .toggle-icon.open {
-      transform: rotate(90deg);
-    }
-    .order-card-body {
-      display: none;
-      padding: 16px;
-      gap: 20px;
-    }
-    .order-card-body.show {
-      display: flex;
-    }
-    .order-image {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 8px;
-      background: #eee;
-    }
-    .order-details {
-      flex: 1;
-      display: grid;
-      gap: 8px;
-      font-size: 0.95rem;
-    }
-    .order-details strong {
-      color: var(--accent);
-    }
-    .status-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
-    }
-    .status-pending { background: #eab308; }
-    .status-processing { background: #3b82f6; }
-    .status-dispatched { background: #eab308; }
-    .status-delivered { background: #22c55e; }
-    .status-cancelled { background: #ef4444; }
-
-    @media (max-width: 600px) {
-      .order-card-body {
-        flex-direction: column;
-      }
-      .order-image {
-        width: 100%;
-        height: 180px;
-      }
-    }
-  </style>
 </head>
 <body>
 <header class="site-header">
-  <nav>
-    <a href="index.html" class="logo">
-      <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
-    </a>
-    <div class="nav-links">
-      <a href="index.html">Products</a>
-      <a href="status.html">Order Status</a>
-      <a href="admin.html">Admin</a>
-    </div>
-  </nav>
-</header>
+     <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+  </header>
 
-<div class="container">
-  <h1>Order Status</h1>
-  <form id="status-form" class="form">
-    <div>
-      <label>Phone Number</label>
-      <input id="phone-input" type="tel" placeholder="e.g. 01XXXXXXXXX" required>
-    </div>
-    <button type="submit">Check Orders</button>
-  </form>
+  <div class="container">
+    <h1>Order Status</h1>
+    <form id="status-form" class="form">
+      <div>
+        <label>Transaction ID</label>
+        <input id="txn-id" required>
+      </div>
+      <button type="submit">Check Status</button>
+    </form>
+  </div>
 
-  <!-- Results will appear here -->
-  <div id="order-result" class="order-result"></div>
-</div>
-
-<section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
+    <section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
   <!-- Left card -->
   <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>Important Notice</h3>
+    <h3>📢 Important Notice</h3>
     <p class="muted">
       Please ensure all order details are entered correctly before confirmation.  
       Double-check your <b>address</b>, <b>contact number</b>, and <b>product selection</b> to avoid delays.  
@@ -138,7 +51,7 @@
 
   <!-- Middle full-length policy card -->
   <div class="notice-card card" style="flex: 2; text-align: left;">
-    <h2>Shipping & Return Policy</h2>
+    <h2>📦 Shipping & 🔄 Return Policy</h2>
     
     <h3>1. Order Processing & Dispatch</h3>
     <ul>
@@ -148,7 +61,7 @@
 
     <h3>2. Delivery Timeline</h3>
     <ul>
-      <li>Estimated delivery time is <b>3–7 business days for normal order and 20-40 days for pre order</b>, depending on location and courier efficiency.</li>
+      <li>Estimated delivery time is <b>3–7 business days for normal order and 20-40 days for pre order </b>, depending on location and courier efficiency.</li>
       <li>Customers will be notified with tracking details once the order has been dispatched.</li>
     </ul>
 
@@ -186,7 +99,7 @@
 
   <!-- Right card -->
   <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>Support</h3>
+    <h3>💬 Support</h3>
     <p class="muted">
       For assistance, please reach us via:<br><br>
       ▪ Facebook: <a href="https://www.facebook.com/thegeek.shop0/" target="_blank">The Geek Shop</a><br>
@@ -196,7 +109,8 @@
   </div>
 </section>
 
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
+
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
   <div>
     <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
       <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
@@ -204,133 +118,18 @@
     <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
       <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
     </a>
-    <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
-      <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
     </a>
   </div>
-  <p>© All rights reserved by The Geek Shop</p>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
 </footer>
-
-<script type="module">
-  import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-  import { firebaseConfig } from './config.js';
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  const statusExplanations = {
-    Pending: 'Order received, waiting for processing.',
-    Processing: 'Your order is being prepared.',
-    Dispatched: 'Your order has been shipped.',
-    Delivered: 'Your order has been delivered.',
-    Cancelled: 'Your order has been cancelled.'
-  };
-
-  const statusColors = {
-    Pending: 'status-pending',
-    Processing: 'status-processing',
-    Dispatched: 'status-dispatched',
-    Delivered: 'status-delivered',
-    Cancelled: 'status-cancelled'
-  };
-
-  document.getElementById('status-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const phone = document.getElementById('phone-input').value.trim();
-    if (!phone) return;
-
-    const resultContainer = document.getElementById('order-result');
-    resultContainer.innerHTML = '';
-    resultContainer.classList.remove('show');
-
-    try {
-      const ordersQuery = query(
-        collection(db, 'orders'),
-        where('phone', '==', phone),
-        orderBy('timeISO', 'desc')
-      );
-      const snapshot = await getDocs(ordersQuery);
-
-      if (snapshot.empty) {
-        resultContainer.innerHTML = `<p style="text-align:center; color:var(--muted);">No orders found for this phone number.</p>`;
-        resultContainer.classList.add('show');
-        return;
-      }
-
-      const productsSnapshot = await getDocs(collection(db, 'products'));
-      const productsMap = {};
-      productsSnapshot.docs.forEach(doc => {
-        productsMap[doc.id] = { id: doc.id, ...doc.data() };
-      });
-
-      snapshot.docs.forEach((doc, index) => {
-        const order = { id: doc.id, ...doc.data() };
-        const product = productsMap[order.productId] || {};
-        const images = product.images || [];
-        const isPreOrder = product.availability === 'Pre Order';
-        const deliveryTime = isPreOrder ? '20–40 days' : '2–5 days';
-        const orderType = isPreOrder ? 'Pre-Order' : 'In Stock';
-
-        const card = document.createElement('div');
-        card.className = 'card order-card';
-        card.innerHTML = `
-          <div class="order-card-header">
-            <span class="toggle-icon">></span>
-            <strong>${order.productName}</strong>
-            <span style="margin-left:auto; font-size:0.9rem; color:var(--muted);">
-              ${new Date(order.timeISO).toLocaleDateString()}
-            </span>
-          </div>
-          <div class="order-card-body">
-            <img src="${images[0] || ''}" alt="${order.productName}" class="order-image" onerror="this.src=''; this.style.display='none';">
-            <div class="order-details">
-              <div><strong>Color:</strong> ${order.color || '—'}</div>
-              <div><strong>Price:</strong> ৳${Number(order.unitPrice).toFixed(2)} × ${order.quantity} = ৳${(order.unitPrice * order.quantity).toFixed(2)}</div>
-              <div><strong>Delivery Fee:</strong> ৳${Number(order.deliveryFee).toFixed(2)}</div>
-              <div><strong>Total Paid:</strong> ৳${Number(order.paid).toFixed(2)}</div>
-              <div><strong>Due:</strong> ৳${Number(order.due).toFixed(2)}</div>
-              <div><strong>Order Type:</strong> ${orderType}</div>
-              <div><strong>Est. Delivery:</strong> ${deliveryTime}</div>
-              <div><strong>Payment Method:</strong> ${order.paymentMethod}</div>
-              <div><strong>Status:</strong> 
-                <span class="status-badge ${statusColors[order.status]}">${order.status}</span>
-              </div>
-              <div style="margin-top:8px; font-size:0.85rem; color:var(--muted);">
-                ${statusExplanations[order.status]}
-              </div>
-            </div>
-          </div>
-        `;
-
-        const header = card.querySelector('.order-card-header');
-        const body = card.querySelector('.order-card-body');
-        const icon = card.querySelector('.toggle-icon');
-
-        header.addEventListener('click', () => {
-          const isOpen = body.classList.contains('show');
-          body.classList.toggle('show', !isOpen);
-          icon.classList.toggle('open', !isOpen);
-        });
-
-        // Auto-expand first order
-        if (index === 0) {
-          setTimeout(() => {
-            body.classList.add('show');
-            icon.classList.add('open');
-          }, 100);
-        }
-
-        resultContainer.appendChild(card);
-      });
-
-      resultContainer.classList.add('show');
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-      resultContainer.innerHTML = `<p style="color:var(--danger);">Error: ${err.message}</p>`;
-      resultContainer.classList.add('show');
-    }
-  });
-</script>
-
 </body>
+
 </html>
+
+
+
+
+
