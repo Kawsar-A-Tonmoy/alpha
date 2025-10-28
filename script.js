@@ -175,6 +175,11 @@ async function initProductPage() {
     alert('Product not found');
     return;
   }
+  const otherSection = document.getElementById('other-products');
+  // Show shimmer placeholders for other products
+  for (let i = 0; i < 4; i++) {
+    otherSection.appendChild(createShimmerCard());
+  }
   const products = await loadProducts();
   const product = products.find(p => p.id === id);
   if (!product) {
@@ -244,7 +249,7 @@ async function initProductPage() {
   }
   orderRow.appendChild(button);
   // Other products
-  const otherSection = document.getElementById('other-products');
+  otherSection.innerHTML = ''; // Clear placeholders
   const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== id);
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => otherSection.appendChild(createProductCard(p)));
@@ -391,23 +396,7 @@ function updateTotalInModal() {
 }
 
 function handlePaymentChange(e) {
-  const method = e.target.value;
-  const note = document.getElementById('co-note');
-  const paymentNumberInput = document.getElementById('co-payment-number');
-  if (method === 'Bkash') {
-    note.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
-    paymentNumberInput.value = BKASH_NUMBER;
-  } else if (method === 'Cash on Delivery') {
-    note.textContent = `Send the delivery charge to ${COD_NUMBER} and provide transaction ID.`;
-    paymentNumberInput.value = COD_NUMBER;
-  } else {
-    note.textContent = '';
-    paymentNumberInput.value = '';
-  }
-  updateTotalInModal();
-}
-
-async function submitCheckoutOrder(e) {
+  const method = e.target....(truncated 611 characters)...ubmitCheckoutOrder(e) {
   e.preventDefault();
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true;
@@ -827,5 +816,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
-
 
