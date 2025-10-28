@@ -252,15 +252,34 @@ async function initProductPage() {
     return;
   }
 
-  // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
-  document.title = product.name;
-  const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
-  let slug = product.name.toLowerCase().replace(/\s+/g, '-');
-  if (sameName.length > 1 && product.color) {
-    slug += '-' + product.color.toLowerCase().replace(/\s+/g, '-');
+  // === GENERATE HUMAN-READABLE SLUG ===
+  function slugify(text) {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')  // Remove special chars
+      .replace(/\s+/g, '-')          // Replace spaces with -
+      .replace(/-+/g, '-');          // Collapse multiple -
   }
+
+  const baseSlug = slugify(product.name);
+  let slug = baseSlug;
+
+  // Check for duplicate names
+  const sameNameProducts = products.filter(p => 
+    p.name && p.name.trim() !== '' && 
+    slugify(p.name) === baseSlug
+  );
+
+  if (sameNameProducts.length > 1 && product.color) {
+    slug = `${baseSlug}-${slugify(product.color)}`;
+  }
+
+  // Set canonical URL
   document.getElementById('canonical-link').href = `/product/${slug}`;
 
+  // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
+  document.title = product.name;
   const images = product.images || [];
 
   // Replace main image
