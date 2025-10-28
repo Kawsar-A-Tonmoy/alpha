@@ -252,27 +252,34 @@ async function initProductPage() {
     return;
   }
 
-  // === GENERATE HUMAN-READABLE SLUG ===
-  function slugify(text) {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')  // Remove special chars
-      .replace(/\s+/g, '-')          // Replace spaces with -
-      .replace(/-+/g, '-');          // Collapse multiple -
-  }
+  // === USE ADMIN-SET SLUG OR AUTO-GENERATE ===
+  let slug = product.slug || ''; // Use admin-set slug if exists
 
-  const baseSlug = slugify(product.name);
-  let slug = baseSlug;
+  if (!slug) {
+    // Auto-generate if no manual slug
+    function slugify(text) {
+      if (!text) return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
 
-  // Check for duplicate names
-  const sameNameProducts = products.filter(p => 
-    p.name && p.name.trim() !== '' && 
-    slugify(p.name) === baseSlug
-  );
+    const baseSlug = slugify(product.name);
+    slug = baseSlug;
 
-  if (sameNameProducts.length > 1 && product.color) {
-    slug = `${baseSlug}-${slugify(product.color)}`;
+    const sameNameProducts = products.filter(p =>
+      p.id !== product.id &&
+      p.name && p.name.trim() !== '' &&
+      slugify(p.name) === baseSlug
+    );
+
+    if (sameNameProducts.length > 0 && product.color) {
+      slug = `${baseSlug}-${slugify(product.color)}`;
+    }
   }
 
   // Set canonical URL
@@ -621,6 +628,7 @@ async function addProduct(e) {
   e.preventDefault();
   const data = {
     name: document.getElementById('add-name').value.trim(),
+    slug: document.getElementById('add-slug').value.trim() || '', // NEW: Manual slug
     price: document.getElementById('add-price').value.trim() === 'TBA' ? 'TBA' : Number(document.getElementById('add-price').value) || 0,
     discount: Number(document.getElementById('add-discount').value) || 0,
     images: document.getElementById('add-images').value.split(',').map(u => u.trim()).filter(u => u),
@@ -648,6 +656,7 @@ async function renderDataTable() {
   tbody.innerHTML = '';
   const cols = [
     { key: 'name' },
+    { key: 'slug' }, // NEW: Slug column
     { key: 'price' },
     { key: 'category' },
     { key: 'color' },
@@ -660,12 +669,12 @@ async function renderDataTable() {
     // Toggle details
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
-    tdToggle.innerHTML = 'Down Arrow';
+    tdToggle.innerHTML = '▼';
     tdToggle.addEventListener('click', (e) => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
-      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
+      e.target.textContent = isVisible ? '▼' : '▲';
     });
     tr.appendChild(tdToggle);
     // Main columns
@@ -726,7 +735,7 @@ async function renderDataTable() {
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
-    detailsCell.colSpan = cols.length + 3;
+    detailsCell.colSpan = cols.length + 3; // Updated for new slug column
     detailsCell.className = 'details-content';
     const imagesCell = document.createElement('div');
     imagesCell.contentEditable = true;
@@ -790,12 +799,12 @@ async function renderOrdersTable() {
     // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
-    tdToggle.innerHTML = 'Down Arrow';
+    tdToggle.innerHTML = '▼';
     tdToggle.addEventListener('click', (e) => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
-      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
+      e.target.textContent = isVisible ? '▼' : '▲';
     });
     tr.appendChild(tdToggle);
     // Main columns
