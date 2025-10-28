@@ -10,28 +10,97 @@
   <script type="module" src="script.js"></script>
 
   <style>
-    /* Order Result Cards */
-    .order-result {display:none;margin-top:24px;gap:16px;}
-    .order-result.show {display:flex;flex-direction:column;}
-    .order-card {background:var(--card);border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--glass-border);overflow:hidden;transition:all .3s ease;}
-    .order-card-header {display:flex;cursor:pointer;padding:12px;background:#f9fafb;border-bottom:1px solid #e5e7eb;align-items:center;gap:12px;}
-    .order-card-header .toggle-icon {font-weight:bold;transition:transform .2s ease;}
-    .order-card-header .toggle-icon.open {transform:rotate(90deg);}
-    .order-card-body {display:none;padding:16px;gap:20px;}
-    .order-card-body.show {display:flex;}
-    .order-image {width:120px;height:120px;object-fit:cover;border-radius:8px;background:#eee;}
-    .order-details {flex:1;display:grid;gap:8px;font-size:.95rem;}
-    .order-details strong {color:var(--accent);}
-    .status-badge {display:inline-block;padding:4px 10px;border-radius:999px;font-size:.8rem;font-weight:600;color:#fff;}
-    .status-pending {background:#eab308;}
-    .status-processing {background:#3b82f6;}
-    .status-dispatched {background:#eab308;}
-    .status-delivered {background:#22c55e;}
-    .status-cancelled {background:#ef4444;}
-    @media (max-width:600px){
-      .order-card-body{flex-direction:column;}
-      .order-image{width:100%;height:180px;}
-    }
+.orders-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.order-status-card {
+  display: flex;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.order-status-left {
+  flex: 0 0 120px;
+}
+
+.order-status-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #eee;
+}
+
+.order-status-middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.order-status-right {
+  flex: 0 0 180px;
+  border-left: 2px solid #e5e7eb;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.status-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: white;
+  font-weight: bold;
+}
+
+.status-circle:empty::before {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .order-status-card {
+    flex-direction: column;
+  }
+  .order-status-left, .order-status-right {
+    flex: none;
+  }
+  .order-status-right {
+    border-left: none;
+    border-top: 2px solid #e5e7eb;
+    padding-left: 0;
+    padding-top: 16px;
+  }
+}
   </style>
 </head>
 <body>
@@ -129,20 +198,12 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const statusExplanations = {
-    Pending: 'Order received, waiting for processing.',
-    Processing: 'Your order is being prepared.',
-    Dispatched: 'Your order has been shipped.',
-    Delivered: 'Your order has been delivered.',
-    Cancelled: 'Your order has been cancelled.'
-  };
-
-  const statusColors = {
-    Pending: 'status-pending',
-    Processing: 'status-processing',
-    Dispatched: 'status-dispatched',
-    Delivered: 'status-delivered',
-    Cancelled: 'status-cancelled'
+  const statusOrder = ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'];
+  const statusIcons = {
+    completed: 'Checkmark',
+    current: 'Checkmark',
+    pending: 'Circle',
+    cancelled: 'Cross'
   };
 
   document.getElementById('status-form').addEventListener('submit', async e => {
@@ -151,88 +212,110 @@
     if (!phone) return;
 
     const resultContainer = document.getElementById('order-result');
-    resultContainer.innerHTML = '';
-    resultContainer.classList.remove('show');
+    resultContainer.innerHTML = '<p style="text-align:center;color:var(--muted);">Loading...</p>';
+    resultContainer.classList.add('show');
 
     try {
-      const ordersQ = query(
+      const q = query(
         collection(db, 'orders'),
         where('phone', '==', phone),
         orderBy('timeISO', 'desc')
       );
-      const ordersSnap = await getDocs(ordersQ);
 
-      if (ordersSnap.empty) {
-        resultContainer.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders found for this phone number.</p>`;
-        resultContainer.classList.add('show');
+      const snapshot = await getDocs(q);
+      resultContainer.innerHTML = '';
+
+      if (snapshot.empty) {
+        resultContainer.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders found for ${phone}</p>`;
         return;
       }
 
       const prodSnap = await getDocs(collection(db, 'products'));
       const prodMap = {};
-      prodSnap.docs.forEach(d => { prodMap[d.id] = { id: d.id, ...d.data() }; });
+      prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
 
-      ordersSnap.docs.forEach((doc, idx) => {
-        const order = { id: doc.id, ...doc.data() };
+      const ordersGrid = document.createElement('div');
+      ordersGrid.className = 'orders-grid';
+
+      snapshot.docs.forEach(doc => {
+        const order = doc.data();
         const product = prodMap[order.productId] || {};
         const images = product.images || [];
         const isPreOrder = product.availability === 'Pre Order';
         const deliveryTime = isPreOrder ? '20–40 days' : '2–5 days';
-        const orderType = isPreOrder ? 'Pre-Order' : 'In Stock';
+        const availabilityText = isPreOrder ? 'Pre-Order' : 'In Stock';
+
+        const currentStatus = order.status;
+        const currentIndex = statusOrder.indexOf(currentStatus);
+        const isCancelled = currentStatus === 'Cancelled';
 
         const card = document.createElement('div');
-        card.className = 'card order-card';
-        card.innerHTML = `
-          <div class="order-card-header">
-            <span class="toggle-icon">></span>
-            <strong>${order.productName}</strong>
-            <span style="margin-left:auto;font-size:.9rem;color:var(--muted);">
-              ${new Date(order.timeISO).toLocaleDateString()}
-            </span>
-          </div>
-          <div class="order-card-body">
-            <img src="${images[0] || ''}" alt="${order.productName}" class="order-image"
-                 onerror="this.style.display='none';">
-            <div class="order-details">
-              <div><strong>Color:</strong> ${order.color || '—'}</div>
-              <div><strong>Price:</strong> ৳${Number(order.unitPrice).toFixed(2)} × ${order.quantity} = ৳${(order.unitPrice*order.quantity).toFixed(2)}</div>
-              <div><strong>Delivery Fee:</strong> ৳${Number(order.deliveryFee).toFixed(2)}</div>
-              <div><strong>Total Paid:</strong> ৳${Number(order.paid).toFixed(2)}</div>
-              <div><strong>Due:</strong> ৳${Number(order.due).toFixed(2)}</div>
-              <div><strong>Order Type:</strong> ${orderType}</div>
-              <div><strong>Est. Delivery:</strong> ${deliveryTime}</div>
-              <div><strong>Payment Method:</strong> ${order.paymentMethod}</div>
-              <div><strong>Status:</strong> 
-                <span class="status-badge ${statusColors[order.status]}">${order.status}</span>
-              </div>
-              <div style="margin-top:8px;font-size:.85rem;color:var(--muted);">
-                ${statusExplanations[order.status]}
-              </div>
+        card.className = 'card order-status-card';
+
+        let statusHTML = '';
+        statusOrder.forEach((status, idx) => {
+          const isCompleted = idx < currentIndex;
+          const isCurrent = idx === currentIndex;
+          const isFuture = idx > currentIndex;
+          const isCancel = status === 'Cancelled';
+
+          let icon = statusIcons.pending;
+          let color = '#9ca3af'; // gray
+          let textWeight = 'normal';
+
+          if (isCancel && isCancelled) {
+            icon = statusIcons.cancelled;
+            color = '#ef4444'; // red
+            textWeight = '600';
+          } else if (isCompleted || (isCurrent && !isCancelled)) {
+            icon = statusIcons.completed;
+            color = '#22c55e'; // green
+            textWeight = '600';
+          } else if (isCurrent && !isCancelled) {
+            icon = statusIcons.current;
+            color = '#22c55e';
+            textWeight = '600';
+          }
+
+          statusHTML += `
+            <div class="status-item" style="color:${color};font-weight:${textWeight};">
+              <span class="status-circle">${icon}</span>
+              <span class="status-label">${status}</span>
             </div>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="order-status-left">
+            <img src="${images[0] || ''}" alt="${order.productName}" class="order-status-img" onerror="this.style.display='none'">
+          </div>
+          <div class="order-status-middle">
+            <div><strong>${order.productName}</strong></div>
+            <div class="muted">Color: ${order.color || '—'}</div>
+            <div class="muted">Quantity: ${order.quantity}</div>
+            <div class="muted">${availabilityText}</div>
+            <div class="muted">Est. Delivery: <strong>${deliveryTime}</strong></div>
+            <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
+          </div>
+          <div class="order-status-right">
+            ${statusHTML}
           </div>
         `;
 
-        const header = card.querySelector('.order-card-header');
-        const body   = card.querySelector('.order-card-body');
-        const icon   = card.querySelector('.toggle-icon');
-
-        header.addEventListener('click', () => {
-          const open = body.classList.toggle('show');
-          icon.classList.toggle('open', open);
-        });
-
-        if (idx === 0) setTimeout(() => { body.classList.add('show'); icon.classList.add('open'); }, 100);
-
-        resultContainer.appendChild(card);
+        ordersGrid.appendChild(card);
       });
 
-      resultContainer.classList.add('show');
+      resultContainer.appendChild(ordersGrid);
+
     } catch (err) {
       console.error(err);
-      resultContainer.innerHTML = `<p style="color:var(--danger);">Error: ${err.message}</p>`;
-      resultContainer.classList.add('show');
+      const url = err.message.match(/https:\/\/[^\s]+/)?.[0];
+      resultContainer.innerHTML = url 
+        ? `<p style="color:var(--danger);">Index missing! <a href="${url}" target="_blank" style="color:blue;">Fix here</a></p>`
+        : `<p style="color:var(--danger);">Error: ${err.message}</p>`;
     }
   });
 </script>
 </body>
 </html>
+
