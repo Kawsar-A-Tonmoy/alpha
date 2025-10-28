@@ -4,9 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Status</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png">
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
   <script type="module" src="script.js"></script>
+
+  <style>
+    /* ---------- RESULT GRID ---------- */
+    .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
+    .order-status-card {
+      display:flex;padding:16px;border-radius:12px;background:var(--card);
+      border:1px solid var(--glass-border);box-shadow:0 2px 8px rgba(0,0,0,.05);
+      gap:16px;align-items:flex-start;
+    }
+    .order-status-left {flex:0 0 120px;}
+    .order-status-img {width:120px;height:120px;object-fit:cover;border-radius:12px;background:#eee;}
+    .order-status-middle {flex:1;display:flex;flex-direction:column;gap:6px;font-size:0.95rem;}
+    .order-status-right {
+      flex:0 0 180px;border-left:2px solid #e5e7eb;padding-left:16px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .status-item {display:flex;align-items:center;gap:10px;font-size:0.9rem;}
+    .status-circle {
+      width:20px;height:20px;border-radius:50%;background:currentColor;
+      display:flex;align-items:center;justify-content:center;font-size:0.7rem;
+      color:white;font-weight:bold;
+    }
+    .status-circle.check::before {content:'Checkmark';font-weight:bold;}
+    .status-circle.cross::before {content:'Cross';font-weight:bold;}
+    .status-circle.dot::before {content:'';display:block;width:10px;height:10px;background:white;border-radius:50%;}
+
+    .muted {color:var(--muted);}
+    .price-line {font-weight:600;color:var(--accent);}
+    .due {color:var(--danger);}
+
+    /* ---------- CANCELLED STATE ---------- */
+    .order-cancelled .status-item {color:#9ca3af !important;}
+    .order-cancelled .status-circle {background:#9ca3af !important;}
+    .order-cancelled .status-circle.cross {background:#ef4444 !important;}
+
+    @media (max-width:768px){
+      .order-status-card{flex-direction:column;}
+      .order-status-left,.order-status-right{flex:none;}
+      .order-status-right{border-left:none;border-top:2px solid #e5e7eb;padding-left:0;padding-top:16px;}
+    }
+
+    /* ==================== NOTICE SECTION ==================== */
+    .notice-section {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+      margin: 40px 0;
+      align-items: start;
+    }
+    .notice-left {display:flex;flex-direction:column;gap:16px;}
+    .policy-card {min-height:100%;}
+    .notice-card {padding:20px;border-radius:12px;background:var(--card);border:1px solid var(--glass-border);box-shadow:0 2px 8px rgba(0,0,0,.05);}
+    @media (max-width:900px){.notice-section{grid-template-columns:1fr;}}
+  </style>
 </head>
 <body>
 <header class="site-header">
@@ -54,15 +108,15 @@
       </p>
     </div>
   </div>
-
   <div class="notice-card card policy-card">
     <h2>Shipping & Return Policy</h2>
+    <!-- (your full policy content) -->
     <h3>1. Order Processing & Dispatch</h3>
     <ul>
       <li>All confirmed orders placed before <b>6:00 PM</b> are processed and dispatched the <b>same business day</b>.</li>
       <li>Orders placed after 6:00 PM will be dispatched on the <b>next business day</b>.</li>
     </ul>
-    <!-- … rest of your policy … -->
+    <!-- ... rest of your policy ... -->
   </div>
 </section>
 
@@ -110,8 +164,8 @@
         const order = doc.data();
         const product = prodMap[order.productId] || {};
 
-        // ---- IMAGE: first URL from comma-separated list ----
-        const imgList = (product.images || '').split(',').map(s=>s.trim()).filter(Boolean);
+        // Fix image: split comma-separated URLs, take first
+        const imgList = (product.images || '').split(',').map(s => s.trim()).filter(Boolean);
         const firstImg = imgList[0] || '';
 
         const isPreOrder = product.availability === 'Pre Order';
@@ -125,22 +179,22 @@
         card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
 
         let statusHTML = '';
-        statusOrder.forEach((st,i) => {
-          const completed = i < curIdx && !cancelled;
-          const current   = i === curIdx && !cancelled;
-          const isCancel  = st === 'Cancelled';
+        statusOrder.forEach((st, i) => {
+          const isCompleted = i < curIdx && !cancelled;
+          const isCurrent = i === curIdx && !cancelled;
+          const isCancel = st === 'Cancelled';
 
           let circleClass = 'dot';
-          let color = 'var(--status-gray)';
+          let color = '#9ca3af';
           let weight = 'normal';
 
           if (isCancel && cancelled) {
             circleClass = 'cross';
-            color = 'var(--status-red)';
+            color = '#ef4444';
             weight = '600';
-          } else if (completed || current) {
+          } else if (isCompleted || isCurrent) {
             circleClass = 'check';
-            color = 'var(--status-green)';
+            color = '#22c55e';
             weight = '600';
           }
 
@@ -154,14 +208,14 @@
         card.innerHTML = `
           <div class="order-status-left">
             <img src="${firstImg}" alt="${order.productName}" class="order-status-img"
-                 onerror="this.style.display='none'">
+                 onerror="this.style.display='none'; this.alt='No image'">
           </div>
           <div class="order-status-middle">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
             <div class="muted">Quantity: ${order.quantity}</div>
             <div class="price-line">
-              Price: ৳${order.paid} ${order.due>0 ? `<span class="due">(Due: ৳${order.due})</span>` : ''}
+              Price: ৳${order.paid} ${order.due > 0 ? `<span class="due">(Due: ৳${order.due})</span>` : ''}
             </div>
             <div class="muted">${avail}</div>
             <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
