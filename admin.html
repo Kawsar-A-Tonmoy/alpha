@@ -88,9 +88,18 @@
         </div>
         <div class="row">
           <div>
+            <label>Slug (Optional)</label>
+            <input id="add-slug" placeholder="e.g. akko-keycap-set-blue">
+            <small style="display: block; margin-top: 4px; color: #6b7280;">
+              Leave empty for auto-generation. Use lowercase letters, numbers, and hyphens only.
+            </small>
+          </div>
+          <div>
             <label>Stock</label>
             <input id="add-stock" type="number" value="0">
           </div>
+        </div>
+        <div class="row">
           <div>
             <label>Availability</label>
             <select id="add-availability" required>
@@ -99,6 +108,7 @@
               <option value="Upcoming">Upcoming</option>
             </select>
           </div>
+          <div></div> <!-- Empty cell to balance grid -->
         </div>
         <div>
           <label>Description</label>
@@ -117,6 +127,7 @@
               <th>Price</th>
               <th>Category</th>
               <th>Color</th>
+              <th>Slug</th>
               <th>Discount (tk)</th>
               <th>Stock</th>
               <th>Availability</th>
@@ -155,5 +166,4 @@
     </div>
   </main>
 </body>
-
 </html>
