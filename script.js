@@ -109,6 +109,7 @@ function createProductCard(p, products) {
   const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
   const images = p.images || [];
 
+  // Generate slug
   const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
   let slug = p.name.toLowerCase().replace(/\s+/g, '-');
   if (sameName.length > 1 && p.color) {
