@@ -60,7 +60,7 @@ function shuffle(array) {
   return array.slice().sort(() => Math.random() - 0.5);
 }
 
-// ====== SHIMMER PLACEHOLDER ======
+// ====== SHIMMER PLACEHOLDERS ======
 function createShimmerCard() {
   const card = document.createElement('div');
   card.className = 'card product-card shimmer-placeholder';
@@ -76,6 +76,27 @@ function createShimmerCard() {
     <div class="shimmer-button"></div>
   `;
   return card;
+}
+
+// Shimmer for main product image
+function createMainImageShimmer() {
+  const img = document.createElement('div');
+  img.className = 'shimmer-image-placeholder';
+  return img;
+}
+
+// Shimmer for thumbnail gallery
+function createThumbnailShimmer() {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumbnail shimmer-thumbnail';
+  return thumb;
+}
+
+// Shimmer for product info lines
+function createInfoLineShimmer() {
+  const line = document.createElement('div');
+  line.className = 'shimmer-line';
+  return line;
 }
 
 // ====== PRODUCT CARD ======
@@ -155,7 +176,7 @@ async function initProductsPage() {
   if (category) title.innerText = category;
   else title.innerText = 'All Products';
 
-  // Show shimmer placeholders (assuming up to 8 products for a balanced loading effect)
+  // Show shimmer placeholders
   for (let i = 0; i < 8; i++) {
     list.appendChild(createShimmerCard());
   }
@@ -175,26 +196,8 @@ async function initProductPage() {
     alert('Product not found');
     return;
   }
-  const otherSection = document.getElementById('other-products');
-  // Add shimmer placeholders for other products
-  for (let i = 0; i < 4; i++) {
-    otherSection.appendChild(createShimmerCard());
-  }
-  const products = await loadProducts();
-  const product = products.find(p => p.id === id);
-  if (!product) {
-    alert('Product not found');
-    return;
-  }
-  // Set title and canonical
-  document.title = product.name;
-  const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
-  let slug = product.name.toLowerCase().replace(/\s+/g, '-');
-  if (sameName.length > 1 && product.color) {
-    slug += '-' + product.color.toLowerCase().replace(/\s+/g, '-');
-  }
-  document.getElementById('canonical-link').href = `/product/${slug}`;
-  // Fill product details
+
+  // === SHIMMER FOR MAIN PRODUCT ===
   const mainImg = document.getElementById('main-image');
   const thumbnailGallery = document.getElementById('thumbnail-gallery');
   const nameEl = document.getElementById('product-name');
@@ -203,26 +206,84 @@ async function initProductPage() {
   const badgesEl = document.getElementById('product-badges');
   const descEl = document.getElementById('product-desc');
   const orderRow = document.getElementById('order-row');
-  const images = product.images || [];
-  mainImg.src = images[0] || '';
-  mainImg.alt = product.name;
-  if (images.length > 1) {
-    images.slice(1).forEach(src => {
-      const thumb = document.createElement('img');
-      thumb.src = src;
-      thumb.alt = product.name;
-      thumb.className = 'thumbnail';
-      thumb.onclick = () => { mainImg.src = src; };
-      thumbnailGallery.appendChild(thumb);
-    });
+
+  // Insert shimmer placeholders
+  mainImg.parentNode.replaceChild(createMainImageShimmer(), mainImg);
+  nameEl.innerHTML = '';
+  nameEl.appendChild(createInfoLineShimmer());
+  nameEl.appendChild(createInfoLineShimmer());
+  colorEl.innerHTML = '';
+  colorEl.appendChild(createInfoLineShimmer());
+  priceEl.innerHTML = '';
+  priceEl.appendChild(createInfoLineShimmer());
+  badgesEl.innerHTML = '';
+  for (let i = 0; i < 2; i++) {
+    const badge = document.createElement('div');
+    badge.className = 'shimmer-badge';
+    badgesEl.appendChild(badge);
   }
-  nameEl.innerText = product.name;
+  descEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const line = createInfoLineShimmer();
+    line.style.width = `${70 + Math.random() * 20}%`;
+    descEl.appendChild(line);
+  }
+  orderRow.innerHTML = '';
+  const btnShimmer = document.createElement('div');
+  btnShimmer.className = 'shimmer-button';
+  orderRow.appendChild(btnShimmer);
+
+  // Thumbnails shimmer
+  for (let i = 0; i < 3; i++) {
+    thumbnailGallery.appendChild(createThumbnailShimmer());
+  }
+
+  // === SHIMMER FOR OTHER PRODUCTS ===
+  const otherSection = document.getElementById('other-products');
+  for (let i = 0; i < 4; i++) {
+    otherSection.appendChild(createShimmerCard());
+  }
+
+  // === LOAD DATA ===
+  const products = await loadProducts();
+  const product = products.find(p => p.id === id);
+  if (!product) {
+    alert('Product not found');
+    return;
+  }
+
+  // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
+  document.title = product.name;
+  const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
+  let slug = product.name.toLowerCase().replace(/\s+/g, '-');
+  if (sameName.length > 1 && product.color) {
+    slug += '-' + product.color.toLowerCase().replace(/\s+/g, '-');
+  }
+  document.getElementById('canonical-link').href = `/product/${slug}`;
+
+  const images = product.images || [];
+
+  // Replace main image
+  const realMainImg = document.createElement('img');
+  realMainImg.id = 'main-image';
+  realMainImg.src = images[0] || '';
+  realMainImg.alt = product.name;
+  document.querySelector('.shimmer-image-placeholder').parentNode.replaceChild(realMainImg, document.querySelector('.shimmer-image-placeholder'));
+
+  // Replace name
+  nameEl.innerHTML = product.name;
+
+  // Replace color
   colorEl.innerText = `Color: ${product.color || '-'}`;
+
+  // Replace price
   const isUpcoming = product.availability === 'Upcoming';
   const hasDiscount = Number(product.discount) > 0;
   const price = Number(product.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
   priceEl.innerHTML = isUpcoming ? 'TBA' : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`;
+
+  // Replace badges
   badgesEl.innerHTML = `
     ${product.category === 'new' ? `<span class="badge new">NEW</span>` : ''}
     ${product.category === 'hot' ? `<span class="badge hot">HOT</span>` : ''}
@@ -230,8 +291,11 @@ async function initProductPage() {
     ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
     ${product.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
   `;
+
+  // Replace description
   descEl.innerText = product.description || '';
-  // Order button
+
+  // Replace order button
   const button = document.createElement('button');
   if (isUpcoming) {
     button.textContent = 'Upcoming - Stay Tuned';
@@ -247,13 +311,29 @@ async function initProductPage() {
     button.textContent = 'Out of Stock';
     button.disabled = true;
   }
+  orderRow.innerHTML = '';
   orderRow.appendChild(button);
-  // Replace shimmer with actual other products
+
+  // Replace thumbnails
+  thumbnailGallery.innerHTML = '';
+  if (images.length > 1) {
+    images.slice(1).forEach(src => {
+      const thumb = document.createElement('img');
+      thumb.src = src;
+      thumb.alt = product.name;
+      thumb.className = 'thumbnail';
+      thumb.onclick = () => { realMainImg.src = src; };
+      thumbnailGallery.appendChild(thumb);
+    });
+  }
+
+  // === REPLACE OTHER PRODUCTS SHIMMER ===
   otherSection.innerHTML = '';
   const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== id);
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => otherSection.appendChild(createProductCard(p)));
-  // Setup modal and viewer
+
+  // === SETUP INTERACTIONS ===
   document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
   const form = document.getElementById('checkout-form');
   form.addEventListener('submit', submitCheckoutOrder);
@@ -261,8 +341,8 @@ async function initProductPage() {
   document.getElementById('co-qty').addEventListener('input', updateTotalInModal);
   document.getElementById('co-address').addEventListener('input', updateDeliveryCharge);
   setupImageViewer();
-  mainImg.addEventListener('click', () => {
-    document.getElementById('viewer-img').src = mainImg.src;
+  realMainImg.addEventListener('click', () => {
+    document.getElementById('viewer-img').src = realMainImg.src;
     document.getElementById('image-viewer').classList.add('show');
   });
 }
@@ -627,7 +707,7 @@ async function renderDataTable() {
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
-    detailsCell.colSpan = cols.length + 3; // Span across toggle, cols, status, and actions
+    detailsCell.colSpan = cols.length + 3;
     detailsCell.className = 'details-content';
     const imagesCell = document.createElement('div');
     imagesCell.contentEditable = true;
@@ -747,7 +827,7 @@ async function renderOrdersTable() {
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
-    detailsCell.colSpan = 14; // Span across toggle, main columns, and status
+    detailsCell.colSpan = 14;
     detailsCell.className = 'details-content';
     const unitPriceCell = document.createElement('div');
     unitPriceCell.textContent = `Unit Price: ৳${Number(o.unitPrice).toFixed(2)}`;
