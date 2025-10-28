@@ -244,46 +244,65 @@ async function initProductPage() {
     otherSection.appendChild(createShimmerCard());
   }
 
-  // === LOAD DATA ===
-  const products = await loadProducts();
-  const product = products.find(p => p.id === id);
-  if (!product) {
-    alert('Product not found');
-    return;
+// === LOAD DATA ===
+const products = await loadProducts();
+const product = products.find(p => p.id === id);
+if (!product) {
+  alert('Product not found');
+  return;
+}
+
+/* --------------------------------------------------------------
+   CANONICAL URL – ADMIN SLUG (priority) → auto-generated fallback
+   -------------------------------------------------------------- */
+let slug = '';
+
+// 1. ADMIN-DEFINED SLUG (if present and valid)
+if (product.slug && typeof product.slug === 'string' && product.slug.trim() !== '') {
+  const adminSlug = product.slug.trim().toLowerCase();
+  if (/^[a-z0-9-]+$/.test(adminSlug)) {
+    slug = adminSlug;
+  } else {
+    console.warn('Invalid admin slug, falling back to auto-generation:', product.slug);
   }
+}
 
-  // === USE ADMIN-SET SLUG OR AUTO-GENERATE ===
-  let slug = product.slug || ''; // Use admin-set slug if exists
-
-  if (!slug) {
-    // Auto-generate if no manual slug
-    function slugify(text) {
-      if (!text) return '';
-      return text
-        .toString()
-        .toLowerCase()
-        .trim()
+// 2. AUTO-GENERATE if no valid admin slug
+if (!slug) {
+  const slugify = (txt) => txt
+    ? txt.toString().toLowerCase().trim()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/-+/g, '-');
-    }
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+    : '';
 
-    const baseSlug = slugify(product.name);
-    slug = baseSlug;
+  const base = slugify(product.name);
+  slug = base;
 
-    const sameNameProducts = products.filter(p =>
-      p.id !== product.id &&
-      p.name && p.name.trim() !== '' &&
-      slugify(p.name) === baseSlug
-    );
+  // Append color only if duplicate name exists
+  const duplicates = products.filter(p =>
+    p.id !== product.id &&
+    p.name && slugify(p.name) === base
+  );
 
-    if (sameNameProducts.length > 0 && product.color) {
-      slug = `${baseSlug}-${slugify(product.color)}`;
-    }
+  if (duplicates.length > 0 && product.color) {
+    slug = `${base}-${slugify(product.color)}`;
   }
+}
 
-  // Set canonical URL
-  document.getElementById('canonical-link').href = `/product/${slug}`;
+// 3. UPDATE CANONICAL LINK
+const canonicalEl = document.getElementById('canonical-link');
+if (canonicalEl) {
+  canonicalEl.href = `/product/${slug}`;
+} else {
+  // Fallback: create if missing (should not happen)
+  const link = document.createElement('link');
+  link.id = 'canonical-link';
+  link.rel = 'canonical';
+  link.href = `/product/${slug}`;
+  document.head.appendChild(link);
+}
 
   // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
   document.title = product.name;
@@ -949,3 +968,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
+
