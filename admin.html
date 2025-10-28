@@ -86,23 +86,11 @@
             <input id="add-color">
           </div>
         </div>
-
-        <!-- SLUG FIELD: REQUIRED + VALIDATION HELP -->
         <div class="row">
-          <div>
-            <label>Slug <span style="color: red;">*</span></label>
-            <input id="add-slug" placeholder="e.g. akko-keycap-set-blue" required>
-            <small style="display: block; margin-top: 4px; color: #d32f2f; font-weight: 500;">
-              Required. Use only lowercase letters, numbers, and hyphens. No spaces or special chars.
-            </small>
-          </div>
           <div>
             <label>Stock</label>
             <input id="add-stock" type="number" value="0">
           </div>
-        </div>
-
-        <div class="row">
           <div>
             <label>Availability</label>
             <select id="add-availability" required>
@@ -111,9 +99,7 @@
               <option value="Upcoming">Upcoming</option>
             </select>
           </div>
-          <div></div> <!-- Empty cell to balance grid -->
         </div>
-
         <div>
           <label>Description</label>
           <textarea id="add-desc"></textarea>
@@ -131,7 +117,6 @@
               <th>Price</th>
               <th>Category</th>
               <th>Color</th>
-              <th>Slug</th>
               <th>Discount (tk)</th>
               <th>Stock</th>
               <th>Availability</th>
@@ -170,4 +155,5 @@
     </div>
   </main>
 </body>
+
 </html>

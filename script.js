@@ -244,49 +244,23 @@ async function initProductPage() {
     otherSection.appendChild(createShimmerCard());
   }
 
-// === LOAD DATA ===
-const products = await loadProducts();
-const product = products.find(p => p.id === id);
-if (!product) {
-  alert('Product not found');
-  return;
-}
-
-/* --------------------------------------------------------------
-   CANONICAL URL – ADMIN SLUG ONLY (NO AUTO-GENERATION)
-   -------------------------------------------------------------- */
-let slug = '';
-
-// 1. ADMIN-DEFINED SLUG (REQUIRED & VALIDATED)
-if (product.slug && typeof product.slug === 'string') {
-  slug = product.slug.trim().toLowerCase();
-
-  // Validate: only lowercase letters, numbers, hyphens
-  if (!/^[a-z0-9-]+$/.test(slug)) {
-    console.error('Invalid slug in product:', product.id, 'Slug:', product.slug);
-    alert(`Error: Invalid slug for "${product.name}".\nOnly lowercase letters, numbers, and hyphens allowed.\n\nFix in Admin panel.`);
-    slug = ''; // Force error state
+  // === LOAD DATA ===
+  const products = await loadProducts();
+  const product = products.find(p => p.id === id);
+  if (!product) {
+    alert('Product not found');
+    return;
   }
-} else {
-  console.error('Missing slug for product:', product.id, product.name);
-  alert(`Error: No slug set for "${product.name}".\nPlease add a valid slug in Admin panel.`);
-  slug = '';
-}
-
-// 2. IF SLUG IS INVALID OR MISSING → STOP (no fallback)
-if (!slug) {
-  // Optionally redirect or show placeholder
-  document.getElementById('canonical-link').href = '#';
-  document.title = `${product.name} - Slug Missing`;
-  return; // Stop loading product until slug is fixed
-}
-
-// 3. SET CANONICAL URL
-document.getElementById('canonical-link').href = `/product/${slug}`;
-console.log('Canonical URL set:', `/product/${slug}`);
 
   // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
   document.title = product.name;
+  const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
+  let slug = product.name.toLowerCase().replace(/\s+/g, '-');
+  if (sameName.length > 1 && product.color) {
+    slug += '-' + product.color.toLowerCase().replace(/\s+/g, '-');
+  }
+  document.getElementById('canonical-link').href = `/product/${slug}`;
+
   const images = product.images || [];
 
   // Replace main image
@@ -628,7 +602,6 @@ async function addProduct(e) {
   e.preventDefault();
   const data = {
     name: document.getElementById('add-name').value.trim(),
-    slug: document.getElementById('add-slug').value.trim() || '', // NEW: Manual slug
     price: document.getElementById('add-price').value.trim() === 'TBA' ? 'TBA' : Number(document.getElementById('add-price').value) || 0,
     discount: Number(document.getElementById('add-discount').value) || 0,
     images: document.getElementById('add-images').value.split(',').map(u => u.trim()).filter(u => u),
@@ -656,7 +629,6 @@ async function renderDataTable() {
   tbody.innerHTML = '';
   const cols = [
     { key: 'name' },
-    { key: 'slug' }, // NEW: Slug column
     { key: 'price' },
     { key: 'category' },
     { key: 'color' },
@@ -669,12 +641,12 @@ async function renderDataTable() {
     // Toggle details
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
-    tdToggle.innerHTML = '▼';
+    tdToggle.innerHTML = 'Down Arrow';
     tdToggle.addEventListener('click', (e) => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
-      e.target.textContent = isVisible ? '▼' : '▲';
+      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
     });
     tr.appendChild(tdToggle);
     // Main columns
@@ -735,7 +707,7 @@ async function renderDataTable() {
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
-    detailsCell.colSpan = cols.length + 3; // Updated for new slug column
+    detailsCell.colSpan = cols.length + 3;
     detailsCell.className = 'details-content';
     const imagesCell = document.createElement('div');
     imagesCell.contentEditable = true;
@@ -799,12 +771,12 @@ async function renderOrdersTable() {
     // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
-    tdToggle.innerHTML = '▼';
+    tdToggle.innerHTML = 'Down Arrow';
     tdToggle.addEventListener('click', (e) => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
-      e.target.textContent = isVisible ? '▼' : '▲';
+      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
     });
     tr.appendChild(tdToggle);
     // Main columns
@@ -949,5 +921,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
-
-
