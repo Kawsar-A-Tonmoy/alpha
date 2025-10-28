@@ -4,50 +4,96 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Status</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="icon" type="image/x-icon" href="logo t.png">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="script.js"></script>
-
   <style>
     /* ---------- RESULT GRID ---------- */
     .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
+    
     .order-status-card {
-      display:flex;padding:16px;border-radius:12px;background:var(--card);
-      border:1px solid var(--glass-border);box-shadow:0 2px 8px rgba(0,0,0,.05);
-      gap:16px;align-items:flex-start;
+      display:flex;
+      padding:16px;
+      border-radius:12px;
+      background:var(--card);
+      border:1px solid var(--glass-border);
+      box-shadow:0 2px 8px rgba(0,0,0,.05);
+      gap:16px;
+      align-items:flex-start;
     }
-    .order-status-left {flex:0 0 120px;}
-    .order-status-img {width:120px;height:120px;object-fit:cover;border-radius:12px;background:#eee;}
-    .order-status-middle {flex:1;display:flex;flex-direction:column;gap:6px;font-size:0.95rem;}
-    .order-status-right {
-      flex:0 0 180px;border-left:2px solid #e5e7eb;padding-left:16px;
-      display:flex;flex-direction:column;gap:12px;
+
+    /* ---------- STATUS (LEFT) ---------- */
+    .order-status-left {
+      flex: 0 0 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .status-item {display:flex;align-items:center;gap:10px;font-size:0.9rem;}
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
     .status-circle {
-      width:20px;height:20px;border-radius:50%;background:currentColor;
-      display:flex;align-items:center;justify-content:center;font-size:0.7rem;
-      color:white;font-weight:bold;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.75rem;
+      color: white;
+      flex-shrink: 0;
     }
-    .status-circle:empty::before{
-      content:'';display:block;width:10px;height:10px;background:white;border-radius:50%;
+
+    /* Status Colors */
+    .status-green { background: #4caf50; }
+    .status-red   { background: #d32f2f; }
+    .status-grey  { background: #9ca3af; }
+
+    /* ---------- MIDDLE (DETAILS) ---------- */
+    .order-status-middle {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.95rem;
     }
-    .muted {color:var(--muted);}
-    .price-line {font-weight:600;color:var(--accent);}
-    .due {color:var(--danger);}
+    .muted { color: var(--muted); }
+    .price-line { font-weight: 600; color: var(--accent); }
+
+    /* ---------- RIGHT (DUE) ---------- */
+    .order-status-right {
+      flex: 0 0 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .due {
+      color: #d32f2f; /* Professional red */
+      font-weight: 600;
+    }
 
     /* ---------- CANCELLED STATE ---------- */
-    .order-cancelled .status-item {color:#9ca3af !important;}
-    .order-cancelled .status-circle {background:#9ca3af !important;}
+    .order-cancelled .status-item { color: #9ca3af !important; }
+    .order-cancelled .status-circle { background: #9ca3af !important; }
 
-    @media (max-width:768px){
-      .order-status-card{flex-direction:column;}
-      .order-status-left,.order-status-right{flex:none;}
-      .order-status-right{border-left:none;border-top:2px solid #e5e7eb;padding-left:0;padding-top:16px;}
+    /* Responsive */
+    @media (max-width: 768px) {
+      .order-status-card { flex-direction: column; }
+      .order-status-left, .order-status-right { flex: none; align-items: flex-start; }
+      .order-status-right { align-items: flex-end; margin-top: 12px; }
     }
   </style>
 </head>
 <body>
+<!-- [Your header, form, notice section, footer – unchanged] -->
 <header class="site-header">
   <nav>
     <a href="index.html" class="logo"><img src="logo.png" alt="Logo" style="height:40px;"></a>
@@ -58,7 +104,6 @@
     </div>
   </nav>
 </header>
-
 <div class="container">
   <h1>Order Status</h1>
   <form id="status-form" class="form">
@@ -68,37 +113,33 @@
     </div>
     <button type="submit">Check Orders</button>
   </form>
-
   <div id="order-result" class="order-result"></div>
 </div>
 
- <section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
+<!-- [Your notice section and footer – unchanged] -->
+<section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
   <!-- Left card -->
   <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>📢 Important Notice</h3>
+    <h3>Important Notice</h3>
     <p class="muted">
-      Please ensure all order details are entered correctly before confirmation.  
-      Double-check your <b>address</b>, <b>contact number</b>, and <b>product selection</b> to avoid delays.  
+      Please ensure all order details are entered correctly before confirmation.
+      Double-check your <b>address</b>, <b>contact number</b>, and <b>product selection</b> to avoid delays.
       Orders once confirmed are subject to our Return and Pre-Order Policies.
     </p>
   </div>
-
   <!-- Middle full-length policy card -->
   <div class="notice-card card" style="flex: 2; text-align: left;">
-    <h2>📦 Shipping & 🔄 Return Policy</h2>
-    
+    <h2>Shipping & Return Policy</h2>
     <h3>1. Order Processing & Dispatch</h3>
     <ul>
       <li>All confirmed orders placed before <b>6:00 PM</b> are processed and dispatched the <b>same business day</b>.</li>
       <li>Orders placed after 6:00 PM will be dispatched on the <b>next business day</b>.</li>
     </ul>
-
     <h3>2. Delivery Timeline</h3>
     <ul>
       <li>Estimated delivery time is <b>3–7 business days for normal order and 20-40 days for pre order </b>, depending on location and courier efficiency.</li>
       <li>Customers will be notified with tracking details once the order has been dispatched.</li>
     </ul>
-
     <h3>3. Pre-Order Policy</h3>
     <ul>
       <li>A <b>25% advance payment</b> is required to confirm any pre-order.</li>
@@ -108,21 +149,17 @@
       <li>Once a pre-order is confirmed, it <b>cannot be cancelled, refunded, or placed on hold</b>.</li>
       <li>Customers must <b>verify the product upon delivery</b> in the presence of the courier.</li>
     </ul>
-
     <h3>4. Return Policy</h3>
-
     <h4>4.1 Eligibility Window</h4>
     <ul>
       <li>Items can be returned within <b>7 days of purchase</b>.</li>
       <li>The 7-day period is counted from the <b>date of delivery</b>.</li>
     </ul>
-
     <h4>4.2 Condition of Returned Items</h4>
     <ul>
       <li>Products must be in <b>original condition</b>, unused, with all packaging and accessories intact.</li>
       <li>Items not meeting these conditions may be declined for return.</li>
     </ul>
-
     <h4>4.3 Valid Reasons for Return</h4>
     <ul>
       <li><b>Change of preference is not accepted</b> – Returns <b>cannot</b> be made for reasons like “didn’t like the product” or “changed my mind”.</li>
@@ -130,10 +167,9 @@
       <li><b>Pre-Orders</b> – Confirmed pre-orders <b>cannot be returned</b>, unless defective on arrival.</li>
     </ul>
   </div>
-
   <!-- Right card -->
   <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>💬 Support</h3>
+    <h3>Support</h3>
     <p class="muted">
       For assistance, please reach us via:<br><br>
       ▪ Facebook: <a href="https://www.facebook.com/thegeek.shop0/" target="_blank">The Geek Shop</a><br>
@@ -143,8 +179,7 @@
   </div>
 </section>
 
-
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
   <div>
     <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
       <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
@@ -152,22 +187,21 @@
     <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
       <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
     </a>
-        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
-      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
     </a>
   </div>
- 
   <p>&copy; All rights reserved by The Geek Shop</p>
 </footer>
+
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
   import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   import { firebaseConfig } from './config.js';
 
   const app = initializeApp(firebaseConfig);
-  const db   = getFirestore(app);
-
-  const statusOrder = ['Pending','Processing','Dispatched','Delivered','Cancelled'];
+  const db = getFirestore(app);
+  const statusOrder = ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'];
 
   document.getElementById('status-form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -179,7 +213,7 @@
     result.classList.add('show');
 
     try {
-      const q = query(collection(db,'orders'), where('phone','==',phone), orderBy('timeISO','desc'));
+      const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'));
       const snap = await getDocs(q);
       result.innerHTML = '';
 
@@ -188,7 +222,7 @@
         return;
       }
 
-      const prodSnap = await getDocs(collection(db,'products'));
+      const prodSnap = await getDocs(collection(db, 'products'));
       const prodMap = {};
       prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
 
@@ -198,66 +232,66 @@
       snap.docs.forEach(doc => {
         const order = doc.data();
         const product = prodMap[order.productId] || {};
-        const imgList = (product.images || '').split(',').map(s=>s.trim()).filter(Boolean);
-        const firstImg = imgList[0] || '';
-
         const isPreOrder = product.availability === 'Pre Order';
         const delivery = isPreOrder ? '20–40 days' : '2–5 days';
-        const avail   = isPreOrder ? 'Pre-Order' : 'In Stock';
-
+        const avail = isPreOrder ? 'Pre-Order' : 'In Stock';
         const curStat = order.status;
-        const curIdx  = statusOrder.indexOf(curStat);
+        const curIdx = statusOrder.indexOf(curStat);
         const cancelled = curStat === 'Cancelled';
 
         const card = document.createElement('div');
-        card.className = `card order-status-card ${cancelled?'order-cancelled':''}`;
+        card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
 
+        // Build status items
         let statusHTML = '';
         statusOrder.forEach((st, i) => {
-          const completed = i < curIdx && !cancelled;
-          const current   = i === curIdx && !cancelled;
-          const future    = i > curIdx && !cancelled;
-          const isCancel  = st === 'Cancelled';
+          const isCurrent = i === curIdx;
+          const isCompleted = i < curIdx && !cancelled;
+          const isCancelled = st === 'Cancelled' && cancelled;
 
-          let icon = 'Circle';
-          let color = '#9ca3af';      // gray
-          let weight = 'normal';
+          let icon = '';
+          let colorClass = 'status-grey';
 
-          if (isCancel && cancelled) {
-            icon = 'Cross';
-            color = '#ef4444';
-            weight = '600';
-          } else if (completed || current) {
-            icon = 'Checkmark';
-            color = '#22c55e';
-            weight = '600';
+          if (isCancelled) {
+            icon = '✗';
+            colorClass = 'status-red';
+          } else if (isCompleted || (isCurrent && st !== 'Cancelled')) {
+            icon = '✓';
+            colorClass = 'status-green';
+          } else {
+            icon = '';
           }
 
           statusHTML += `
-            <div class="status-item" style="color:${color};font-weight:${weight};">
-              <span class="status-circle">${icon}</span>
-              <span class="status-label">${st}</span>
+            <div class="status-item" style="color:${isCancelled ? '#ef4444' : isCompleted || (isCurrent && !cancelled) ? '#22c55e' : '#9ca3af'};">
+              <div class="status-circle ${colorClass}">${icon}</div>
+              <span>${st}</span>
             </div>`;
         });
 
         card.innerHTML = `
+          <!-- Status on Left -->
           <div class="order-status-left">
-            <img src="${firstImg}" alt="${order.productName}" class="order-status-img"
-                 onerror="this.style.display='none'">
+            ${statusHTML}
           </div>
+
+          <!-- Middle: Product Details -->
           <div class="order-status-middle">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
-            <div class="muted">Quantity:: ${order.quantity}</div>
+            <div class="muted">Quantity: ${order.quantity}</div>
             <div class="price-line">
-              Price: ৳${order.paid} <span class="due">${order.due>0?`(Due: ৳${order.due})`:''}</span>
+              Paid: ৳${order.paid}
+              ${order.due > 0 ? `<span class="due"> (Due: ৳${order.due})</span>` : ''}
             </div>
             <div class="muted">${avail}</div>
             <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
             <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
           </div>
+
+          <!-- Right: Due Amount -->
           <div class="order-status-right">
-            ${statusHTML}
+            ${order.due > 0 ? `<div class="due">Due: ৳${order.due}</div>` : '<div class="muted">Paid</div>'}
           </div>
         `;
 
@@ -265,7 +299,6 @@
       });
 
       result.appendChild(grid);
-
     } catch (err) {
       console.error(err);
       const url = err.message.match(/https:\/\/[^\s]+/)?.[0];
@@ -277,4 +310,3 @@
 </script>
 </body>
 </html>
-
