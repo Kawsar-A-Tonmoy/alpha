@@ -21,7 +21,7 @@
       align-items:flex-start;
     }
 
-    /* ---------- LEFT: PRODUCT DETAILS ---------- */
+    /* LEFT: Product Details */
     .order-status-left {
       flex: 1;
       display: flex;
@@ -32,7 +32,7 @@
     .muted { color: var(--muted); }
     .price-line { font-weight: 600; color: var(--accent); }
 
-    /* ---------- RIGHT: FULL STATUS TIMELINE ---------- */
+    /* RIGHT: Status Timeline */
     .order-status-right {
       flex: 0 0 160px;
       display: flex;
@@ -64,16 +64,20 @@
     .status-red { background: #d32f2f; }
     .status-grey { background: #9ca3af; }
 
-    /* Cancelled State */
-    .order-cancelled .status-item { color: #9ca3af; }
-    .order-cancelled .status-item.cancelled {
-      color: #ef4444 !important;
+    /* CANCELLED STATE: Only Cancelled is RED */
+    .order-cancelled .status-item {
+      color: #9ca3af; /* All gray by default */
     }
-    .order-cancelled .status-circle:not(.cancelled) {
-      background: #9ca3af !important;
+    .order-cancelled .status-item.cancelled {
+      color: #ef4444 !important; /* Cancelled text = RED */
+    }
+    .order-cancelled .status-circle {
+      background: #9ca3af !important; /* All circles gray */
+    }
+    .order-cancelled .status-circle.cancelled {
+      background: #d32f2f !important; /* Cancelled circle = RED */
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .order-status-card { flex-direction: column; }
       .order-status-right { align-items: stretch; }
@@ -104,7 +108,6 @@
   </form>
   <div id="order-result" class="order-result"></div>
 </div>
-
  <section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
   <!-- Left card -->
   <div class="notice-card card" style="flex: 1; text-align: left;">
@@ -192,7 +195,6 @@
  
   <p>&copy; All rights reserved by The Geek Shop</p>
 </footer>
-
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
   import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
@@ -239,7 +241,7 @@
         const card = document.createElement('div');
         card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
 
-        // Build FULL status timeline for RIGHT side
+        // Build status timeline
         let statusHTML = '';
         statusOrder.forEach((st, i) => {
           const isCurrent = i === curIdx;
@@ -249,28 +251,27 @@
           let icon = '';
           let colorClass = 'status-grey';
           let textColor = '#9ca3af';
+          let itemClass = '';
 
           if (isCancelled) {
-            icon = '✗';
-            colorClass = 'status-red';
+            icon = 'Cross';
+            colorClass = 'status-red cancelled';
             textColor = '#ef4444';
-          } else if (isCompleted || (isCurrent && st !== 'Cancelled')) {
-            icon = '✓';
+            itemClass = 'cancelled';
+          } else if (isCompleted || (isCurrent && !cancelled)) {
+            icon = 'Checkmark';
             colorClass = 'status-green';
             textColor = '#22c55e';
           }
 
-          const cancelledClass = isCancelled ? 'cancelled' : '';
-
           statusHTML += `
-            <div class="status-item ${cancelledClass}" style="color:${cancelled ? '#ef4444' : textColor};">
+            <div class="status-item ${itemClass}" style="color:${textColor};">
               <div class="status-circle ${colorClass}">${icon}</div>
               <span>${st}</span>
             </div>`;
         });
 
         card.innerHTML = `
-          <!-- LEFT: Product Details -->
           <div class="order-status-left">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
@@ -284,7 +285,6 @@
             <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
           </div>
 
-          <!-- RIGHT: FULL STATUS TIMELINE -->
           <div class="order-status-right">
             ${statusHTML}
           </div>
@@ -301,4 +301,3 @@
 </script>
 </body>
 </html>
-
