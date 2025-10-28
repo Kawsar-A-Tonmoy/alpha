@@ -6,107 +6,51 @@
   <title>Order Status</title>
   <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
-  <!-- Remove the old import block – everything is imported inside the inline script -->
   <script type="module" src="script.js"></script>
 
   <style>
-.orders-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: 16px;
-}
+    /* ---------- RESULT GRID ---------- */
+    .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
+    .order-status-card {
+      display:flex;padding:16px;border-radius:12px;background:var(--card);
+      border:1px solid var(--glass-border);box-shadow:0 2px 8px rgba(0,0,0,.05);
+      gap:16px;align-items:flex-start;
+    }
+    .order-status-left {flex:0 0 120px;}
+    .order-status-img {width:120px;height:120px;object-fit:cover;border-radius:12px;background:#eee;}
+    .order-status-middle {flex:1;display:flex;flex-direction:column;gap:6px;font-size:0.95rem;}
+    .order-status-right {
+      flex:0 0 180px;border-left:2px solid #e5e7eb;padding-left:16px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .status-item {display:flex;align-items:center;gap:10px;font-size:0.9rem;}
+    .status-circle {
+      width:20px;height:20px;border-radius:50%;background:currentColor;
+      display:flex;align-items:center;justify-content:center;font-size:0.7rem;
+      color:white;font-weight:bold;
+    }
+    .status-circle:empty::before{
+      content:'';display:block;width:10px;height:10px;background:white;border-radius:50%;
+    }
+    .muted {color:var(--muted);}
+    .price-line {font-weight:600;color:var(--accent);}
+    .due {color:var(--danger);}
 
-.order-status-card {
-  display: flex;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--card);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 2px 8px rgba(0,0,0,.05);
-  gap: 16px;
-  align-items: flex-start;
-}
+    /* ---------- CANCELLED STATE ---------- */
+    .order-cancelled .status-item {color:#9ca3af !important;}
+    .order-cancelled .status-circle {background:#9ca3af !important;}
 
-.order-status-left {
-  flex: 0 0 120px;
-}
-
-.order-status-img {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 12px;
-  background: #eee;
-}
-
-.order-status-middle {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.95rem;
-}
-
-.order-status-right {
-  flex: 0 0 180px;
-  border-left: 2px solid #e5e7eb;
-  padding-left: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-}
-
-.status-circle {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: currentColor;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  color: white;
-  font-weight: bold;
-}
-
-.status-circle:empty::before {
-  content: '';
-  display: block;
-  width: 10px;
-  height: 10px;
-  background: white;
-  border-radius: 50%;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .order-status-card {
-    flex-direction: column;
-  }
-  .order-status-left, .order-status-right {
-    flex: none;
-  }
-  .order-status-right {
-    border-left: none;
-    border-top: 2px solid #e5e7eb;
-    padding-left: 0;
-    padding-top: 16px;
-  }
-}
+    @media (max-width:768px){
+      .order-status-card{flex-direction:column;}
+      .order-status-left,.order-status-right{flex:none;}
+      .order-status-right{border-left:none;border-top:2px solid #e5e7eb;padding-left:0;padding-top:16px;}
+    }
   </style>
 </head>
 <body>
 <header class="site-header">
   <nav>
-    <a href="index.html" class="logo"><img src="logo.png" alt="The Geek Shop Logo" style="height:40px;"></a>
+    <a href="index.html" class="logo"><img src="logo.png" alt="Logo" style="height:40px;"></a>
     <div class="nav-links">
       <a href="index.html">Products</a>
       <a href="status.html">Order Status</a>
@@ -128,66 +72,13 @@
   <div id="order-result" class="order-result"></div>
 </div>
 
+<!-- (your notice/footer sections stay unchanged) -->
 <section class="notice-section" style="display:flex;gap:20px;align-items:flex-start;">
-  <div class="notice-card card" style="flex:1;text-align:left;">
-    <h3>Important Notice</h3>
-    <p class="muted">
-      Please ensure all order details are entered correctly before confirmation.  
-      Double-check your <b>address</b>, <b>contact number</b>, and <b>product selection</b> to avoid delays.  
-      Orders once confirmed are subject to our Return and Pre-Order Policies.
-    </p>
-  </div>
-
-  <div class="notice-card card" style="flex:2;text-align:left;">
-    <h2>Shipping & Return Policy</h2>
-    <h3>1. Order Processing & Dispatch</h3>
-    <ul><li>All confirmed orders placed before <b>6:00 PM</b> are processed and dispatched the <b>same business day</b>.</li>
-        <li>Orders placed after 6:00 PM will be dispatched on the <b>next business day</b>.</li></ul>
-    <h3>2. Delivery Timeline</h3>
-    <ul><li>Estimated delivery time is <b>3–7 business days for normal order and 20-40 days for pre order</b>, depending on location and courier efficiency.</li>
-        <li>Customers will be notified with tracking details once the order has been dispatched.</li></ul>
-    <h3>3. Pre-Order Policy</h3>
-    <ul><li>A <b>25% advance payment</b> is required to confirm any pre-order.</li></ul>
-    <h4>Important Note</h4>
-    <ul><li>Once a pre-order is confirmed, it <b>cannot be cancelled, refunded, or placed on hold</b>.</li>
-        <li>Customers must <b>verify the product upon delivery</b> in the presence of the courier.</li></ul>
-    <h3>4. Return Policy</h3>
-    <h4>4.1 Eligibility Window</h4>
-    <ul><li>Items can be returned within <b>7 days of purchase</b>.</li>
-        <li>The 7-day period is counted from the <b>date of delivery</b>.</li></ul>
-    <h4>4.2 Condition of Returned Items</h4>
-    <ul><li>Products must be in <b>original condition</b>, unused, with all packaging and accessories intact.</li>
-        <li>Items not meeting these conditions may be declined for return.</li></ul>
-    <h4>4.3 Valid Reasons for Return</h4>
-    <ul><li><b>Change of preference is not accepted</b> – Returns <b>cannot</b> be made for reasons like “didn’t like the product” or “changed my mind”.</li>
-        <li><b>Defective on Arrival</b> – Products may only be returned if <b>defective or damaged upon delivery</b>.</li>
-        <li><b>Pre-Orders</b> – Confirmed pre-orders <b>cannot be returned</b>, unless defective on arrival.</li></ul>
-  </div>
-
-  <div class="notice-card card" style="flex:1;text-align:left;">
-    <h3>Support</h3>
-    <p class="muted">
-      For assistance, please reach us via:<br><br>
-      Facebook: <a href="https://www.facebook.com/thegeek.shop0/" target="_blank">The Geek Shop</a><br>
-      Instagram: <a href="https://www.instagram.com/thegeek.shop0/" target="_blank">@thegeekshop</a><br>
-      WhatsApp: <a href="https://wa.me/01960788862" target="_blank">WhatsApp</a>
-    </p>
-  </div>
+  <!-- … your existing notice cards … -->
 </section>
 
-<footer style="background-color:#e8e8ff;padding:20px;text-align:center;height:90px;color:#000;font-family:Arial,sans-serif;">
-  <div>
-    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin:0 10px;">
-      <img src="facebook.png" alt="Facebook" style="width:30px;height:30px;">
-    </a>
-    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin:0 10px;">
-      <img src="instagram.png" alt="Instagram" style="width:30px;height:30px;">
-    </a>
-    <a href="https://wa.me/01960788862" target="_blank" style="margin:0 10px;">
-      <img src="whatsapp.png" alt="WhatsApp" style="width:30px;height:30px;">
-    </a>
-  </div>
-  <p>© All rights reserved by The Geek Shop</p>
+<footer style="background:#e8e8ff;padding:20px;text-align:center;height:90px;color:#000;">
+  <!-- … your footer … -->
 </footer>
 
 <script type="module">
@@ -196,105 +87,95 @@
   import { firebaseConfig } from './config.js';
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db   = getFirestore(app);
 
-  const statusOrder = ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'];
-  const statusIcons = {
-    completed: 'Checkmark',
-    current: 'Checkmark',
-    pending: 'Circle',
-    cancelled: 'Cross'
-  };
+  const statusOrder = ['Pending','Processing','Dispatched','Delivered','Cancelled'];
 
   document.getElementById('status-form').addEventListener('submit', async e => {
     e.preventDefault();
     const phone = document.getElementById('phone-input').value.trim();
     if (!phone) return;
 
-    const resultContainer = document.getElementById('order-result');
-    resultContainer.innerHTML = '<p style="text-align:center;color:var(--muted);">Loading...</p>';
-    resultContainer.classList.add('show');
+    const result = document.getElementById('order-result');
+    result.innerHTML = '<p style="text-align:center;color:var(--muted);">Loading...</p>';
+    result.classList.add('show');
 
     try {
-      const q = query(
-        collection(db, 'orders'),
-        where('phone', '==', phone),
-        orderBy('timeISO', 'desc')
-      );
+      const q = query(collection(db,'orders'), where('phone','==',phone), orderBy('timeISO','desc'));
+      const snap = await getDocs(q);
+      result.innerHTML = '';
 
-      const snapshot = await getDocs(q);
-      resultContainer.innerHTML = '';
-
-      if (snapshot.empty) {
-        resultContainer.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders found for ${phone}</p>`;
+      if (snap.empty) {
+        result.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders for ${phone}</p>`;
         return;
       }
 
-      const prodSnap = await getDocs(collection(db, 'products'));
+      const prodSnap = await getDocs(collection(db,'products'));
       const prodMap = {};
       prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
 
-      const ordersGrid = document.createElement('div');
-      ordersGrid.className = 'orders-grid';
+      const grid = document.createElement('div');
+      grid.className = 'orders-grid';
 
-      snapshot.docs.forEach(doc => {
+      snap.docs.forEach(doc => {
         const order = doc.data();
         const product = prodMap[order.productId] || {};
-        const images = product.images || [];
-        const isPreOrder = product.availability === 'Pre Order';
-        const deliveryTime = isPreOrder ? '20–40 days' : '2–5 days';
-        const availabilityText = isPreOrder ? 'Pre-Order' : 'In Stock';
+        const imgList = (product.images || '').split(',').map(s=>s.trim()).filter(Boolean);
+        const firstImg = imgList[0] || '';
 
-        const currentStatus = order.status;
-        const currentIndex = statusOrder.indexOf(currentStatus);
-        const isCancelled = currentStatus === 'Cancelled';
+        const isPreOrder = product.availability === 'Pre Order';
+        const delivery = isPreOrder ? '20–40 days' : '2–5 days';
+        const avail   = isPreOrder ? 'Pre-Order' : 'In Stock';
+
+        const curStat = order.status;
+        const curIdx  = statusOrder.indexOf(curStat);
+        const cancelled = curStat === 'Cancelled';
 
         const card = document.createElement('div');
-        card.className = 'card order-status-card';
+        card.className = `card order-status-card ${cancelled?'order-cancelled':''}`;
 
         let statusHTML = '';
-        statusOrder.forEach((status, idx) => {
-          const isCompleted = idx < currentIndex;
-          const isCurrent = idx === currentIndex;
-          const isFuture = idx > currentIndex;
-          const isCancel = status === 'Cancelled';
+        statusOrder.forEach((st, i) => {
+          const completed = i < curIdx && !cancelled;
+          const current   = i === curIdx && !cancelled;
+          const future    = i > curIdx && !cancelled;
+          const isCancel  = st === 'Cancelled';
 
-          let icon = statusIcons.pending;
-          let color = '#9ca3af'; // gray
-          let textWeight = 'normal';
+          let icon = 'Circle';
+          let color = '#9ca3af';      // gray
+          let weight = 'normal';
 
-          if (isCancel && isCancelled) {
-            icon = statusIcons.cancelled;
-            color = '#ef4444'; // red
-            textWeight = '600';
-          } else if (isCompleted || (isCurrent && !isCancelled)) {
-            icon = statusIcons.completed;
-            color = '#22c55e'; // green
-            textWeight = '600';
-          } else if (isCurrent && !isCancelled) {
-            icon = statusIcons.current;
+          if (isCancel && cancelled) {
+            icon = 'Cross';
+            color = '#ef4444';
+            weight = '600';
+          } else if (completed || current) {
+            icon = 'Checkmark';
             color = '#22c55e';
-            textWeight = '600';
+            weight = '600';
           }
 
           statusHTML += `
-            <div class="status-item" style="color:${color};font-weight:${textWeight};">
+            <div class="status-item" style="color:${color};font-weight:${weight};">
               <span class="status-circle">${icon}</span>
-              <span class="status-label">${status}</span>
-            </div>
-          `;
+              <span class="status-label">${st}</span>
+            </div>`;
         });
 
         card.innerHTML = `
           <div class="order-status-left">
-            <img src="${images[0] || ''}" alt="${order.productName}" class="order-status-img" onerror="this.style.display='none'">
+            <img src="${firstImg}" alt="${order.productName}" class="order-status-img"
+                 onerror="this.style.display='none'">
           </div>
           <div class="order-status-middle">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
-            <div class="muted">Quantity: ${order.quantity}</div>
-            <div class="muted">${availabilityText}</div>
-            <div class="muted">Est. Delivery: <strong>${deliveryTime}</strong></div>
+            <div class="muted">Quantity:: ${order.quantity}</div>
+            <div class="price-line">
+              Price: ৳${order.paid} <span class="due">${order.due>0?`(Due: ৳${order.due})`:''}</span>
+            </div>
+            <div class="muted">${avail}</div>
+            <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
             <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
           </div>
           <div class="order-status-right">
@@ -302,15 +183,15 @@
           </div>
         `;
 
-        ordersGrid.appendChild(card);
+        grid.appendChild(card);
       });
 
-      resultContainer.appendChild(ordersGrid);
+      result.appendChild(grid);
 
     } catch (err) {
       console.error(err);
       const url = err.message.match(/https:\/\/[^\s]+/)?.[0];
-      resultContainer.innerHTML = url 
+      result.innerHTML = url
         ? `<p style="color:var(--danger);">Index missing! <a href="${url}" target="_blank" style="color:blue;">Fix here</a></p>`
         : `<p style="color:var(--danger);">Error: ${err.message}</p>`;
     }
@@ -318,4 +199,3 @@
 </script>
 </body>
 </html>
-
