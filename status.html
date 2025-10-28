@@ -9,7 +9,7 @@
   <script type="module" src="script.js"></script>
   <style>
     .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
-    
+   
     .order-status-card {
       display:flex;
       padding:16px;
@@ -20,8 +20,7 @@
       gap:16px;
       align-items:flex-start;
     }
-
-    /* LEFT: Product Details */
+    /* ---------- LEFT: PRODUCT DETAILS ---------- */
     .order-status-left {
       flex: 1;
       display: flex;
@@ -31,8 +30,7 @@
     }
     .muted { color: var(--muted); }
     .price-line { font-weight: 600; color: var(--accent); }
-
-    /* RIGHT: Status Timeline */
+    /* ---------- RIGHT: FULL STATUS TIMELINE ---------- */
     .order-status-right {
       flex: 0 0 160px;
       display: flex;
@@ -64,9 +62,9 @@
     .status-red { background: #d32f2f; }
     .status-grey { background: #9ca3af; }
 
-    /* CANCELLED STATE: Only Cancelled is RED */
+    /* CANCELLED STATE: Only Cancelled = RED, others = GRAY */
     .order-cancelled .status-item {
-      color: #9ca3af; /* All gray by default */
+      color: #9ca3af; /* Default: all gray */
     }
     .order-cancelled .status-item.cancelled {
       color: #ef4444 !important; /* Cancelled text = RED */
@@ -78,6 +76,7 @@
       background: #d32f2f !important; /* Cancelled circle = RED */
     }
 
+    /* Responsive */
     @media (max-width: 768px) {
       .order-status-card { flex-direction: column; }
       .order-status-right { align-items: stretch; }
@@ -85,7 +84,6 @@
   </style>
 </head>
 <body>
-
 <header class="site-header">
   <nav>
     <a href="index.html" class="logo"><img src="logo.png" alt="Logo" style="height:40px;"></a>
@@ -96,7 +94,6 @@
     </div>
   </nav>
 </header>
-
 <div class="container">
   <h1>Order Status</h1>
   <form id="status-form" class="form">
@@ -223,7 +220,8 @@
       }
 
       const prodSnap = await getDocs(collection(db, 'products'));
-      const prodMap = {}; prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
+      const prodMap = {}; 
+      prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
 
       const grid = document.createElement('div');
       grid.className = 'orders-grid';
@@ -241,7 +239,7 @@
         const card = document.createElement('div');
         card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
 
-        // Build status timeline
+        // Build FULL status timeline for RIGHT side
         let statusHTML = '';
         statusOrder.forEach((st, i) => {
           const isCurrent = i === curIdx;
@@ -272,6 +270,7 @@
         });
 
         card.innerHTML = `
+          <!-- LEFT: Product Details -->
           <div class="order-status-left">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
@@ -284,7 +283,7 @@
             <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
             <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
           </div>
-
+          <!-- RIGHT: FULL STATUS TIMELINE -->
           <div class="order-status-right">
             ${statusHTML}
           </div>
