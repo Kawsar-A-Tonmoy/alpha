@@ -114,7 +114,7 @@ function createProductCard(p) {
     <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
     <div class="badges">
       ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
-      ${p.category === 'hot' ? `<span class="badge hot">HOT Deal</span>` : ``}
+      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
       ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
       ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
       ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
@@ -848,103 +848,27 @@ function logoutAdmin() {
   }
 }
 
-// ====== ORDER STATUS BY PHONE ======
-// Add this function inside script.js (before setupStatusForm)
-async function searchOrdersByPhone() {
-  const phone = document.getElementById('phone-input').value.trim();
-  const resultsContainer = document.getElementById('order-results');
-  if (!phone) {
-    alert('Please enter a phone number.');
-    return;
-  }
-
-  resultsContainer.innerHTML = '<p>Loading orders...</p>';
-
-  try {
-    const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'));
-    const snapshot = await getDocs(q);
-    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    if (orders.length === 0) {
-      resultsContainer.innerHTML = '<p class="no-orders">No orders found for this phone number.</p>';
-      return;
-    }
-
-    resultsContainer.innerHTML = '';
-    const products = await loadProducts();
-    const productMap = {};
-    products.forEach(p => productMap[p.id] = p);
-
-    orders.forEach(order => {
-      const product = productMap[order.productId] || {};
-      const images = product.images || [];
-      const isPreOrder = order.paid > 0 && order.paid < order.total && product.availability === 'Pre Order';
-      const orderedWhen = isPreOrder ? 'Pre Order' : (Number(product.stock) > 0 ? 'In Stock' : 'Out of Stock');
-      const deliveryTime = isPreOrder ? '20–40 days' : '3–7 business days';
-
-      const card = document.createElement('div');
-      card.className = 'order-card';
-
-      card.innerHTML = `
-        <div class="order-card-header">
-          <span class="toggle-icon">Right Arrow</span>
-          <div>
-            Order on ${new Date(order.timeISO).toLocaleDateString()} 
-            <span class="status-badge" style="background: ${statusColors[order.status] || '#ccc'}; color: white; margin-left: 8px;">
-              ${order.status}
-            </span>
-          </div>
-        </div>
-        <div class="order-card-body">
-          <img src="${images[0] || ''}" alt="${order.productName}" class="order-image" onerror="this.src=''; this.style.display='none';">
-          <div class="order-details">
-            <div><strong>${order.productName}</strong></div>
-            ${order.color ? `<div>Color: ${order.color}</div>` : ''}
-            <div>Qty: ${order.quantity} × ৳${Number(order.unitPrice).toFixed(2)}</div>
-            <div>Delivery: ৳${Number(order.deliveryFee).toFixed(2)}</div>
-            <div><strong>Total: ৳${Number(order.total).toFixed(2)}</strong></div>
-            <div>Paid: ৳${Number(order.paid).toFixed(2)} | Due: ৳${Number(order.due).toFixed(2)}</div>
-            <div><strong>Ordered when:</strong> ${orderedWhen}</div>
-            <div><strong>Est. Delivery:</strong> ${deliveryTime}</div>
-            <div><strong>Payment:</strong> ${order.paymentMethod}${order.transactionId ? ` (TXN: ${order.transactionId})` : ''}</div>
-            <div><strong>Address:</strong> ${order.address}</div>
-          </div>
-        </div>
-      `;
-
-      const header = card.querySelector('.order-card-header');
-      const body = card.querySelector('.order-card-body');
-      const icon = card.querySelector('.toggle-icon');
-
-      header.addEventListener('click', () => {
-        const isOpen = body.classList.contains('open');
-        body.classList.toggle('open', !isOpen);
-        icon.classList.toggle('open', !isOpen);
-        icon.textContent = isOpen ? 'Right Arrow' : 'Down Arrow';
-      });
-
-      resultsContainer.appendChild(card);
-    });
-  } catch (err) {
-    console.error('Error searching orders:', err);
-    resultsContainer.innerHTML = '<p class="no-orders">Error loading orders. Please try again.</p>';
-  }
-}
 // ====== ORDER STATUS PAGE ======
 function setupStatusForm() {
   const form = document.getElementById('status-form');
   if (!form) return;
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    await searchOrdersByPhone();
-  });
-
-  // Optional: Allow pressing Enter in input
-  document.getElementById('phone-input')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      searchOrdersByPhone();
+    const txn = document.getElementById('txn-id').value.trim();
+    if (!txn) return;
+    try {
+      const q = query(collection(db, 'orders'), where('transactionId', '==', txn));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        alert('Order not found.');
+        return;
+      }
+      const order = snapshot.docs[0].data();
+      const status = order.status;
+      alert(`Status: ${status}\n${statusExplanations[status] || 'Unknown status.'}`);
+    } catch (err) {
+      console.error('Error fetching status:', err);
+      alert('Error fetching status: ' + err.message);
     }
   });
 }
@@ -996,6 +920,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   }
-
 });
-
