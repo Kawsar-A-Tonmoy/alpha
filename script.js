@@ -176,7 +176,7 @@ async function initProductPage() {
     return;
   }
   const otherSection = document.getElementById('other-products');
-  // Show shimmer placeholders for other products
+  // Add shimmer placeholders for other products
   for (let i = 0; i < 4; i++) {
     otherSection.appendChild(createShimmerCard());
   }
@@ -248,8 +248,8 @@ async function initProductPage() {
     button.disabled = true;
   }
   orderRow.appendChild(button);
-  // Other products
-  otherSection.innerHTML = ''; // Clear placeholders
+  // Replace shimmer with actual other products
+  otherSection.innerHTML = '';
   const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== id);
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => otherSection.appendChild(createProductCard(p)));
@@ -396,7 +396,32 @@ function updateTotalInModal() {
 }
 
 function handlePaymentChange(e) {
-  const method = e.target....(truncated 611 characters)...ubmitCheckoutOrder(e) {
+  const method = e.target.value;
+  const payNowEl = document.getElementById('co-pay-now');
+  const dueEl = document.getElementById('co-due-amount');
+  const paymentNumberEl = document.getElementById('co-payment-number');
+  const txnEl = document.getElementById('co-txn');
+  const noteEl = document.getElementById('co-note');
+
+  if (method === 'Bkash') {
+    paymentNumberEl.value = BKASH_NUMBER;
+    noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    txnEl.required = true;
+  } else if (method === 'Cash on Delivery') {
+    paymentNumberEl.value = COD_NUMBER;
+    noteEl.textContent = `Pay on delivery to ${COD_NUMBER}.`;
+    txnEl.required = false;
+    txnEl.value = '';
+  } else {
+    paymentNumberEl.value = '';
+    noteEl.textContent = '';
+    txnEl.required = false;
+    txnEl.value = '';
+  }
+  updateTotalInModal();
+}
+
+async function submitCheckoutOrder(e) {
   e.preventDefault();
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true;
@@ -536,12 +561,12 @@ async function renderDataTable() {
     // Toggle details
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
-    tdToggle.innerHTML = '▼';
+    tdToggle.innerHTML = 'Down Arrow';
     tdToggle.addEventListener('click', (e) => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
-      e.target.textContent = isVisible ? '▼' : '▲';
+      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
     });
     tr.appendChild(tdToggle);
     // Main columns
@@ -666,12 +691,12 @@ async function renderOrdersTable() {
     // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
-    tdToggle.innerHTML = '▼';
+    tdToggle.innerHTML = 'Down Arrow';
     tdToggle.addEventListener('click', (e) => {
       const detailsRow = e.target.closest('tr').nextElementSibling;
       const isVisible = detailsRow.classList.contains('show');
       detailsRow.classList.toggle('show', !isVisible);
-      e.target.textContent = isVisible ? '▼' : '▲';
+      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
     });
     tr.appendChild(tdToggle);
     // Main columns
@@ -816,4 +841,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
-
