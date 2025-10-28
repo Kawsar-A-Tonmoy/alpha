@@ -253,56 +253,37 @@ if (!product) {
 }
 
 /* --------------------------------------------------------------
-   CANONICAL URL – ADMIN SLUG (priority) → auto-generated fallback
+   CANONICAL URL – ADMIN SLUG ONLY (NO AUTO-GENERATION)
    -------------------------------------------------------------- */
 let slug = '';
 
-// 1. ADMIN-DEFINED SLUG (if present and valid)
-if (product.slug && typeof product.slug === 'string' && product.slug.trim() !== '') {
-  const adminSlug = product.slug.trim().toLowerCase();
-  if (/^[a-z0-9-]+$/.test(adminSlug)) {
-    slug = adminSlug;
-  } else {
-    console.warn('Invalid admin slug, falling back to auto-generation:', product.slug);
+// 1. ADMIN-DEFINED SLUG (REQUIRED & VALIDATED)
+if (product.slug && typeof product.slug === 'string') {
+  slug = product.slug.trim().toLowerCase();
+
+  // Validate: only lowercase letters, numbers, hyphens
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    console.error('Invalid slug in product:', product.id, 'Slug:', product.slug);
+    alert(`Error: Invalid slug for "${product.name}".\nOnly lowercase letters, numbers, and hyphens allowed.\n\nFix in Admin panel.`);
+    slug = ''; // Force error state
   }
-}
-
-// 2. AUTO-GENERATE if no valid admin slug
-if (!slug) {
-  const slugify = (txt) => txt
-    ? txt.toString().toLowerCase().trim()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '')
-    : '';
-
-  const base = slugify(product.name);
-  slug = base;
-
-  // Append color only if duplicate name exists
-  const duplicates = products.filter(p =>
-    p.id !== product.id &&
-    p.name && slugify(p.name) === base
-  );
-
-  if (duplicates.length > 0 && product.color) {
-    slug = `${base}-${slugify(product.color)}`;
-  }
-}
-
-// 3. UPDATE CANONICAL LINK
-const canonicalEl = document.getElementById('canonical-link');
-if (canonicalEl) {
-  canonicalEl.href = `/product/${slug}`;
 } else {
-  // Fallback: create if missing (should not happen)
-  const link = document.createElement('link');
-  link.id = 'canonical-link';
-  link.rel = 'canonical';
-  link.href = `/product/${slug}`;
-  document.head.appendChild(link);
+  console.error('Missing slug for product:', product.id, product.name);
+  alert(`Error: No slug set for "${product.name}".\nPlease add a valid slug in Admin panel.`);
+  slug = '';
 }
+
+// 2. IF SLUG IS INVALID OR MISSING → STOP (no fallback)
+if (!slug) {
+  // Optionally redirect or show placeholder
+  document.getElementById('canonical-link').href = '#';
+  document.title = `${product.name} - Slug Missing`;
+  return; // Stop loading product until slug is fixed
+}
+
+// 3. SET CANONICAL URL
+document.getElementById('canonical-link').href = `/product/${slug}`;
+console.log('Canonical URL set:', `/product/${slug}`);
 
   // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
   document.title = product.name;
@@ -968,4 +949,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
+
 
