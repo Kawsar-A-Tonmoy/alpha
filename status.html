@@ -8,9 +8,8 @@
   <link rel="stylesheet" href="style.css">
   <script type="module" src="script.js"></script>
   <style>
-    /* ---------- RESULT GRID ---------- */
     .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
-   
+    
     .order-status-card {
       display:flex;
       padding:16px;
@@ -22,12 +21,24 @@
       align-items:flex-start;
     }
 
-    /* ---------- STATUS (LEFT) ---------- */
+    /* ---------- LEFT: PRODUCT DETAILS ---------- */
     .order-status-left {
-      flex: 0 0 140px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+    .muted { color: var(--muted); }
+    .price-line { font-weight: 600; color: var(--accent); }
+
+    /* ---------- RIGHT: FULL STATUS TIMELINE ---------- */
+    .order-status-right {
+      flex: 0 0 160px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      align-items: flex-start;
     }
     .status-item {
       display: flex;
@@ -35,6 +46,7 @@
       gap: 8px;
       font-size: 0.9rem;
       font-weight: 500;
+      width: 100%;
     }
     .status-circle {
       width: 22px;
@@ -48,68 +60,28 @@
       color: white;
       flex-shrink: 0;
     }
-    /* Status Colors */
     .status-green { background: #4caf50; }
     .status-red { background: #d32f2f; }
     .status-grey { background: #9ca3af; }
 
-    /* ---------- MIDDLE (DETAILS) ---------- */
-    .order-status-middle {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 0.95rem;
+    /* Cancelled State */
+    .order-cancelled .status-item { color: #9ca3af; }
+    .order-cancelled .status-item.cancelled {
+      color: #ef4444 !important;
     }
-    .muted { color: var(--muted); }
-    .price-line { font-weight: 600; color: var(--accent); }
-
-    /* ---------- RIGHT (STATUS INDICATOR) ---------- */
-    .order-status-right {
-      flex: 0 0 140px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-end;
-      font-weight: 600;
-      font-size: 1rem;
+    .order-cancelled .status-circle:not(.cancelled) {
+      background: #9ca3af !important;
     }
-    .final-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
-    .final-status.green {
-      background: rgba(34, 197, 94, 0.15);
-      color: #22c55e;
-    }
-    .final-status.red {
-      background: rgba(239, 68, 68, 0.15);
-      color: #ef4444;
-    }
-    .final-status-icon {
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-
-    /* ---------- CANCELLED STATE ---------- */
-    .order-cancelled .status-item { color: #9ca3af !important; }
-    .order-cancelled .status-circle { background: #9ca3af !important; }
 
     /* Responsive */
     @media (max-width: 768px) {
       .order-status-card { flex-direction: column; }
-      .order-status-left, .order-status-right { flex: none; align-items: flex-start; }
-      .order-status-right { align-items: flex-end; margin-top: 12px; }
+      .order-status-right { align-items: stretch; }
     }
   </style>
 </head>
 <body>
-<!-- [Header, Form, Notice, Footer – unchanged] -->
+
 <header class="site-header">
   <nav>
     <a href="index.html" class="logo"><img src="logo.png" alt="Logo" style="height:40px;"></a>
@@ -120,6 +92,7 @@
     </div>
   </nav>
 </header>
+
 <div class="container">
   <h1>Order Status</h1>
   <form id="status-form" class="form">
@@ -132,8 +105,8 @@
   <div id="order-result" class="order-result"></div>
 </div>
 
-<!-- [Notice & Footer – unchanged] -->
-<!-- ... (your notice section and footer here) ... -->
+<!-- Notice & Footer unchanged -->
+<!-- ... your notice and footer ... -->
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
@@ -163,8 +136,7 @@
       }
 
       const prodSnap = await getDocs(collection(db, 'products'));
-      const prodMap = {};
-      prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
+      const prodMap = {}; prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
 
       const grid = document.createElement('div');
       grid.className = 'orders-grid';
@@ -182,59 +154,54 @@
         const card = document.createElement('div');
         card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
 
-        // Build left status items (progress bar)
+        // Build FULL status timeline for RIGHT side
         let statusHTML = '';
         statusOrder.forEach((st, i) => {
           const isCurrent = i === curIdx;
           const isCompleted = i < curIdx && !cancelled;
           const isCancelled = st === 'Cancelled' && cancelled;
+
           let icon = '';
           let colorClass = 'status-grey';
+          let textColor = '#9ca3af';
+
           if (isCancelled) {
             icon = '✗';
             colorClass = 'status-red';
+            textColor = '#ef4444';
           } else if (isCompleted || (isCurrent && st !== 'Cancelled')) {
             icon = '✓';
             colorClass = 'status-green';
-          } else {
-            icon = '';
+            textColor = '#22c55e';
           }
+
+          const cancelledClass = isCancelled ? 'cancelled' : '';
+
           statusHTML += `
-            <div class="status-item" style="color:${isCancelled ? '#ef4444' : isCompleted || (isCurrent && !cancelled) ? '#22c55e' : '#9ca3af'};">
+            <div class="status-item ${cancelledClass}" style="color:${cancelled ? '#ef4444' : textColor};">
               <div class="status-circle ${colorClass}">${icon}</div>
               <span>${st}</span>
             </div>`;
         });
 
-        // Right-side final status with Checkmark/Crossmark and colored background
-        const isActiveStatus = ['Pending', 'Processing', 'Dispatched', 'Delivered'].includes(curStat);
-        const statusColorClass = cancelled ? 'red' : 'green';
-        const statusIcon = cancelled ? '✗' : '✓';
-
         card.innerHTML = `
-          <!-- Status on Left -->
+          <!-- LEFT: Product Details -->
           <div class="order-status-left">
-            ${statusHTML}
-          </div>
-          <!-- Middle: Product Details -->
-          <div class="order-status-middle">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
             <div class="muted">Quantity: ${order.quantity}</div>
             <div class="price-line">
               Paid: ৳${order.paid}
-              ${order.due > 0 ? `<span class="due"> (Due: ৳${order.due})</span>` : ''}
+              ${order.due > 0 ? `<span style="color:#d32f2f"> (Due: ৳${order.due})</span>` : ''}
             </div>
             <div class="muted">${avail}</div>
             <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
             <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
           </div>
-          <!-- Right: Final Status with Icon + Text -->
+
+          <!-- RIGHT: FULL STATUS TIMELINE -->
           <div class="order-status-right">
-            <div class="final-status ${statusColorClass}">
-              <span class="final-status-icon">${statusIcon}</span>
-              <span>${curStat}</span>
-            </div>
+            ${statusHTML}
           </div>
         `;
         grid.appendChild(card);
@@ -243,10 +210,7 @@
       result.appendChild(grid);
     } catch (err) {
       console.error(err);
-      const url = err.message.match(/https:\/\/[^\s]+/)?.[0];
-      result.innerHTML = url
-        ? `<p style="color:var(--danger);">Index missing! <a href="${url}" target="_blank" style="color:blue;">Fix here</a></p>`
-        : `<p style="color:var(--danger);">Error: ${err.message}</p>`;
+      result.innerHTML = `<p style="color:var(--danger);">Error: ${err.message}</p>`;
     }
   });
 </script>
