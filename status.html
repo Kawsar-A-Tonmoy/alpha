@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Status</title>
- <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
@@ -15,33 +15,35 @@
 </head>
 <body>
 <header class="site-header">
-     <nav>
-      <a href="index.html" class="logo">
-        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
-      </a>
-      <div class="nav-links">
-        <a href="index.html">Products</a>
-        <a href="status.html">Order Status</a>
-        <a href="admin.html">Admin</a>
-      </div>
-    </nav>
-  </header>
+  <nav>
+    <a href="index.html" class="logo">
+      <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Products</a>
+      <a href="status.html">Order Status</a>
+      <a href="admin.html">Admin</a>
+    </div>
+  </nav>
+</header>
 
-  <div class="container">
-    <h1>Order Status</h1>
-    <form id="status-form" class="form">
-      <div>
-        <label>Transaction ID</label>
-        <input id="txn-id" required>
-      </div>
-      <button type="submit">Check Status</button>
-    </form>
-  </div>
+<div class="container">
+  <h1>Order Status</h1>
+  <form id="status-form" class="form">
+    <div>
+      <label>Phone Number</label>
+      <input id="phone-input" type="tel" placeholder="01XXXXXXXXX" required>
+    </div>
+    <button type="submit">Check Orders</button>
+  </form>
 
-    <section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
+  <div id="order-results" class="order-history-container"></div>
+</div>
+
+<section class="notice-section">
   <!-- Left card -->
-  <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>📢 Important Notice</h3>
+  <div class="notice-card card">
+    <h3>Important Notice</h3>
     <p class="muted">
       Please ensure all order details are entered correctly before confirmation.  
       Double-check your <b>address</b>, <b>contact number</b>, and <b>product selection</b> to avoid delays.  
@@ -50,8 +52,8 @@
   </div>
 
   <!-- Middle full-length policy card -->
-  <div class="notice-card card" style="flex: 2; text-align: left;">
-    <h2>📦 Shipping & 🔄 Return Policy</h2>
+  <div class="notice-card card">
+    <h2>Shipping & Return Policy</h2>
     
     <h3>1. Order Processing & Dispatch</h3>
     <ul>
@@ -98,38 +100,30 @@
   </div>
 
   <!-- Right card -->
-  <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>💬 Support</h3>
+  <div class="notice-card card">
+    <h3>Support</h3>
     <p class="muted">
       For assistance, please reach us via:<br><br>
-      ▪ Facebook: <a href="https://www.facebook.com/thegeek.shop0/" target="_blank">The Geek Shop</a><br>
-      ▪ Instagram: <a href="https://www.instagram.com/thegeek.shop0/" target="_blank">@thegeekshop</a><br>
-      ▪ WhatsApp: <a href="https://wa.me/01960788862" target="_blank">WhatsApp</a>
+      Facebook: <a href="https://www.facebook.com/thegeek.shop0/" target="_blank">The Geek Shop</a><br>
+      Instagram: <a href="https://www.instagram.com/thegeek.shop0/" target="_blank">@thegeekshop</a><br>
+      WhatsApp: <a href="https://wa.me/01960788862" target="_blank">WhatsApp</a>
     </p>
   </div>
 </section>
 
-
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+<footer>
   <div>
-    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank">
       <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
     </a>
-    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank">
       <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
     </a>
-        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
-      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    <a href="https://wa.me/01960788862" target="_blank">
+      <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
     </a>
   </div>
- 
   <p>&copy; All rights reserved by The Geek Shop</p>
 </footer>
 </body>
-
 </html>
-
-
-
-
-
