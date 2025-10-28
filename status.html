@@ -64,19 +64,18 @@
 
     /* CANCELLED STATE: Only Cancelled = RED, others = GRAY */
     .order-cancelled .status-item {
-      color: #9ca3af; /* Default: all gray */
+      color: #9ca3af;
     }
     .order-cancelled .status-item.cancelled {
-      color: #ef4444 !important; /* Cancelled text = RED */
+      color: #ef4444 !important;
     }
     .order-cancelled .status-circle {
-      background: #9ca3af !important; /* All circles gray */
+      background: #9ca3af !important;
     }
     .order-cancelled .status-circle.cancelled {
-      background: #d32f2f !important; /* Cancelled circle = RED */
+      background: #d32f2f !important;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .order-status-card { flex-direction: column; }
       .order-status-right { align-items: stretch; }
@@ -239,7 +238,7 @@
         const card = document.createElement('div');
         card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
 
-        // Build FULL status timeline for RIGHT side
+        // Build status timeline
         let statusHTML = '';
         statusOrder.forEach((st, i) => {
           const isCurrent = i === curIdx;
@@ -252,12 +251,12 @@
           let itemClass = '';
 
           if (isCancelled) {
-            icon = 'Cross';
+            icon = 'Cross';           // Real Cross symbol
             colorClass = 'status-red cancelled';
             textColor = '#ef4444';
             itemClass = 'cancelled';
           } else if (isCompleted || (isCurrent && !cancelled)) {
-            icon = 'Checkmark';
+            icon = 'Checkmark';       // Real Checkmark symbol
             colorClass = 'status-green';
             textColor = '#22c55e';
           }
@@ -270,7 +269,6 @@
         });
 
         card.innerHTML = `
-          <!-- LEFT: Product Details -->
           <div class="order-status-left">
             <div><strong>${order.productName}</strong></div>
             <div class="muted">Color: ${order.color || '—'}</div>
@@ -283,7 +281,6 @@
             <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
             <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
           </div>
-          <!-- RIGHT: FULL STATUS TIMELINE -->
           <div class="order-status-right">
             ${statusHTML}
           </div>
