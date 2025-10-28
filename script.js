@@ -114,7 +114,7 @@ function createProductCard(p) {
     <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
     <div class="badges">
       ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
-      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
+      ${p.category === 'hot' ? `<span class="badge hot">HOT Deal</span>` : ``}
       ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
       ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
       ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
@@ -920,4 +920,5 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   }
+
 });
