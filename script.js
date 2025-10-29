@@ -78,21 +78,18 @@ function createShimmerCard() {
   return card;
 }
 
-// Shimmer for main product image
 function createMainImageShimmer() {
   const img = document.createElement('div');
   img.className = 'shimmer-image-placeholder';
   return img;
 }
 
-// Shimmer for thumbnail gallery
 function createThumbnailShimmer() {
   const thumb = document.createElement('div');
   thumb.className = 'thumbnail shimmer-thumbnail';
   return thumb;
 }
 
-// Shimmer for product info lines
 function createInfoLineShimmer() {
   const line = document.createElement('div');
   line.className = 'shimmer-line';
@@ -100,7 +97,7 @@ function createInfoLineShimmer() {
 }
 
 // ====== PRODUCT CARD ======
-function createProductCard(p) {
+function createProductCard(p, products) {
   const isUpcoming = p.availability === 'Upcoming';
   const isOOS = !isUpcoming && Number(p.stock) <= 0 && p.availability !== 'Pre Order';
   const isPreOrder = p.availability === 'Pre Order';
@@ -108,40 +105,7 @@ function createProductCard(p) {
   const price = Number(p.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
   const images = p.images || [];
-  const card = document.createElement('div');
-  card.className = 'card product-card';
-  card.innerHTML = `
-    <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
-    <div class="badges">
-      ${p.category === 'new' ? `<span class="badge new">NEW</span>` : ``}
-      ${p.category === 'hot' ? `<span class="badge hot">HOT</span>` : ``}
-      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ``}
-      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ``}
-      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ``}
-    </div>
-    <h3>${p.name}</h3>
-    <div class="muted">Color: ${p.color || '-'}</div>
-    <div class="price">
-      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ``}৳${finalPrice.toFixed(2)}`}
-    </div>
-    <button class="view-details-btn">View Details</button>
-  `;
-  card.querySelector('.view-details-btn').addEventListener('click', () => {
-    window.location.href = `product.html?id=${p.id}`;
-  });
-  return card;
-}
 
-function createCategoryCard(c) {
-  const card = document.createElement('div');
-  card.className = 'card category-card';
-  card.style.backgroundImage = `url(${c.bg})`;
-  card.innerHTML = `<h3>${c.name}</h3>`;
-  card.addEventListener('click', () => {
-    window.location.href = `products.html?category=${encodeURIComponent(c.name)}`;
-  });
-  return card;
-}
   // Generate slug
   const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
   let slug = p.name.toLowerCase().replace(/\s+/g, '-');
@@ -183,26 +147,24 @@ function createCategoryCard(c) {
   });
   return card;
 }
+
 // ====== PAGE INIT ======
 async function initHomePage() {
   const interestSection = document.getElementById('interest-products');
   const categoriesSection = document.getElementById('categories');
   if (!interestSection || !categoriesSection) return;
 
-  // Render categories
   categories.forEach(c => categoriesSection.appendChild(createCategoryCard(c)));
 
-  // Show shimmer placeholders
   for (let i = 0; i < 4; i++) {
     interestSection.appendChild(createShimmerCard());
   }
 
-  // Render interest products
   const products = await loadProducts();
-  interestSection.innerHTML = ''; // Clear placeholders
+  interestSection.innerHTML = '';
   const eligible = products.filter(p => p.availability !== 'Upcoming');
   const random4 = shuffle(eligible).slice(0, 4);
-  random4.forEach(p => interestSection.appendChild(createProductCard(p)));
+  random4.forEach(p => interestSection.appendChild(createProductCard(p, products)));
   setupImageViewer();
 }
 
@@ -216,23 +178,21 @@ async function initProductsPage() {
   if (category) title.innerText = category;
   else title.innerText = 'All Products';
 
-  // Show shimmer placeholders
   for (let i = 0; i < 8; i++) {
     list.appendChild(createShimmerCard());
   }
 
-  // Load and render products
   const products = await loadProducts();
-  list.innerHTML = ''; // Clear placeholders
+  list.innerHTML = '';
   const filtered = category ? products.filter(p => p.category === category) : products;
-  filtered.forEach(p => list.appendChild(createProductCard(p)));
+  filtered.forEach(p => list.appendChild(createProductCard(p, products)));
   setupImageViewer();
 }
 
 async function initProductPage() {
   const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-  if (!id) {
+  const urlSlug = urlParams.get('slug');
+  if (!urlSlug) {
     alert('Product not found');
     return;
   }
@@ -247,7 +207,6 @@ async function initProductPage() {
   const descEl = document.getElementById('product-desc');
   const orderRow = document.getElementById('order-row');
 
-  // Insert shimmer placeholders
   mainImg.parentNode.replaceChild(createMainImageShimmer(), mainImg);
   nameEl.innerHTML = '';
   nameEl.appendChild(createInfoLineShimmer());
@@ -273,12 +232,10 @@ async function initProductPage() {
   btnShimmer.className = 'shimmer-button';
   orderRow.appendChild(btnShimmer);
 
-  // Thumbnails shimmer
   for (let i = 0; i < 3; i++) {
     thumbnailGallery.appendChild(createThumbnailShimmer());
   }
 
-  // === SHIMMER FOR OTHER PRODUCTS ===
   const otherSection = document.getElementById('other-products');
   for (let i = 0; i < 4; i++) {
     otherSection.appendChild(createShimmerCard());
@@ -286,7 +243,18 @@ async function initProductPage() {
 
   // === LOAD DATA ===
   const products = await loadProducts();
-  const product = products.find(p => p.id === id);
+  let product = null;
+  for (const p of products) {
+    const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
+    let slug = p.name.toLowerCase().replace(/\s+/g, '-');
+    if (sameName.length > 1 && p.color) {
+      slug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
+    }
+    if (slug === urlSlug) {
+      product = p;
+      break;
+    }
+  }
   if (!product) {
     alert('Product not found');
     return;
@@ -302,28 +270,21 @@ async function initProductPage() {
   document.getElementById('canonical-link').href = `/product/${slug}`;
 
   const images = product.images || [];
-
-  // Replace main image
   const realMainImg = document.createElement('img');
   realMainImg.id = 'main-image';
   realMainImg.src = images[0] || '';
   realMainImg.alt = product.name;
   document.querySelector('.shimmer-image-placeholder').parentNode.replaceChild(realMainImg, document.querySelector('.shimmer-image-placeholder'));
 
-  // Replace name
   nameEl.innerHTML = product.name;
-
-  // Replace color
   colorEl.innerText = `Color: ${product.color || '-'}`;
 
-  // Replace price
   const isUpcoming = product.availability === 'Upcoming';
   const hasDiscount = Number(product.discount) > 0;
   const price = Number(product.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
   priceEl.innerHTML = isUpcoming ? 'TBA' : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`;
 
-  // Replace badges
   badgesEl.innerHTML = `
     ${product.category === 'new' ? `<span class="badge new">NEW</span>` : ''}
     ${product.category === 'hot' ? `<span class="badge hot">HOT</span>` : ''}
@@ -332,10 +293,8 @@ async function initProductPage() {
     ${product.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
   `;
 
-  // Replace description
   descEl.innerText = product.description || '';
 
-  // Replace order button
   const button = document.createElement('button');
   if (isUpcoming) {
     button.textContent = 'Upcoming - Stay Tuned';
@@ -354,7 +313,6 @@ async function initProductPage() {
   orderRow.innerHTML = '';
   orderRow.appendChild(button);
 
-  // Replace thumbnails
   thumbnailGallery.innerHTML = '';
   if (images.length > 1) {
     images.slice(1).forEach(src => {
@@ -367,13 +325,11 @@ async function initProductPage() {
     });
   }
 
-  // === REPLACE OTHER PRODUCTS SHIMMER ===
   otherSection.innerHTML = '';
-  const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== id);
+  const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== product.id);
   const random4 = shuffle(eligible).slice(0, 4);
-  random4.forEach(p => otherSection.appendChild(createProductCard(p)));
+  random4.forEach(p => otherSection.appendChild(createProductCard(p, products)));
 
-  // === SETUP INTERACTIONS ===
   document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
   const form = document.getElementById('checkout-form');
   form.addEventListener('submit', submitCheckoutOrder);
@@ -419,11 +375,8 @@ function setupImageViewer() {
 // ====== DELIVERY CHARGE LOGIC ======
 function calculateDeliveryFee(address) {
   const lowerAddr = address.toLowerCase();
-  if (lowerAddr.includes("savar")) {
-    return 70;
-  } else if (lowerAddr.includes("dhaka")) {
-    return 110;
-  }
+  if (lowerAddr.includes("savar")) return 70;
+  else if (lowerAddr.includes("dhaka")) return 110;
   return 150;
 }
 
@@ -440,9 +393,11 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   const products = await loadProducts();
   const p = products.find(x => x.id === productId);
   if (!p) return;
+
   const price = p.price === 'TBA' ? 0 : Number(p.price) || 0;
   const discount = Number(p.discount) || 0;
   const unit = price - discount;
+
   document.getElementById('co-product-id').value = p.id;
   document.getElementById('co-product-name').value = p.name;
   document.getElementById('co-color').value = p.color || '';
@@ -462,26 +417,59 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   document.getElementById('co-policy').checked = false;
   document.getElementById('co-pay-now').style.display = 'none';
   document.getElementById('co-due-amount').style.display = 'none';
-  document.getElementById('co-delivery').value = `Delivery Charge = ${DELIVERY_FEE}`;
-  document.getElementById('co-delivery').dataset.fee = DELIVERY_FEE;
+
+  const deliveryFee = calculateDeliveryFee('');
+  document.getElementById('co-delivery').value = `Delivery Charge = ${deliveryFee}`;
+  document.getElementById('co-delivery').dataset.fee = deliveryFee;
+
   if (isPreOrder) {
     const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
-    document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
-    document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
-    document.getElementById('co-payment-number').value = BKASH_NUMBER;
-    document.getElementById('co-note').textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    document.getElementById('co-pay-now').value = preOrderPrice + deliveryFee;
     document.getElementById('co-pay-now').style.display = 'block';
+    document.getElementById('co-due-amount').value = unit - preOrderPrice;
     document.getElementById('co-due-amount').style.display = 'block';
+    document.getElementById('co-note').textContent = 'For pre-orders, 25% advance payment is required.';
+    document.getElementById('co-payment-number').value = BKASH_NUMBER;
+  } else {
+    document.getElementById('co-payment-number').value = '';
   }
+
+  document.getElementById('co-total').value = 'Calculating...';
+  document.getElementById('checkout-modal').classList.add('show');
   updateTotalInModal();
-  const modal = document.getElementById('checkout-modal');
-  modal.classList.add('show');
 }
 
 function closeCheckoutModal() {
-  const modal = document.getElementById('checkout-modal');
-  modal.classList.remove('show');
+  document.getElementById('checkout-modal').classList.remove('show');
+}
+
+function handlePaymentChange(e) {
+  const val = e.target.value;
+  const payNowEl = document.getElementById('co-pay-now');
+  const dueEl = document.getElementById('co-due-amount');
+  const txnEl = document.getElementById('co-txn');
+  const paymentNumberEl = document.getElementById('co-payment-number');
+
+  if (val === 'Bkash') {
+    payNowEl.style.display = 'block';
+    dueEl.style.display = 'block';
+    txnEl.required = true;
+    paymentNumberEl.value = BKASH_NUMBER;
+    paymentNumberEl.required = true;
+  } else if (val === 'Cash on Delivery') {
+    payNowEl.style.display = 'none';
+    dueEl.style.display = 'none';
+    txnEl.required = false;
+    paymentNumberEl.value = COD_NUMBER;
+    paymentNumberEl.required = false;
+  } else {
+    payNowEl.style.display = 'none';
+    dueEl.style.display = 'none';
+    txnEl.required = false;
+    paymentNumberEl.value = '';
+    paymentNumberEl.required = false;
+  }
+  updateTotalInModal();
 }
 
 function updateTotalInModal() {
@@ -491,95 +479,41 @@ function updateTotalInModal() {
   const subtotal = qty * unit;
   const total = subtotal + delivery;
   document.getElementById('co-total').value = total.toFixed(2);
-  const paymentMethod = document.getElementById('co-payment').value;
-  const isPreOrderMode = paymentMethod === 'Bkash' && document.getElementById('co-payment').disabled;
-  const payNowEl = document.getElementById('co-pay-now');
-  const dueEl = document.getElementById('co-due-amount');
-  if (isPreOrderMode) {
-    const upfrontPercent = 0.25;
-    const upfront = Math.round((subtotal * upfrontPercent) / 5) * 5;
-    payNowEl.value = upfront.toFixed(2);
-    dueEl.value = (subtotal + delivery - upfront).toFixed(2);
-    payNowEl.style.display = 'block';
-    dueEl.style.display = 'block';
-  } else if (paymentMethod) {
-    const payNow = paymentMethod === 'Bkash' ? total : delivery;
-    const dueAmount = paymentMethod === 'Bkash' ? 0 : subtotal;
-    payNowEl.value = payNow.toFixed(2);
-    dueEl.value = dueAmount.toFixed(2);
-    payNowEl.style.display = 'block';
-    dueEl.style.display = 'block';
-  } else {
-    payNowEl.style.display = 'none';
-    dueEl.style.display = 'none';
-  }
-}
 
-function handlePaymentChange(e) {
-  const method = e.target.value;
-  const payNowEl = document.getElementById('co-pay-now');
-  const dueEl = document.getElementById('co-due-amount');
-  const paymentNumberEl = document.getElementById('co-payment-number');
-  const txnEl = document.getElementById('co-txn');
-  const noteEl = document.getElementById('co-note');
-
-  if (method === 'Bkash') {
-    paymentNumberEl.value = BKASH_NUMBER;
-    noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
-    txnEl.required = true;
-  } else if (method === 'Cash on Delivery') {
-    paymentNumberEl.value = COD_NUMBER;
-    noteEl.textContent = `Pay on delivery to ${COD_NUMBER}.`;
-    txnEl.required = false;
-    txnEl.value = '';
-  } else {
-    paymentNumberEl.value = '';
-    noteEl.textContent = '';
-    txnEl.required = false;
-    txnEl.value = '';
+  const payment = document.getElementById('co-payment').value;
+  if (payment === 'Bkash') {
+    document.getElementById('co-pay-now').value = total.toFixed(2);
+    document.getElementById('co-due-amount').value = '0.00';
+  } else if (payment === 'Cash on Delivery') {
+    document.getElementById('co-pay-now').value = '0.00';
+    document.getElementById('co-due-amount').value = total.toFixed(2);
   }
-  updateTotalInModal();
 }
 
 async function submitCheckoutOrder(e) {
   e.preventDefault();
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true;
+
   if (!document.getElementById('co-policy').checked) {
     alert('Please agree to the order policy.');
     btn.disabled = false;
     return;
   }
+
   const productId = document.getElementById('co-product-id').value;
   const qty = Number(document.getElementById('co-qty').value);
   const available = Number(document.getElementById('co-available-stock').value);
-  if (!productId) {
-    alert('Product ID is missing.');
-    btn.disabled = false;
-    return;
-  }
-  if (qty <= 0) {
-    alert('Quantity must be at least 1.');
-    btn.disabled = false;
-    return;
-  }
-  if (qty > available && available !== -1) {
-    alert(`Quantity exceeds available stock of ${available}.`);
-    btn.disabled = false;
-    return;
-  }
+  if (!productId) { alert('Product ID is missing.'); btn.disabled = false; return; }
+  if (qty <= 0) { alert('Quantity must be at least 1.'); btn.disabled = false; return; }
+  if (qty > available && available !== -1) { alert(`Quantity exceeds available stock of ${available}.`); btn.disabled = false; return; }
+
   const unit = Number(document.getElementById('co-unit-price-raw').value);
-  if (isNaN(unit)) {
-    alert('Invalid unit price.');
-    btn.disabled = false;
-    return;
-  }
+  if (isNaN(unit)) { alert('Invalid unit price.'); btn.disabled = false; return; }
+
   const delivery = Number(document.getElementById('co-delivery').dataset.fee);
-  if (isNaN(delivery)) {
-    alert('Invalid delivery fee.');
-    btn.disabled = false;
-    return;
-  }
+  if (isNaN(delivery)) { alert('Invalid delivery fee.'); btn.disabled = false; return; }
+
   const total = (qty * unit) + delivery;
   const orderData = {
     timeISO: new Date().toISOString(),
@@ -600,33 +534,37 @@ async function submitCheckoutOrder(e) {
     transactionId: document.getElementById('co-txn').value.trim().toUpperCase(),
     status: 'Pending'
   };
+
   if (!orderData.customerName || !orderData.phone || !orderData.address || !orderData.paymentMethod) {
     alert('Please fill all required fields.');
     btn.disabled = false;
     return;
   }
+
   if (orderData.paymentMethod === 'Bkash' && (!orderData.paymentNumber || !orderData.transactionId)) {
     alert('Please provide payment number and transaction ID for Bkash.');
     btn.disabled = false;
     return;
   }
+
   try {
     await runTransaction(db, async (transaction) => {
       const productRef = doc(db, 'products', productId);
       const productSnap = await transaction.get(productRef);
-      if (!productSnap.exists()) {
-        throw new Error('Product not found.');
-      }
+      if (!productSnap.exists()) throw new Error('Product not found.');
+
       const currentStock = Number(productSnap.data().stock);
       if (currentStock !== -1 && currentStock < qty && productSnap.data().availability !== 'Pre Order') {
         throw new Error(`Insufficient stock. Only ${currentStock} available.`);
       }
+
       if (currentStock !== -1 && productSnap.data().availability !== 'Pre Order') {
-        const newStock = currentStock - qty;
-        transaction.update(productRef, { stock: Number(newStock) });
+        transaction.update(productRef, { stock: currentStock - qty });
       }
+
       await addDoc(collection(db, 'orders'), orderData);
     });
+
     alert('Order placed successfully!');
     closeCheckoutModal();
   } catch (err) {
@@ -641,7 +579,7 @@ async function submitCheckoutOrder(e) {
 async function addProduct(e) {
   e.preventDefault();
   const data = {
-    name: document.getElementById('add-name').value.trim(),
+    name: document.getElementById('add-name').value.trim(), 
     price: document.getElementById('add-price').value.trim() === 'TBA' ? 'TBA' : Number(document.getElementById('add-price').value) || 0,
     discount: Number(document.getElementById('add-discount').value) || 0,
     images: document.getElementById('add-images').value.split(',').map(u => u.trim()).filter(u => u),
@@ -678,7 +616,6 @@ async function renderDataTable() {
   ];
   products.forEach(p => {
     const tr = document.createElement('tr');
-    // Toggle details
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
     tdToggle.innerHTML = 'Down Arrow';
@@ -689,7 +626,7 @@ async function renderDataTable() {
       e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
     });
     tr.appendChild(tdToggle);
-    // Main columns
+
     cols.forEach(col => {
       const td = document.createElement('td');
       td.contentEditable = true;
@@ -727,12 +664,12 @@ async function renderDataTable() {
       });
       tr.appendChild(td);
     });
-    // Status column
+
     const tdStatus = document.createElement('td');
     tdStatus.dataset.status = '1';
     tdStatus.textContent = computeStatus(p);
     tr.appendChild(tdStatus);
-    // Actions column
+
     const tdActions = document.createElement('td');
     const del = document.createElement('button');
     del.className = 'danger';
@@ -743,7 +680,7 @@ async function renderDataTable() {
     tdActions.appendChild(del);
     tr.appendChild(tdActions);
     tbody.appendChild(tr);
-    // Details row for Image URLs and Description
+
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
@@ -808,7 +745,6 @@ async function renderOrdersTable() {
   tbody.innerHTML = '';
   orders.forEach(o => {
     const tr = document.createElement('tr');
-    // Toggle button cell
     const tdToggle = document.createElement('td');
     tdToggle.className = 'toggle-details';
     tdToggle.innerHTML = 'Down Arrow';
@@ -819,7 +755,7 @@ async function renderOrdersTable() {
       e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
     });
     tr.appendChild(tdToggle);
-    // Main columns
+
     const tds = [
       new Date(o.timeISO).toLocaleString(),
       o.productName,
@@ -839,7 +775,7 @@ async function renderOrdersTable() {
       td.textContent = v;
       tr.appendChild(td);
     });
-    // Status dropdown
+
     const tdStatus = document.createElement('td');
     const select = document.createElement('select');
     ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'].forEach(opt => {
@@ -863,7 +799,7 @@ async function renderOrdersTable() {
     tdStatus.appendChild(select);
     tr.appendChild(tdStatus);
     tbody.appendChild(tr);
-    // Details row for Unit Price
+
     const detailsRow = document.createElement('tr');
     detailsRow.className = 'details-row';
     const detailsCell = document.createElement('td');
@@ -924,11 +860,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isProducts) await initProductsPage();
   if (isProduct) await initProductPage();
   if (isStatus) setupStatusForm();
-  // Admin page
+
   const loginPanel = document.getElementById('login-panel');
   const adminPanel = document.getElementById('admin-panel');
   const addForm = document.getElementById('add-product-form');
   if (addForm) addForm.addEventListener('submit', addProduct);
+
   if (loginPanel && adminPanel) {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -943,13 +880,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         adminPanel.style.display = 'none';
       }
     });
+
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('admin-email').value;
         const pass = document.getElementById('admin-pass').value;
-        console.log('Attempting login with email:', email);
         try {
           await signInWithEmailAndPassword(auth, email, pass);
           console.log('Login successful');
