@@ -422,9 +422,15 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   document.getElementById('co-delivery').value = `Delivery Charge = ${deliveryFee}`;
   document.getElementById('co-delivery').dataset.fee = deliveryFee;
 
-  if (isPreOrder) {
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
-    document.getElementById('co-pay-now').value = preOrderPrice + deliveryFee;
+      const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
+
+    document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
+
+    document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
+
+    document.getElementById('co-payment-number').value = BKASH_NUMBER;
+
+    document.getElementById('co-note').textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
     document.getElementById('co-pay-now').style.display = 'block';
     document.getElementById('co-due-amount').value = unit - preOrderPrice;
     document.getElementById('co-due-amount').style.display = 'block';
@@ -480,15 +486,95 @@ function updateTotalInModal() {
   const total = subtotal + delivery;
   document.getElementById('co-total').value = total.toFixed(2);
 
-  const payment = document.getElementById('co-payment').value;
-  if (payment === 'Bkash') {
-    document.getElementById('co-pay-now').value = total.toFixed(2);
-    document.getElementById('co-due-amount').value = '0.00';
-  } else if (payment === 'Cash on Delivery') {
-    document.getElementById('co-pay-now').value = '0.00';
-    document.getElementById('co-due-amount').value = total.toFixed(2);
+  const paymentMethod = document.getElementById('co-payment').value;
+
+  const isPreOrderMode = paymentMethod === 'Bkash' && document.getElementById('co-payment').disabled;
+
+  const payNowEl = document.getElementById('co-pay-now');
+
+  const dueEl = document.getElementById('co-due-amount');
+
+  if (isPreOrderMode) {
+
+    const upfrontPercent = 0.25;
+
+    const upfront = Math.round((subtotal * upfrontPercent) / 5) * 5;
+
+    payNowEl.value = upfront.toFixed(2);
+
+    dueEl.value = (subtotal + delivery - upfront).toFixed(2);
+
+    payNowEl.style.display = 'block';
+
+    dueEl.style.display = 'block';
+
+  } else if (paymentMethod) {
+
+    const payNow = paymentMethod === 'Bkash' ? total : delivery;
+
+    const dueAmount = paymentMethod === 'Bkash' ? 0 : subtotal;
+
+    payNowEl.value = payNow.toFixed(2);
+
+    dueEl.value = dueAmount.toFixed(2);
+
+    payNowEl.style.display = 'block';
+
+    dueEl.style.display = 'block';
+
+  } else {
+
+    payNowEl.style.display = 'none';
+
+    dueEl.style.display = 'none';
+
   }
+
 }
+
+
+
+function handlePaymentChange(e) {
+
+  const method = e.target.value;
+
+  const payNowEl = document.getElementById('co-pay-now');
+
+  const dueEl = document.getElementById('co-due-amount');
+
+  const paymentNumberEl = document.getElementById('co-payment-number');
+
+  const txnEl = document.getElementById('co-txn');
+
+  const noteEl = document.getElementById('co-note');
+
+
+
+  if (method === 'Bkash') {
+    paymentNumberEl.value = BKASH_NUMBER;
+    noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    txnEl.required = true;
+  } 
+else if (method === 'Cash on Delivery') {
+    paymentNumberEl.value = COD_NUMBER;
+    noteEl.textContent = `Pay on delivery to ${COD_NUMBER}.`;
+    txnEl.required = false;
+    txnEl.value = '';
+
+  } 
+
+else {
+    paymentNumberEl.value = '';
+    noteEl.textContent = '';
+    txnEl.required = false;
+    txnEl.value = '';
+  }
+
+  updateTotalInModal();
+
+}
+
+
 
 async function submitCheckoutOrder(e) {
   e.preventDefault();
