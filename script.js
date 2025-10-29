@@ -422,7 +422,7 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   document.getElementById('co-delivery').value = `Delivery Charge = ${deliveryFee}`;
   document.getElementById('co-delivery').dataset.fee = deliveryFee;
 
-      const deliveryFee = Number(document.getElementById('co-delivery').dataset.fee) || DELIVERY_FEE;
+    
 
     document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
 
@@ -984,3 +984,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
+
