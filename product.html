@@ -28,7 +28,7 @@
     </nav>
   </header>
 
-  <main class="container">
+ <main class="container">
     <div id="product-section" class="product-detail">
       <div class="product-images">
         <img id="main-image" src="" alt="">
@@ -36,11 +36,11 @@
       </div>
       <div class="product-info">
         <h1 id="product-name"></h1>
-        <div id="variant-selector" class="variant-selector" style="display: none;">
+        <div id="product-color" class="muted"></div>
+        <div class="variant-selector" id="variant-selector">
           <label id="variant-label"></label>
           <select id="variant-select"></select>
         </div>
-        <div id="product-color" class="muted"></div>
         <div id="product-price" class="price"></div>
         <div id="product-badges" class="badges"></div>
         <p id="product-desc"></p>
@@ -53,7 +53,7 @@
   </main>
 
   <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">×</button>
+    <button id="close-viewer" class="close-viewer">&times;</button>
     <img id="viewer-img" src="" alt="">
   </div>
 
@@ -73,7 +73,7 @@
           </div>
           <div>
             <label>Variant</label>
-            <input id="co-variant" readonly>
+            <input id="co-variant-name" readonly>
           </div>
         </div>
         <div class="row">
@@ -153,20 +153,20 @@
       </form>
     </div>
   </div>
-
-  <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000; font-family: Arial, sans-serif;">
-    <div>
-      <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
-      </a>
-      <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
-      </a>
-      <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
-        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
-      </a>
-    </div>
-    <p>© All rights reserved by The Geek Shop</p>
-  </footer>
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960788862" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>© All rights reserved by The Geek Shop</p>
+</footer>
 </body>
 </html>
