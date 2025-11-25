@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Account</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+     <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a id="login-link" href="user.html">Login</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- LOGIN -->
+    <div id="login-panel" class="card">
+      <h2>Login</h2>
+      <form id="login-form" class="form">
+        <div><label>Email</label><input id="login-email" type="email" required></div>
+        <div><label>Password</label><input id="login-pass" type="password" required></div>
+        <button type="submit">Login</button>
+      </form>
+      <p>No account? <a href="#" id="to-register">Register here</a></p>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-panel" class="card" style="display:none;">
+      <h2>Create Account</h2>
+      <form id="register-form" class="form">
+        <div><label>Name</label><input id="reg-name" required></div>
+        <div><label>Phone</label><input id="reg-phone" type="tel" required></div>
+        <div><label>Address</label><textarea id="reg-address" required></textarea></div>
+        <div><label>Email</label><input id="reg-email" type="email" required></div>
+        <div><label>Password</label><input id="reg-pass" type="password" required></div>
+        <button type="submit">Register</button>
+      </form>
+      <p>Already have account? <a href="#" id="to-login">Login</a></p>
+    </div>
+
+    <!-- VERIFY EMAIL CODE -->
+    <div id="verify-panel" class="card" style="display:none;">
+      <h2>Verify Email</h2>
+      <p>We sent a 4-digit code to your email.</p>
+      <form id="verify-form" class="form">
+        <div><label>Code</label><input id="verify-code" maxlength="4" required></div>
+        <button type="submit">Verify</button>
+      </form>
+    </div>
+
+    <!-- USER DASHBOARD (Cart + Orders) -->
+    <div id="user-dashboard" class="card" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2>Welcome, <span id="user-name-display"></span></h2>
+        <button onclick="logoutUser()">Logout</button>
+      </div>
+
+      <h3>Your Cart</h3>
+      <div id="cart-empty" style="text-align:center;color:var(--muted);display:none;">Cart is empty</div>
+      <div id="cart-table-wrapper" class="table-wrapper" style="display:none;">
+        <table class="data-table">
+          <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Action</th></tr></thead>
+          <tbody id="cart-body"></tbody>
+        </table>
+        <button id="checkout-cart-btn" style="margin-top:10px;">Checkout All Items</button>
+      </div>
+
+      <h3>Your Orders</h3>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="user-orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>
