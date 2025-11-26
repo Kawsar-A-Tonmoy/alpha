@@ -26,7 +26,6 @@
     </nav>
   </header>
 
- 
   <main class="container">
     <div id="login-panel" class="card" style="display: none;">
       <h2>Admin Login</h2>
@@ -49,6 +48,36 @@
         <button onclick="logoutAdmin()">Logout</button>
       </div>
 
+      <!-- Notices Section (Top) -->
+      <h2>Notices</h2>
+      <form id="add-notice-form" class="form">
+        <div class="row">
+          <div>
+            <label>Notice Name</label>
+            <input id="add-notice-name" required>
+          </div>
+          <div>
+            <label>Image URL</label>
+            <input id="add-notice-image" required placeholder="https://...">
+          </div>
+        </div>
+        <button type="submit">Add Notice</button>
+      </form>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Image Preview</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="notices-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Existing Product Section -->
       <h2>Add Product</h2>
       <form id="add-product-form" class="form">
         <div class="row">
@@ -101,20 +130,12 @@
           </div>
         </div>
         <div>
-  <label><input type="checkbox" id="add-hotdeal"> Hot Deal</label>
-</div>
+          <label><input type="checkbox" id="add-hotdeal"> Hot Deal</label>
+        </div>
         <div>
           <label>Description</label>
           <textarea id="add-desc"></textarea>
         </div>
-<div>
-  <label>Meta Description (for SEO)</label>
-  <textarea id="add-meta-desc"></textarea>
-</div>
-<div>
-  <label>Core Description (shown on product page)</label>
-  <textarea id="add-core-desc"></textarea>
-</div>
         <button type="submit">Add Product</button>
       </form>
 
@@ -165,26 +186,6 @@
         </table>
       </div>
     </div>
-
-<h2>Notices (Image Board)</h2>
-<form id="add-notice-form" class="form">
-  <div class="row">
-    <div><label>Notice Name</label><input id="notice-name" required></div>
-    <div><label>Image URL</label><input id="notice-url" required></div>
-  </div>
-  <button type="submit">Add Notice</button>
-</form>
-<div class="table-wrapper">
-  <table class="data-table">
-    <thead><tr><th>Name</th><th>Image</th><th>Actions</th></tr></thead>
-    <tbody id="notices-tbody"></tbody>
-  </table>
-</div>
   </main>
-
 </body>
-
-
 </html>
-
-
