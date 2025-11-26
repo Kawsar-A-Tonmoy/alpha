@@ -110,8 +110,10 @@ function createProductCard(p, products) {
   const finalPrice = hasDiscount ? (price - Number(p.discount)) : price;
   const images = p.images || [];
 
+  // Auto In Stock badge
   const isInStock = Number(p.stock) > 0 && p.availability === 'Ready';
 
+  // Generate slug
   const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
   let slug = p.name.toLowerCase().replace(/\s+/g, '-');
   if (sameName.length > 1 && p.color) {
@@ -152,7 +154,7 @@ function createCategoryCard(c) {
   return card;
 }
 
-// ====== NOTICE SLIDER (HOME PAGE) ======
+// ====== NOTICE SLIDER FOR HOME PAGE ======
 async function initNoticeSlider() {
   const container = document.getElementById('notice-container');
   if (!container) return;
@@ -199,7 +201,7 @@ async function initHomePage() {
   const random4 = shuffle(eligible).slice(0, 4);
   random4.forEach(p => interestSection.appendChild(createProductCard(p, products)));
   setupImageViewer();
-  await initNoticeSlider(); // ← Added notice slider
+  await initNoticeSlider(); // ← Added: Notice slider
 }
 
 async function initProductsPage() {
@@ -228,6 +230,7 @@ async function initProductPage() {
     return;
   }
 
+  // === SHIMMER FOR MAIN PRODUCT ===
   const mainImg = document.getElementById('main-image');
   const thumbnailGallery = document.getElementById('thumbnail-gallery');
   const nameEl = document.getElementById('product-name');
@@ -238,18 +241,38 @@ async function initProductPage() {
   const orderRow = document.getElementById('order-row');
 
   mainImg.parentNode.replaceChild(createMainImageShimmer(), mainImg);
-  nameEl.innerHTML = ''; nameEl.appendChild(createInfoLineShimmer()); nameEl.appendChild(createInfoLineShimmer());
-  colorEl.innerHTML = ''; colorEl.appendChild(createInfoLineShimmer());
-  priceEl.innerHTML = ''; priceEl.appendChild(createInfoLineShimmer());
+  nameEl.innerHTML = '';
+  nameEl.appendChild(createInfoLineShimmer());
+  nameEl.appendChild(createInfoLineShimmer());
+  colorEl.innerHTML = '';
+  colorEl.appendChild(createInfoLineShimmer());
+  priceEl.innerHTML = '';
+  priceEl.appendChild(createInfoLineShimmer());
   badgesEl.innerHTML = '';
-  for (let i = 0; i < 2; i++) { const badge = document.createElement('div'); badge.className = 'shimmer-badge'; badgesEl.appendChild(badge); }
+  for (let i = 0; i < 2; i++) {
+    const badge = document.createElement('div');
+    badge.className = 'shimmer-badge';
+    badgesEl.appendChild(badge);
+  }
   descEl.innerHTML = '';
-  for (let i = 0; i < 3; i++) { const line = createInfoLineShimmer(); line.style.width = `${70 + Math.random() * 20}%`; descEl.appendChild(line); }
-  orderRow.innerHTML = ''; const btnShimmer = document.createElement('div'); btnShimmer.className = 'shimmer-button'; orderRow.appendChild(btnShimmer);
-  for (let i = 0; i < 3; i++) { thumbnailGallery.appendChild(createThumbnailShimmer()); }
+  for (let i = 0; i < 3; i++) {
+    const line = createInfoLineShimmer();
+    line.style.width = `${70 + Math.random() * 20}%`;
+    descEl.appendChild(line);
+  }
+  orderRow.innerHTML = '';
+  const btnShimmer = document.createElement('div');
+  btnShimmer.className = 'shimmer-button';
+  orderRow.appendChild(btnShimmer);
+  for (let i = 0; i < 3; i++) {
+    thumbnailGallery.appendChild(createThumbnailShimmer());
+  }
   const otherSection = document.getElementById('other-products');
-  for (let i = 0; i < 4; i++) { otherSection.appendChild(createShimmerCard()); }
+  for (let i = 0; i < 4; i++) {
+    otherSection.appendChild(createShimmerCard());
+  }
 
+  // === LOAD DATA ===
   const products = await loadProducts();
   let product = null;
   for (const p of products) {
@@ -268,6 +291,7 @@ async function initProductPage() {
     return;
   }
 
+  // === REPLACE MAIN PRODUCT SHIMMER WITH REAL DATA ===
   document.title = product.name;
   const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
   let slug = product.name.toLowerCase().replace(/\s+/g, '-');
@@ -382,7 +406,7 @@ function setupImageViewer() {
   }
 }
 
-// ====== DELIVERY & CHECKOUT (unchanged) ======
+// ====== DELIVERY CHARGE LOGIC ======
 function calculateDeliveryFee(address) {
   const lowerAddr = address.toLowerCase();
   if (lowerAddr.includes("savar")) return 70;
@@ -397,6 +421,7 @@ function updateDeliveryCharge() {
   updateTotalInModal();
 }
 
+// ====== CHECKOUT MODAL FLOW ======
 async function openCheckoutModal(productId, isPreOrder = false) {
   const products = await loadProducts();
   const p = products.find(x => x.id === productId);
@@ -541,7 +566,32 @@ async function submitCheckoutOrder(e) {
   }
 }
 
-// ====== ADMIN: NOTICES ======
+// ====== ADMIN: ADD PRODUCT ======
+async function addProduct(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('add-name').value.trim(),
+    price: document.getElementById('add-price').value.trim() === 'TBA' ? 'TBA' : Number(document.getElementById('add-price').value) || 0,
+    discount: Number(document.getElementById('add-discount').value) || 0,
+    images: document.getElementById('add-images').value.split(',').map(u => u.trim()).filter(u => u),
+    category: document.getElementById('add-category').value,
+    color: document.getElementById('add-color').value.trim(),
+    stock: Number(document.getElementById('add-stock').value) || 0,
+    availability: document.getElementById('add-availability').value,
+    description: document.getElementById('add-desc').value.trim(),
+    hotDeal: !!document.getElementById('add-hotdeal')?.checked
+  };
+  try {
+    await addDoc(collection(db, 'products'), data);
+    e.target.reset();
+    renderDataTable();
+  } catch (err) {
+    console.error('Add product error:', err);
+    alert('Error adding product: ' + err.message);
+  }
+}
+
+// ====== ADMIN: NOTICES TABLE ======
 async function renderNoticesTable() {
   const tbody = document.getElementById('notices-body');
   if (!tbody) return;
@@ -550,7 +600,7 @@ async function renderNoticesTable() {
   notices.forEach(n => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td contenteditable="true" data-id="${n.id}">${n.name}</td>
+      <td contenteditable="true">${n.name}</td>
       <td><img src="${n.image}" alt="Notice" style="width:120px; height:auto; border-radius:6px;"></td>
       <td><button class="danger" onclick="deleteNotice('${n.id}')">Delete</button></td>
     `;
@@ -571,35 +621,280 @@ window.deleteNotice = async (id) => {
   }
 };
 
-// Add Notice Form
+// Add Notice Form Handler
 document.getElementById('add-notice-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('add-notice-name').value.trim();
   const image = document.getElementById('add-notice-image').value.trim();
-  if (!name || !image) return alert('Both fields are required');
+  if (!name || !image) {
+    alert('Both fields are required');
+    return;
+  }
   await addDoc(collection(db, 'notices'), { name, image });
   e.target.reset();
   renderNoticesTable();
 });
 
-// ====== ADMIN: PRODUCTS & ORDERS (unchanged) ======
-async function addProduct(e) { /* ... your original code ... */ }
-async function renderDataTable() { /* ... your original code ... */ }
-function computeStatus(p) { /* ... your original code ... */ }
-async function updateProductField(id, field, value) { /* ... your original code ... */ }
-async function deleteProductById(id) { /* ... your original code ... */ }
-async function renderOrdersTable() { /* ... your original code ... */ }
+// ====== ADMIN: PRODUCTS TABLE ======
+async function renderDataTable() {
+  const tbody = document.getElementById('products-body');
+  if (!tbody) return;
+  const products = await loadProducts();
+  tbody.innerHTML = '';
+  const cols = [
+    { key: 'name' },
+    { key: 'price' },
+    { key: 'category' },
+    { key: 'color' },
+    { key: 'discount' },
+    { key: 'stock' },
+    { key: 'availability' }
+  ];
+  products.forEach(p => {
+    const tr = document.createElement('tr');
+    const tdToggle = document.createElement('td');
+    tdToggle.className = 'toggle-details';
+    tdToggle.innerHTML = 'Down Arrow';
+    tdToggle.addEventListener('click', (e) => {
+      const detailsRow = e.target.closest('tr').nextElementSibling;
+      const isVisible = detailsRow.classList.contains('show');
+      detailsRow.classList.toggle('show', !isVisible);
+      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
+    });
+    tr.appendChild(tdToggle);
 
+    cols.forEach(col => {
+      const td = document.createElement('td');
+      td.contentEditable = true;
+      td.textContent = p[col.key] != null ? String(p[col.key]) : '';
+      td.addEventListener('blur', async (e) => {
+        const val = e.target.textContent.trim();
+        if (val === (p[col.key] != null ? String(p[col.key]) : '')) return;
+
+        let updateValue = val;
+        if (col.key === 'price') {
+          if (val !== 'TBA' && isNaN(Number(val))) {
+            alert('Price must be a number or "TBA".');
+            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
+            return;
+          }
+          updateValue = val === 'TBA' ? 'TBA' : Number(val);
+        } else if (col.key === 'discount' || col.key === 'stock') {
+          if (isNaN(Number(val))) {
+            alert(`${col.key.charAt(0).toUpperCase() + col.key.slice(1)} must be a number.`);
+            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
+            return;
+          }
+          updateValue = Number(val);
+        } else if (col.key === 'availability') {
+          if (!['Ready', 'Pre Order', 'Upcoming'].includes(val)) {
+            alert('Availability must be Ready, Pre Order, or Upcoming.');
+            e.target.textContent = p[col.key] != null ? String(p[col.key]) : '';
+            return;
+          }
+        }
+        await updateProductField(p.id, col.key, updateValue);
+        if (col.key === 'stock' || col.key === 'availability') {
+          const cur = (await loadProducts()).find(x => x.id === p.id);
+          tr.querySelector('td[data-status="1"]').textContent = computeStatus(cur);
+        }
+      });
+      tr.appendChild(td);
+    });
+
+    const tdHotDeal = document.createElement('td');
+    const hotDealInput = document.createElement('input');
+    hotDealInput.type = 'checkbox';
+    hotDealInput.checked = !!p.hotDeal;
+    hotDealInput.addEventListener('change', async () => {
+      await updateProductField(p.id, 'hotDeal', hotDealInput.checked);
+    });
+    tdHotDeal.appendChild(hotDealInput);
+    tr.appendChild(tdHotDeal);
+
+    const tdStatus = document.createElement('td');
+    tdStatus.dataset.status = '1';
+    tdStatus.textContent = computeStatus(p);
+    tr.appendChild(tdStatus);
+
+    const tdActions = document.createElement('td');
+    const del = document.createElement('button');
+    del.className = 'danger';
+    del.textContent = 'Delete';
+    del.addEventListener('click', async () => {
+      if (confirm(`Delete "${p.name}"?`)) await deleteProductById(p.id);
+    });
+    tdActions.appendChild(del);
+    tr.appendChild(tdActions);
+    tbody.appendChild(tr);
+
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'details-row';
+    const detailsCell = document.createElement('td');
+    detailsCell.colSpan = cols.length + 4;
+    detailsCell.className = 'details-content';
+
+    const imagesCell = document.createElement('div');
+    imagesCell.contentEditable = true;
+    imagesCell.textContent = p.images ? p.images.join(', ') : '';
+    imagesCell.addEventListener('blur', async (e) => {
+      const val = e.target.textContent.trim();
+      if (val === (p.images ? p.images.join(', ') : '')) return;
+      const imagesArray = val.split(/,\s*/).map(u => u.trim()).filter(u => u);
+      await updateProductField(p.id, 'images', imagesArray);
+    });
+
+    const descCell = document.createElement('div');
+    descCell.contentEditable = true;
+    descCell.textContent = p.description != null ? p.description : '';
+    descCell.addEventListener('blur', async (e) => {
+      const val = e.target.textContent.trim();
+      if (val === (p.description != null ? String(p.description) : '')) return;
+      await updateProductField(p.id, 'description', val);
+    });
+
+    detailsCell.innerHTML = `<strong>Image URLs (comma-separated):</strong> `;
+    detailsCell.appendChild(imagesCell);
+    detailsCell.innerHTML += `<br><strong>Description:</strong> `;
+    detailsCell.appendChild(descCell);
+    detailsRow.appendChild(detailsCell);
+    tbody.appendChild(detailsRow);
+  });
+}
+function computeStatus(p) {
+  if (p.availability === 'Upcoming') return 'Upcoming';
+  if (p.availability === 'Pre Order') return 'Pre Order';
+  return Number(p.stock) > 0 ? 'In Stock' : 'Out of Stock';
+}
+async function updateProductField(id, field, value) {
+  try {
+    await updateDoc(doc(db, 'products', id), { [field]: value });
+  } catch (err) {
+    console.error('Error updating product:', err);
+    alert('Error updating product: ' + err.message);
+  }
+}
+async function deleteProductById(id) {
+  try {
+    await deleteDoc(doc(db, 'products', id));
+    renderDataTable();
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    alert('Error deleting product: ' + err.message);
+  }
+}
+
+// ====== ADMIN: ORDERS TABLE ======
+async function renderOrdersTable() {
+  const tbody = document.getElementById('orders-body');
+  if (!tbody) return;
+  const orders = await loadOrders();
+  tbody.innerHTML = '';
+  orders.forEach(o => {
+    const tr = document.createElement('tr');
+    const tdToggle = document.createElement('td');
+    tdToggle.className = 'toggle-details';
+    tdToggle.innerHTML = 'Down Arrow';
+    tdToggle.addEventListener('click', (e) => {
+      const detailsRow = e.target.closest('tr').nextElementSibling;
+      const isVisible = detailsRow.classList.contains('show');
+      detailsRow.classList.toggle('show', !isVisible);
+      e.target.textContent = isVisible ? 'Down Arrow' : 'Up Arrow';
+    });
+    tr.appendChild(tdToggle);
+
+    const tds = [
+      new Date(o.timeISO).toLocaleString(),
+      o.productName,
+      o.color,
+      o.quantity,
+      '৳' + Number(o.deliveryFee).toFixed(2),
+      '৳' + Number(o.paid).toFixed(2),
+      '৳' + Number(o.due).toFixed(2),
+      o.customerName,
+      o.phone,
+      o.address,
+      o.paymentMethod,
+      o.transactionId
+    ];
+    tds.forEach(v => {
+      const td = document.createElement('td');
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+
+    const tdStatus = document.createElement('td');
+    const select = document.createElement('select');
+    ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'].forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt;
+      option.text = opt;
+      if (o.status === opt) option.selected = true;
+      select.appendChild(option);
+    });
+    select.style.backgroundColor = statusColors[o.status || 'Pending'];
+    select.addEventListener('change', async (e) => {
+      try {
+        const newStatus = e.target.value;
+        await updateDoc(doc(db, 'orders', o.id), { status: newStatus });
+        select.style.backgroundColor = statusColors[newStatus];
+      } catch (err) {
+        console.error('Error updating order status:', err);
+        alert('Error updating order status: ' + err.message);
+      }
+    });
+    tdStatus.appendChild(select);
+    tr.appendChild(tdStatus);
+    tbody.appendChild(tr);
+
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'details-row';
+    const detailsCell = document.createElement('td');
+    detailsCell.colSpan = 14;
+    detailsCell.className = 'details-content';
+    const unitPriceCell = document.createElement('div');
+    unitPriceCell.textContent = `Unit Price: ৳${Number(o.unitPrice).toFixed(2)}`;
+    detailsCell.appendChild(unitPriceCell);
+    detailsRow.appendChild(detailsCell);
+    tbody.appendChild(detailsRow);
+  });
+}
+
+// ====== AUTH ======
 function logoutAdmin() {
   try {
     signOut(auth);
+    console.log('Logged out successfully');
   } catch (err) {
     console.error('Logout error:', err);
     alert('Error logging out: ' + err.message);
   }
 }
 
-function setupStatusForm() { /* ... your original code ... */ }
+// ====== ORDER STATUS PAGE ======
+function setupStatusForm() {
+  const form = document.getElementById('status-form');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const txn = document.getElementById('txn-id').value.trim();
+    if (!txn) return;
+    try {
+      const q = query(collection(db, 'orders'), where('transactionId', '==', txn));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        alert('Order not found.');
+        return;
+      }
+      const order = snapshot.docs[0].data();
+      const status = order.status;
+      alert(`Status: ${status}\n${statusExplanations[status] || 'Unknown status.'}`);
+    } catch (err) {
+      console.error('Error fetching status:', err);
+      alert('Error fetching status: ' + err.message);
+    }
+  });
+}
 
 // ====== INIT ======
 document.addEventListener('DOMContentLoaded', async () => {
@@ -622,12 +917,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (loginPanel && adminPanel) {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        console.log('User logged in:', user.email);
         loginPanel.style.display = 'none';
         adminPanel.style.display = 'block';
         await renderDataTable();
         await renderOrdersTable();
-        await renderNoticesTable(); // ← Load notices in admin
+        await renderNoticesTable(); // ← Added: Load notices in admin
       } else {
+        console.log('No user logged in');
         loginPanel.style.display = 'block';
         adminPanel.style.display = 'none';
       }
@@ -641,7 +938,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pass = document.getElementById('admin-pass').value;
         try {
           await signInWithEmailAndPassword(auth, email, pass);
+          console.log('Login successful');
         } catch (err) {
+          console.error('Login failed:', err);
           alert('Login failed: ' + err.message);
         }
       });
