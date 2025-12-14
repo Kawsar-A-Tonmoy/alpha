@@ -3,96 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Account</title>
+  <title>User</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png">
   <link rel="stylesheet" href="style.css">
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-  </script>
   <script type="module" src="script.js"></script>
 </head>
 <body>
   <header class="site-header">
-     <nav>
-      <a href="index.html" class="logo">
-        <img src="logo.png" alt="Logo" style="height: 40px;">
-      </a>
+    <nav>
+      <a href="index.html" class="logo"><img src="logo.png" alt="Logo" style="height:40px;"></a>
       <div class="nav-links">
         <a href="products.html">Products</a>
         <a href="status.html">Order Status</a>
-        <a id="login-link" href="user.html">Login</a>
+        <a href="user.html">User</a>
+        <a href="admin.html">Admin</a>
       </div>
     </nav>
   </header>
-
-  <main class="container">
-
-    <!-- LOGIN -->
-    <div id="login-panel" class="card">
+  <div class="container" id="user-panel">
+    <div id="user-login-panel" class="card" style="display: none;">
       <h2>Login</h2>
-      <form id="login-form" class="form">
-        <div><label>Email</label><input id="login-email" type="email" required></div>
-        <div><label>Password</label><input id="login-pass" type="password" required></div>
+      <form id="user-login-form" class="form">
+        <div>
+          <label>Email</label>
+          <input id="user-email" type="email" required>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="user-pass" type="password" required>
+        </div>
         <button type="submit">Login</button>
       </form>
-      <p>No account? <a href="#" id="to-register">Register here</a></p>
     </div>
 
-    <!-- REGISTER -->
-    <div id="register-panel" class="card" style="display:none;">
-      <h2>Create Account</h2>
-      <form id="register-form" class="form">
-        <div><label>Name</label><input id="reg-name" required></div>
-        <div><label>Phone</label><input id="reg-phone" type="tel" required></div>
-        <div><label>Address</label><textarea id="reg-address" required></textarea></div>
-        <div><label>Email</label><input id="reg-email" type="email" required></div>
-        <div><label>Password</label><input id="reg-pass" type="password" required></div>
+    <div id="user-register-panel" class="card" style="display: none;">
+      <h2>Register</h2>
+      <form id="user-register-form" class="form">
+        <div>
+          <label>Name</label>
+          <input id="reg-name" required>
+        </div>
+        <div>
+          <label>Address</label>
+          <textarea id="reg-address" required></textarea>
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="reg-phone" type="tel" required>
+        </div>
+        <div>
+          <label>Email</label>
+          <input id="reg-email" type="email" required>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="reg-pass" type="password" required>
+        </div>
         <button type="submit">Register</button>
       </form>
-      <p>Already have account? <a href="#" id="to-login">Login</a></p>
     </div>
 
-    <!-- VERIFY EMAIL CODE -->
-    <div id="verify-panel" class="card" style="display:none;">
-      <h2>Verify Email</h2>
-      <p>We sent a 4-digit code to your email.</p>
-      <form id="verify-form" class="form">
-        <div><label>Code</label><input id="verify-code" maxlength="4" required></div>
-        <button type="submit">Verify</button>
+    <div id="user-info-panel" class="card" style="display: none;">
+      <h2>User Info</h2>
+      <form id="user-info-form" class="form">
+        <div>
+          <label>Name</label>
+          <input id="user-name" required>
+        </div>
+        <div>
+          <label>Address</label>
+          <textarea id="user-address" required></textarea>
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="user-phone" type="tel" required>
+        </div>
+        <button type="submit">Update</button>
       </form>
+      <button id="user-logout">Logout</button>
     </div>
 
-    <!-- USER DASHBOARD (Cart + Orders) -->
-    <div id="user-dashboard" class="card" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h2>Welcome, <span id="user-name-display"></span></h2>
-        <button onclick="logoutUser()">Logout</button>
-      </div>
-
-      <h3>Your Cart</h3>
-      <div id="cart-empty" style="text-align:center;color:var(--muted);display:none;">Cart is empty</div>
-      <div id="cart-table-wrapper" class="table-wrapper" style="display:none;">
-        <table class="data-table">
-          <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Action</th></tr></thead>
-          <tbody id="cart-body"></tbody>
-        </table>
-        <button id="checkout-cart-btn" style="margin-top:10px;">Checkout All Items</button>
-      </div>
-
-      <h3>Your Orders</h3>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Date</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="user-orders-body"></tbody>
-        </table>
-      </div>
+    <div id="user-cart-section" style="display: none;">
+      <h2>Cart</h2>
+      <div id="user-cart-list" class="orders-grid"></div>
+      <div id="user-cart-total"></div>
+      <button id="user-checkout-btn">Checkout</button>
     </div>
-
-  </main>
+  </div>
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+    </a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+        <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
+      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+    </a>
+  </div>
+ 
+  <p>&copy; All rights reserved by The Geek Shop</p>
+</footer>
 </body>
 </html>
