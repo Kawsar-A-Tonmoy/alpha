@@ -7,13 +7,7 @@
   <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="canonical" id="canonical-link" href="">
   <link rel="stylesheet" href="style.css">
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-  </script>
   <script type="module" src="script.js"></script>
-
 </head>
 <body>
   <header class="site-header">
@@ -24,7 +18,7 @@
       <div class="nav-links">
         <a href="products.html">Products</a>
         <a href="status.html">Order Status</a>
-        <a href="user.html">User</a>
+        <a href="cart.html">Cart</a>
         <a href="admin.html">Admin</a>
       </div>
     </nav>
@@ -50,11 +44,7 @@
     <div id="other-products" class="product-list new-hot-list"></div>
   </main>
 
-  <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">&times;</button>
-    <img id="viewer-img" src="" alt="">
-  </div>
-
+  <!-- Checkout Modal (updated for cart) -->
   <div id="checkout-modal" class="modal">
     <div class="card modal-content">
       <div class="modal-header">
@@ -62,86 +52,53 @@
         <button id="close-modal-btn">Close</button>
       </div>
       <form id="checkout-form" class="form">
+        <div id="co-items-list" class="co-items-list"></div>
         <div class="row">
-          <div>
-            <label>Delivery</label>
-            <input id="co-delivery" readonly>
-          </div>
-          <div>
-            <label>Total (tk)</label>
-            <input id="co-total" readonly>
-          </div>
+          <div><label>Products Total (tk)</label><input id="co-products-total" readonly></div>
+          <div><label>Delivery (tk)</label><input id="co-delivery" readonly></div>
         </div>
         <div class="row">
-          <div>
-            <label>Name</label>
-            <input id="co-name" required>
-          </div>
-          <div>
-            <label>Phone</label>
-            <input id="co-phone" type="tel" required>
-          </div>
-        </div>
-        <div>
-          <label>Address</label>
-          <textarea id="co-address" required></textarea>
+          <div><label>Total (tk)</label><input id="co-total" readonly></div>
         </div>
         <div class="row">
-          <div>
-            <label>Payment Method</label>
+          <div><label>Name</label><input id="co-name" required></div>
+          <div><label>Phone</label><input id="co-phone" type="tel" required></div>
+        </div>
+        <div><label>Address</label><textarea id="co-address" required></textarea></div>
+        <div class="row">
+          <div><label>Payment Method</label>
             <select id="co-payment" required>
               <option value="">Select</option>
               <option value="Cash on Delivery">Cash on Delivery</option>
               <option value="Bkash">Bkash</option>
             </select>
           </div>
-          <div>
-            <label>Pay to (Send money)</label>
-            <input id="co-payment-number" readonly>
-          </div>
+          <div><label>Pay to</label><input id="co-payment-number" readonly></div>
         </div>
         <div class="row">
-          <div>
-            <label>Pay Now (tk)</label>
-            <input id="co-pay-now" readonly>
-          </div>
-          <div>
-            <label>Due Amount (tk)</label>
-            <input id="co-due-amount" readonly>
-          </div>
+          <div><label>Pay Now (tk)</label><input id="co-pay-now" readonly></div>
+          <div><label>Due Amount (tk)</label><input id="co-due-amount" readonly></div>
         </div>
-        <div>
-          <label>Transaction ID</label>
-          <input id="co-txn">
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" id="co-policy" required>
-            I agree to the <a href="status.html">Order Policy</a>
-          </label>
-        </div>
-        <div>
-          <p id="co-note" class="muted"></p>
-        </div>
+        <div><label>Transaction ID</label><input id="co-txn"></div>
+        <div><label><input type="checkbox" id="co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
+        <div><p id="co-note" class="muted"></p></div>
         <button id="place-order-btn" type="submit">Place Order</button>
       </form>
     </div>
   </div>
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
-  <div>
-    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
-    </a>
-    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
-    </a>
-        <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
-      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
-    </a>
+
+  <div id="image-viewer" class="image-viewer">
+    <button id="close-viewer" class="close-viewer">&times;</button>
+    <img id="viewer-img" src="" alt="">
   </div>
- 
+
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000;">
+  <div>
+    <a href="https://www.facebook.com/thegeek.shop0" target="_blank"><img src="facebook.png" style="width: 30px; height: 30px;"></a>
+    <a href="https://www.instagram.com/thegeek.shop0" target="_blank"><img src="instagram.png" style="width: 30px; height: 30px;"></a>
+    <a href="https://wa.me/01960902526" target="_blank"><img src="whatsapp.png" style="width: 30px; height: 30px;"></a>
+  </div>
   <p>&copy; All rights reserved by The Geek Shop</p>
 </footer>
 </body>
-
 </html>
