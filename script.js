@@ -572,8 +572,22 @@ async function submitCheckoutOrder(e) {
       }
       await addDoc(collection(db, 'orders'), orderData);
     });
-    showSuccessPopup();
+ // Order success popup
+     showSuccessPopup();
     closeCheckoutModal();
+
+    // Add click listener to OK button (safe to add multiple times)
+    const okBtn = document.getElementById('success-ok-btn');
+    if (okBtn) {
+      okBtn.onclick = closeSuccessPopup;  // Simple and reliable
+      // Optional: Add nice hover effect
+      okBtn.addEventListener('mouseenter', () => {
+        okBtn.style.backgroundColor = '#16a34a';
+      });
+      okBtn.addEventListener('mouseleave', () => {
+        okBtn.style.backgroundColor = '#22c55e';
+      });
+    }
   } catch (err) {
     console.error('Error placing order:', err);
     alert('Error placing order: ' + err.message);
@@ -909,8 +923,6 @@ function showSuccessPopup() {
   const popup = document.getElementById('success-popup');
   if (popup) {
     popup.classList.add('show');
-    
-    // Optional: Add simple confetti animation
     createConfetti();
   }
 }
@@ -919,26 +931,35 @@ function closeSuccessPopup() {
   const popup = document.getElementById('success-popup');
   if (popup) {
     popup.classList.remove('show');
+    // Clean up confetti
+    const confettis = popup.querySelectorAll('.confetti');
+    confettis.forEach(c => c.remove());
   }
 }
-
 // Simple confetti effect
 function createConfetti() {
   const popup = document.getElementById('success-popup');
   if (!popup) return;
 
-  for (let i = 0; i < 60; i++) {
+  const colors = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '#ec4899'];
+
+  for (let i = 0; i < 80; i++) {  // More confetti!
     const confetti = document.createElement('div');
     confetti.className = 'confetti';
-    confetti.style.left = Math.random() * 100 + '%';
-    confetti.style.backgroundColor = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'][Math.floor(Math.random() * 5)];
-    confetti.style.animation = `confettiFall ${1 + Math.random() * 2}s linear forwards`;
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.width = confetti.style.height = (5 + Math.random() * 10) + 'px';
+    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
     confetti.style.animationDelay = Math.random() * 0.5 + 's';
+    confetti.style.opacity = '0.9';
+
     popup.appendChild(confetti);
 
     setTimeout(() => {
-      confetti.remove();
-    }, 3000);
+      if (confetti && confetti.parentNode) {
+        confetti.remove();
+      }
+    }, 4000);
   }
 }
 // ====== INIT ======
@@ -992,4 +1013,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
