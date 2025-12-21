@@ -572,7 +572,7 @@ async function submitCheckoutOrder(e) {
       }
       await addDoc(collection(db, 'orders'), orderData);
     });
-    alert('Order placed successfully!');
+    showSuccessPopup();
     closeCheckoutModal();
   } catch (err) {
     console.error('Error placing order:', err);
@@ -956,3 +956,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
