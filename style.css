@@ -557,8 +557,3 @@ footer {
   );
   animation: shimmer 1.5s infinite;
 }
-.co-items-list { margin-bottom: 16px; padding: 12px; background: #f9fafb; border-radius: 8px; }
-.cart-item-in-modal { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-.cart-item-in-modal:last-child { border-bottom: none; }
-.remove-cart { background: var(--danger); color: white; padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
-.cart-qty { width: 60px; padding: 6px; text-align: center; border: 1px solid #e5e7eb; border-radius: 6px; }
