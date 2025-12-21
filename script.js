@@ -904,7 +904,43 @@ function setupStatusForm() {
     }
   });
 }
+// ORDER SUCCESS POPUP
+function showSuccessPopup() {
+  const popup = document.getElementById('success-popup');
+  if (popup) {
+    popup.classList.add('show');
+    
+    // Optional: Add simple confetti animation
+    createConfetti();
+  }
+}
 
+function closeSuccessPopup() {
+  const popup = document.getElementById('success-popup');
+  if (popup) {
+    popup.classList.remove('show');
+  }
+}
+
+// Simple confetti effect
+function createConfetti() {
+  const popup = document.getElementById('success-popup');
+  if (!popup) return;
+
+  for (let i = 0; i < 60; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.backgroundColor = ['#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7'][Math.floor(Math.random() * 5)];
+    confetti.style.animation = `confettiFall ${1 + Math.random() * 2}s linear forwards`;
+    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+    popup.appendChild(confetti);
+
+    setTimeout(() => {
+      confetti.remove();
+    }, 3000);
+  }
+}
 // ====== INIT ======
 document.addEventListener('DOMContentLoaded', async () => {
   const isHome = !!document.getElementById('interest-products');
