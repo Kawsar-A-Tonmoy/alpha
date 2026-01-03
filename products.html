@@ -12,6 +12,23 @@
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
   <script type="module" src="script.js"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '655776497078930');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
   <header class="site-header">
@@ -22,53 +39,88 @@
       <div class="nav-links">
         <a href="products.html">Products</a>
         <a href="status.html">Order Status</a>
-        <a id="cart-link" href="#">Cart (<span id="cart-count">0</span>)</a>
         <a href="admin.html">Admin</a>
       </div>
+      <button id="cart-btn" class="cart-btn">Cart <span id="cart-count">(0)</span></button>
     </nav>
   </header>
 
  <main class="container">
     <h1 id="products-title">Products</h1>
+    
     <div id="product-list" class="product-list"></div>
   </main>
 
+  <div id="cart-sidebar" class="cart-sidebar">
+    <div class="cart-header">
+      <h2>Cart</h2>
+      <button id="close-cart">×</button>
+    </div>
+    <div id="cart-items"></div>
+    <div id="cart-totals"></div>
+    <button id="cart-checkout">Checkout</button>
+  </div>
+
   <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">&times;</button>
+    <button id="close-viewer" class="close-viewer">×</button>
     <img id="viewer-img" src="" alt="">
   </div>
 
-  <!-- Cart Slider & Multi Checkout (same as index.html) -->
-  <div id="cart-panel" class="cart-panel">
-    <div class="cart-header">
-      <h2>Cart</h2>
-      <button id="close-cart">&times;</button>
-    </div>
-    <div id="cart-items" class="cart-items"></div>
-    <div class="cart-footer">
-      <div><strong>Total: ৳<span id="cart-total">0</span></strong></div>
-      <button id="checkout-btn" class="checkout-cart-btn">Checkout</button>
-    </div>
-  </div>
-  <div id="cart-overlay" class="overlay"></div>
-
-  <div id="multi-checkout-modal" class="modal">
+  <div id="checkout-modal" class="modal">
     <div class="card modal-content">
       <div class="modal-header">
         <h2>Checkout</h2>
-        <button id="close-multi-modal-btn">&times;</button>
+        <button id="close-modal-btn">×</button>
       </div>
-      <form id="multi-checkout-form" class="form">
-        <div id="co-products-list" style="margin-bottom: 16px;"></div>
-        <div class="row">
-          <div><label>Delivery Fee (tk)</label><input id="co-delivery" readonly value="60"></div>
-          <div><label>Total (tk)</label><input id="co-total" readonly></div>
+      <form id="checkout-form" class="form">
+        <div id="co-items-list" class="co-items-list"></div>
+        <input type="hidden" id="co-product-id">
+        <div class="row single-only">
+          <div>
+            <label>Product Name</label>
+            <input id="co-product-name" readonly>
+          </div>
+          <div>
+            <label>Color</label>
+            <input id="co-color" readonly>
+          </div>
+        </div>
+        <div class="row single-only">
+          <div>
+            <label>Price (tk)</label>
+            <input id="co-price" readonly>
+            <input type="hidden" id="co-unit-price-raw">
+            <input type="hidden" id="co-available-stock">
+          </div>
+          <div>
+            <label>Quantity</label>
+            <input id="co-qty" type="number" min="1" value="1">
+          </div>
         </div>
         <div class="row">
-          <div><label>Name</label><input id="co-name" required></div>
-          <div><label>Phone</label><input id="co-phone" type="tel" required></div>
+          <div>
+            <label>Delivery</label>
+            <input id="co-delivery" readonly>
+          </div>
+          <div>
+            <label>Total (tk)</label>
+            <input id="co-total" readonly>
+          </div>
         </div>
-        <div><label>Address</label><textarea id="co-address" required></textarea></div>
+        <div class="row">
+          <div>
+            <label>Name</label>
+            <input id="co-name" required>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="co-phone" type="tel" required>
+          </div>
+        </div>
+        <div>
+          <label>Address</label>
+          <textarea id="co-address" required></textarea>
+        </div>
         <div class="row">
           <div>
             <label>Payment Method</label>
@@ -78,20 +130,40 @@
               <option value="Bkash">Bkash</option>
             </select>
           </div>
-          <div><label>Pay to</label><input id="co-payment-number" readonly></div>
+          <div>
+            <label>Pay to (Send money)</label>
+            <input id="co-payment-number" readonly>
+          </div>
         </div>
         <div class="row">
-          <div><label>Pay Now (tk)</label><input id="co-pay-now" readonly></div>
-          <div><label>Due (tk)</label><input id="co-due-amount" readonly></div>
+          <div>
+            <label>Pay Now (tk)</label>
+            <input id="co-pay-now" readonly>
+          </div>
+          <div>
+            <label>Due Amount (tk)</label>
+            <input id="co-due-amount" readonly>
+          </div>
         </div>
-        <div><label>Transaction ID (if prepaid)</label><input id="co-txn"></div>
-        <div><label><input type="checkbox" id="co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
-        <button type="submit">Place Order</button>
+        <div>
+          <label>Transaction ID</label>
+          <input id="co-txn">
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" id="co-policy" required>
+            I agree to the <a href="status.html">Order Policy</a>
+          </label>
+        </div>
+        <div>
+          <p id="co-note" class="muted"></p>
+        </div>
+        <button id="place-order-btn" type="submit">Place Order</button>
       </form>
     </div>
   </div>
 
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
+<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
   <div>
     <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
       <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">

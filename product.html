@@ -24,9 +24,9 @@
       <div class="nav-links">
         <a href="products.html">Products</a>
         <a href="status.html">Order Status</a>
-        <a id="cart-link" href="#">Cart (<span id="cart-count">0</span>)</a>
         <a href="admin.html">Admin</a>
       </div>
+      <button id="cart-btn" class="cart-btn">Cart <span id="cart-count">(0)</span></button>
     </nav>
   </header>
 
@@ -42,14 +42,7 @@
         <div id="product-price" class="price"></div>
         <div id="product-badges" class="badges"></div>
         <p id="product-spec"></p>
-        <div id="order-row" class="order-row">
-          <div class="quick-buy-row">
-            <input id="quick-qty" type="number" min="1" value="1" style="width: 60px; padding: 8px;">
-            <button id="quick-buy-btn" class="quick-buy-btn">Quick Buy</button>
-            <button id="add-to-cart-btn" class="add-cart-btn">Add to Cart</button>
-          </div>
-          <div id="stock-warning" class="stock-warning" style="display: none; color: #dc2626; font-size: 14px; margin-top: 8px;"></div>
-        </div>
+        <div id="order-row" class="order-row"></div>
       </div>
     </div>
 
@@ -62,21 +55,31 @@
     <div id="other-products" class="product-list new-hot-list"></div>
   </main>
 
+  <div id="cart-sidebar" class="cart-sidebar">
+    <div class="cart-header">
+      <h2>Cart</h2>
+      <button id="close-cart">×</button>
+    </div>
+    <div id="cart-items"></div>
+    <div id="cart-totals"></div>
+    <button id="cart-checkout">Checkout</button>
+  </div>
+
   <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">&times;</button>
+    <button id="close-viewer" class="close-viewer">×</button>
     <img id="viewer-img" src="" alt="">
   </div>
 
-  <!-- Single Product Checkout Modal -->
   <div id="checkout-modal" class="modal">
     <div class="card modal-content">
       <div class="modal-header">
-        <h2>Quick Checkout</h2>
-        <button id="close-modal-btn">&times;</button>
+        <h2>Checkout</h2>
+        <button id="close-modal-btn">×</button>
       </div>
       <form id="checkout-form" class="form">
+        <div id="co-items-list" class="co-items-list"></div>
         <input type="hidden" id="co-product-id">
-        <div class="row">
+        <div class="row single-only">
           <div>
             <label>Product Name</label>
             <input id="co-product-name" readonly>
@@ -86,7 +89,7 @@
             <input id="co-color" readonly>
           </div>
         </div>
-        <div class="row">
+        <div class="row single-only">
           <div>
             <label>Price (tk)</label>
             <input id="co-price" readonly>
@@ -101,7 +104,7 @@
         <div class="row">
           <div>
             <label>Delivery</label>
-            <input id="co-delivery" readonly value="60">
+            <input id="co-delivery" readonly>
           </div>
           <div>
             <label>Total (tk)</label>
@@ -161,69 +164,6 @@
         </div>
         <button id="place-order-btn" type="submit">Place Order</button>
       </form>
-    </div>
-  </div>
-
-  <!-- Cart Slider Panel -->
-  <div id="cart-panel" class="cart-panel">
-    <div class="cart-header">
-      <h2>Cart</h2>
-      <button id="close-cart">&times;</button>
-    </div>
-    <div id="cart-items" class="cart-items"></div>
-    <div class="cart-footer">
-      <div><strong>Total: ৳<span id="cart-total">0</span></strong></div>
-      <button id="checkout-btn" class="checkout-cart-btn">Checkout</button>
-    </div>
-  </div>
-  <div id="cart-overlay" class="overlay"></div>
-
-  <!-- Multi Product Checkout Modal -->
-  <div id="multi-checkout-modal" class="modal">
-    <div class="card modal-content">
-      <div class="modal-header">
-        <h2>Cart Checkout</h2>
-        <button id="close-multi-modal-btn">&times;</button>
-      </div>
-      <form id="multi-checkout-form" class="form">
-        <div id="co-products-list" style="margin-bottom: 16px;"></div>
-        <div class="row">
-          <div><label>Delivery Fee (tk)</label><input id="co-delivery-multi" readonly value="60"></div>
-          <div><label>Total (tk)</label><input id="co-total-multi" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Name</label><input id="co-name-multi" required></div>
-          <div><label>Phone</label><input id="co-phone-multi" type="tel" required></div>
-        </div>
-        <div><label>Address</label><textarea id="co-address-multi" required></textarea></div>
-        <div class="row">
-          <div>
-            <label>Payment Method</label>
-            <select id="co-payment-multi" required>
-              <option value="">Select</option>
-              <option value="Cash on Delivery">Cash on Delivery</option>
-              <option value="Bkash">Bkash</option>
-            </select>
-          </div>
-          <div><label>Pay to</label><input id="co-payment-number-multi" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Pay Now (tk)</label><input id="co-pay-now-multi" readonly></div>
-          <div><label>Due (tk)</label><input id="co-due-amount-multi" readonly></div>
-        </div>
-        <div><label>Transaction ID (if prepaid)</label><input id="co-txn-multi"></div>
-        <div><label><input type="checkbox" id="co-policy-multi" required> I agree to the <a href="status.html">Order Policy</a></label></div>
-        <button type="submit">Place Order</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Success Popup -->
-  <div id="success-popup" class="success-popup">
-    <div class="success-content">
-      <h2>✅ Order Placed!</h2>
-      <p>Thank you for shopping with The Geek Shop</p>
-      <button id="close-success">OK</button>
     </div>
   </div>
 
