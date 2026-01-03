@@ -33,6 +33,7 @@ const categories = [
   { name: 'Keyboard and Mouse', bg: 'k&b.png' },
   { name: 'Accessories and Collectables', bg: 'c&a.png' }
 ];
+
 // ==================== CART SYSTEM ====================
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -152,7 +153,7 @@ function renderCart() {
   `;
 }
 
-// ==================== PRODUCT CARD WITH ADD TO CART ====================
+// ==================== PRODUCT CARD WITH HORIZONTAL BUTTONS ====================
 function createProductCard(p, products) {
   const isUpcoming = p.availability === 'Upcoming';
   const isOOS = !isUpcoming && Number(p.stock) <= 0 && p.availability !== 'Pre Order';
@@ -183,21 +184,35 @@ function createProductCard(p, products) {
     <div class="price">
       ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`}
     </div>
-    <button class="view-details-btn">View Details</button>
   `;
-  card.querySelector('.view-details-btn').onclick = () => location.href = `product.html?slug=${slug}`;
+
+  // Horizontal button container
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.display = 'flex';
+  buttonContainer.style.justifyContent = 'space-between';
+  buttonContainer.style.gap = '8px';
+  buttonContainer.style.marginTop = '12px';
+
+  const viewBtn = document.createElement('button');
+  viewBtn.className = 'view-details-btn';
+  viewBtn.textContent = 'View Details';
+  viewBtn.style.flex = '1';
+  viewBtn.onclick = () => location.href = `product.html?slug=${slug}`;
+  buttonContainer.appendChild(viewBtn);
 
   if (!isUpcoming && !isOOS) {
     const addBtn = document.createElement('button');
     addBtn.className = 'secondary';
     addBtn.textContent = 'Add to Cart';
-    addBtn.style.marginTop = '8px';
+    addBtn.style.flex = '1';
     addBtn.onclick = (e) => {
       e.stopPropagation();
       addToCart(p, 1);
     };
-    card.appendChild(addBtn);
+    buttonContainer.appendChild(addBtn);
   }
+
+  card.appendChild(buttonContainer);
   return card;
 }
 
@@ -309,7 +324,8 @@ async function initProductPage() {
     alert('Product not found');
     return;
   }
-  // Shimmer
+
+  // Shimmer placeholders
   const mainImg = document.getElementById('main-image');
   const thumbnailGallery = document.getElementById('thumbnail-gallery');
   const nameEl = document.getElementById('product-name');
@@ -321,41 +337,20 @@ async function initProductPage() {
   const orderRow = document.getElementById('order-row');
 
   mainImg.parentNode.replaceChild(createMainImageShimmer(), mainImg);
-  nameEl.innerHTML = '';
-  nameEl.appendChild(createInfoLineShimmer());
-  nameEl.appendChild(createInfoLineShimmer());
-  colorEl.innerHTML = '';
-  colorEl.appendChild(createInfoLineShimmer());
-  priceEl.innerHTML = '';
-  priceEl.appendChild(createInfoLineShimmer());
-  badgesEl.innerHTML = '';
-  for (let i = 0; i < 2; i++) {
-    const badge = document.createElement('div');
-    badge.className = 'shimmer-badge';
-    badgesEl.appendChild(badge);
-  }
-  specEl.innerHTML = '';
-  for (let i = 0; i < 3; i++) {
-    specEl.appendChild(createInfoLineShimmer());
-  }
-  descEl.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    descEl.appendChild(createInfoLineShimmer());
-  }
-  orderRow.innerHTML = '';
-  orderRow.appendChild(createInfoLineShimmer());
-  thumbnailGallery.innerHTML = '';
-  for (let i = 0; i < 3; i++) {
-    thumbnailGallery.appendChild(createThumbnailShimmer());
-  }
+  nameEl.innerHTML = ''; nameEl.appendChild(createInfoLineShimmer()); nameEl.appendChild(createInfoLineShimmer());
+  colorEl.innerHTML = ''; colorEl.appendChild(createInfoLineShimmer());
+  priceEl.innerHTML = ''; priceEl.appendChild(createInfoLineShimmer());
+  badgesEl.innerHTML = ''; for (let i = 0; i < 2; i++) { badgesEl.appendChild(document.createElement('div')).className = 'shimmer-badge'; }
+  specEl.innerHTML = ''; for (let i = 0; i < 3; i++) specEl.appendChild(createInfoLineShimmer());
+  descEl.innerHTML = ''; for (let i = 0; i < 5; i++) descEl.appendChild(createInfoLineShimmer());
+  orderRow.innerHTML = ''; orderRow.appendChild(createInfoLineShimmer());
+  thumbnailGallery.innerHTML = ''; for (let i = 0; i < 3; i++) thumbnailGallery.appendChild(createThumbnailShimmer());
 
   const products = await loadProducts();
   let product = products.find(p => {
     let slug = p.name.toLowerCase().replace(/\s+/g, '-');
     const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
-    if (sameName.length > 1 && p.color) {
-      slug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
-    }
+    if (sameName.length > 1 && p.color) slug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
     return slug === urlSlug;
   });
 
@@ -364,15 +359,15 @@ async function initProductPage() {
     return;
   }
 
-  // Replace shimmer
+  // Fill real data
   const newMainImg = document.createElement('img');
   newMainImg.id = 'main-image';
   newMainImg.src = product.images[0] || '';
   newMainImg.alt = product.name;
   document.querySelector('.product-images').replaceChild(newMainImg, document.querySelector('.shimmer-image-placeholder'));
 
-  nameEl.innerHTML = product.name;
-  colorEl.innerHTML = product.color ? `Color: ${product.color}` : '';
+  nameEl.textContent = product.name;
+  colorEl.textContent = product.color ? `Color: ${product.color}` : '';
   const hasDiscount = Number(product.discount) > 0;
   const price = Number(product.price) || 0;
   const finalPrice = hasDiscount ? price - Number(product.discount) : price;
@@ -383,73 +378,78 @@ async function initProductPage() {
   const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
   const isPreOrder = product.availability === 'Pre Order';
   const isInStock = Number(product.stock) > 0 && product.availability === 'Ready';
-  const badgeHtml = `
+  badgesEl.innerHTML = `
     ${product.hotDeal ? `<span class="badge hot">HOT DEAL</span>` : ''}
     ${isInStock ? `<span class="badge new">IN STOCK</span>` : ''}
     ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
     ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
     ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ''}
   `;
-  badgesEl.innerHTML = badgeHtml;
 
-  specEl.innerHTML = product.description || '';
+  specEl.textContent = product.description || '';
   descEl.innerHTML = product.detailedDescription || '';
 
-  // SEO
   document.title = product.metaTitle || `${product.name} - The Geek Shop`;
   document.getElementById('meta-description').content = product.metaDescription || '';
   document.getElementById('canonical-link').href = window.location.href;
 
   // Thumbnails
   thumbnailGallery.innerHTML = '';
-  (product.images || []).forEach((imgSrc, idx) => {
+  (product.images || []).forEach(imgSrc => {
     const thumb = document.createElement('img');
     thumb.className = 'thumbnail';
     thumb.src = imgSrc;
-    thumb.alt = `${product.name} thumbnail ${idx + 1}`;
-    thumb.onclick = () => {
-      newMainImg.src = imgSrc;
-    };
+    thumb.onclick = () => newMainImg.src = imgSrc;
     thumbnailGallery.appendChild(thumb);
   });
 
-  // Order row
+  // Order row: Quantity + Add to Cart + Buy Now
   orderRow.innerHTML = '';
   if (!isUpcoming && !isOOS) {
-    const qtyDiv = document.createElement('div');
-    qtyDiv.className = 'order-row';
-    qtyDiv.innerHTML = `
-      <label>Quantity</label>
-      <input class="qty" type="number" min="1" value="1" ${isPreOrder ? '' : `max="${product.stock}"`}>
+    const qtyWrapper = document.createElement('div');
+    qtyWrapper.style.marginBottom = '12px';
+    qtyWrapper.innerHTML = `
+      <label style="display:block; margin-bottom:4px;">Quantity</label>
+      <input class="qty" type="number" min="1" value="1" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:8px;" ${isPreOrder ? '' : `max="${product.stock}"`}>
     `;
-    const qtyInput = qtyDiv.querySelector('.qty');
+    const qtyInput = qtyWrapper.querySelector('.qty');
     qtyInput.addEventListener('input', () => {
       let val = parseInt(qtyInput.value) || 1;
       if (val < 1) val = 1;
       if (!isPreOrder && val > product.stock) val = product.stock;
       qtyInput.value = val;
     });
-    orderRow.appendChild(qtyDiv);
+    orderRow.appendChild(qtyWrapper);
+
+    const btnWrapper = document.createElement('div');
+    btnWrapper.style.display = 'flex';
+    btnWrapper.style.gap = '10px';
 
     const addBtn = document.createElement('button');
-    addBtn.className = isPreOrder ? 'preorder-btn' : '';
-    addBtn.textContent = isPreOrder ? 'Pre Order' : 'Add to Cart';
+    addBtn.className = 'secondary';
+    addBtn.textContent = 'Add to Cart';
+    addBtn.style.flex = '1';
     addBtn.onclick = () => addToCart(product, parseInt(qtyInput.value));
-    orderRow.appendChild(addBtn);
-  } else if (isUpcoming) {
-    orderRow.innerHTML = '<div class="muted">Upcoming - Stay tuned</div>';
+    btnWrapper.appendChild(addBtn);
+
+    const buyBtn = document.createElement('button');
+    buyBtn.textContent = isPreOrder ? 'Pre Order' : 'Buy Now';
+    buyBtn.className = isPreOrder ? 'preorder-btn' : '';
+    buyBtn.style.flex = '1';
+    buyBtn.onclick = () => showCheckoutModal(false, product);
+    btnWrapper.appendChild(buyBtn);
+
+    orderRow.appendChild(btnWrapper);
   } else {
-    orderRow.innerHTML = '<div class="muted">Out of Stock</div>';
+    orderRow.innerHTML = `<div class="muted">${isUpcoming ? 'Upcoming - Stay tuned' : 'Out of Stock'}</div>`;
   }
 
-  // Image viewer
   setupImageViewer();
 
-  // Other products
   const otherSection = document.getElementById('other-products');
   otherSection.innerHTML = '';
-  const others = shuffle(products.filter(other => other.id !== product.id && other.availability !== 'Upcoming')).slice(0, 4);
-  others.forEach(other => otherSection.appendChild(createProductCard(other, products)));
+  const others = shuffle(products.filter(o => o.id !== product.id && o.availability !== 'Upcoming')).slice(0, 4);
+  others.forEach(o => otherSection.appendChild(createProductCard(o, products)));
 }
 
 // ====== IMAGE VIEWER ======
@@ -458,17 +458,13 @@ function setupImageViewer() {
   const viewerImg = document.getElementById('viewer-img');
   const closeViewer = document.getElementById('close-viewer');
   if (!viewer || !closeViewer) return;
-
-  closeViewer.addEventListener('click', () => viewer.classList.remove('show'));
-  viewer.addEventListener('click', (e) => {
-    if (e.target === viewer) viewer.classList.remove('show');
-  });
-
-  document.querySelectorAll('.product-images img, .thumbnail').forEach(img => {
-    img.addEventListener('click', () => {
+  closeViewer.onclick = () => viewer.classList.remove('show');
+  viewer.onclick = (e) => { if (e.target === viewer) viewer.classList.remove('show'); };
+  document.querySelectorAll('#main-image, .thumbnail').forEach(img => {
+    img.onclick = () => {
       viewerImg.src = img.src;
       viewer.classList.add('show');
-    });
+    };
   });
 }
 
@@ -512,8 +508,6 @@ function showCheckoutModal(multi = false, product = null) {
     const total = subtotal + Number(DELIVERY_FEE);
     document.getElementById('co-delivery').value = DELIVERY_FEE;
     document.getElementById('co-total').value = total.toFixed(2);
-    document.getElementById('co-pay-now').value = '0.00';
-    document.getElementById('co-due-amount').value = total.toFixed(2);
     if (hasPre) note.textContent = 'Pre-order items require 200tk advance per unit on COD.';
   } else {
     singleRows.forEach(r => r.style.display = 'grid');
@@ -525,11 +519,9 @@ function showCheckoutModal(multi = false, product = null) {
     document.getElementById('co-unit-price-raw').value = fp;
     document.getElementById('co-available-stock').value = product.stock;
     document.getElementById('co-qty').value = 1;
-    document.getElementById('co-price').value = (fp * 1).toFixed(2);
+    document.getElementById('co-price').value = fp.toFixed(2);
     document.getElementById('co-delivery').value = DELIVERY_FEE;
     document.getElementById('co-total').value = (fp + Number(DELIVERY_FEE)).toFixed(2);
-    document.getElementById('co-pay-now').value = '0.00';
-    document.getElementById('co-due-amount').value = (fp + Number(DELIVERY_FEE)).toFixed(2);
     if (product.availability === 'Pre Order') note.textContent = 'Pre-order requires 200tk advance per unit on COD.';
   }
 }
@@ -554,9 +546,7 @@ function setupCheckout() {
       hasPre = cart.some(i => i.availability === 'Pre Order');
       if (method === 'Cash on Delivery' && hasPre) {
         payNow = cart.reduce((s, i) => s + (i.availability === 'Pre Order' ? 200 * i.quantity : 0), 0);
-      } else if (method === 'Bkash') {
-        payNow = total;
-      }
+      } else if (method === 'Bkash') payNow = total;
     } else {
       hasPre = currentSingleProduct.availability === 'Pre Order';
       const q = parseInt(qty.value) || 1;
@@ -587,10 +577,10 @@ function setupCheckout() {
 
   form.onsubmit = async (e) => {
     e.preventDefault();
-    if (!document.getElementById('co-policy').checked) return alert('Agree to policy');
+    if (!document.getElementById('co-policy').checked) return alert('Please agree to the order policy');
 
     const payNow = parseFloat(document.getElementById('co-pay-now').value);
-    if (payNow > 0 && !document.getElementById('co-txn').value.trim()) return alert('Transaction ID required');
+    if (payNow > 0 && !document.getElementById('co-txn').value.trim()) return alert('Transaction ID is required for advance payment');
 
     const data = {
       timeISO: new Date().toISOString(),
@@ -628,7 +618,7 @@ function setupCheckout() {
             const ref = doc(db, 'products', item.productId);
             const snap = await t.get(ref);
             const currentStock = snap.data().stock || 0;
-            if (currentStock < item.quantity) throw new Error('Stock insufficient');
+            if (currentStock < item.quantity) throw new Error('Insufficient stock');
             t.update(ref, { stock: currentStock - item.quantity });
           }
         }
@@ -643,11 +633,12 @@ function setupCheckout() {
       }
       document.getElementById('checkout-modal').classList.remove('show');
     } catch (err) {
-      alert('Error: ' + err.message || err);
+      alert('Error placing order: ' + (err.message || err));
     }
   };
 }
 
+// ====== ADMIN SECTION (unchanged from your original) ======
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
@@ -1025,7 +1016,7 @@ async function addProduct(e) {
   }
 }
 
-// ====== INIT ======
+// ====== DOM LOADED ======
 document.addEventListener('DOMContentLoaded', async () => {
   const isHome = !!document.getElementById('interest-products');
   const isProducts = !!document.getElementById('product-list');
@@ -1038,6 +1029,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isProduct) await initProductPage();
   if (isStatus) setupStatusForm();
 
+  // Admin setup (unchanged)
   const loginPanel = document.getElementById('login-panel');
   const adminPanel = document.getElementById('admin-panel');
   const addForm = document.getElementById('add-product-form');
@@ -1046,13 +1038,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (loginPanel && adminPanel) {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log('User logged in:', user.email);
         loginPanel.style.display = 'none';
         adminPanel.style.display = 'block';
         await renderDataTable();
         await renderOrdersTable();
       } else {
-        console.log('No user logged in');
         loginPanel.style.display = 'block';
         adminPanel.style.display = 'none';
       }
@@ -1066,15 +1056,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pass = document.getElementById('admin-pass').value;
         try {
           await signInWithEmailAndPassword(auth, email, pass);
-          console.log('Login successful');
         } catch (err) {
-          console.error('Login failed:', err);
           alert('Login failed: ' + err.message);
         }
       });
     }
   }
 
+  // Cart UI bindings
   updateCartCount();
   document.getElementById('cart-btn')?.addEventListener('click', openCart);
   document.getElementById('close-cart')?.addEventListener('click', closeCart);
