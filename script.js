@@ -59,7 +59,10 @@ function addToCart(product, qty = 1) {
   }
   saveCart();
   updateCartCount();
-  renderCart();
+  // Only render if sidebar is currently open
+  if (document.getElementById('cart-sidebar')?.classList.contains('open')) {
+    renderCart();
+  }
 }
 
 function removeFromCart(id) {
@@ -92,22 +95,29 @@ function updateCartCount() {
 }
 
 function openCart() {
-  document.getElementById('cart-sidebar')?.classList.add('open');
-  renderCart();
+  const sidebar = document.getElementById('cart-sidebar');
+  if (sidebar) {
+    sidebar.classList.add('open');
+    renderCart(); // Always render fresh when opening
+  }
 }
 
 function closeCart() {
-  document.getElementById('cart-sidebar')?.classList.remove('open');
+  const sidebar = document.getElementById('cart-sidebar');
+  if (sidebar) {
+    sidebar.classList.remove('open');
+  }
 }
 
 function renderCart() {
   const itemsEl = document.getElementById('cart-items');
   const totalsEl = document.getElementById('cart-totals');
   const checkoutBtn = document.getElementById('cart-checkout');
+
   if (!itemsEl || !totalsEl || !checkoutBtn) return;
 
   if (cart.length === 0) {
-    itemsEl.innerHTML = '<p style="text-align:center; color:#666;">Cart is empty</p>';
+    itemsEl.innerHTML = '<p style="text-align:center; color:#666; padding:20px;">Cart is empty</p>';
     totalsEl.innerHTML = '';
     checkoutBtn.disabled = true;
     return;
@@ -124,32 +134,39 @@ function renderCart() {
 
     const div = document.createElement('div');
     div.className = 'cart-item';
+    div.style.cssText = 'display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #eee; align-items:flex-start;';
+
     div.innerHTML = `
-      <img src="${item.images[0] || ''}" alt="${item.name}">
-      <div class="cart-item-info">
-        <h3>${item.name}</h3>
-        <div class="muted">${item.color || ''}</div>
-        <div class="price">৳${finalPrice.toFixed(2)} × ${item.quantity} = ৳${lineTotal.toFixed(2)}</div>
-        <div class="cart-item-qty">
-          <button>-</button>
-          <span>${item.quantity}</span>
-          <button>+</button>
-          <button>Remove</button>
+      <img src="${item.images[0] || ''}" alt="${item.name}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; flex-shrink:0;">
+      <div style="flex:1;">
+        <h3 style="margin:0 0 4px 0; font-size:1rem;">${item.name}</h3>
+        <div style="color:#6b7280; font-size:0.9rem; margin-bottom:4px;">${item.color ? 'Color: ' + item.color : ''}</div>
+        <div style="font-weight:600; margin-bottom:8px;">৳${finalPrice.toFixed(2)} × ${item.quantity} = ৳${lineTotal.toFixed(2)}</div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <button style="width:32px;height:32px;border:1px solid #ccc;background:white;border-radius:4px;cursor:pointer;font-weight:bold;">-</button>
+          <span style="min-width:40px;text-align:center;font-weight:bold;">${item.quantity}</span>
+          <button style="width:32px;height:32px;border:1px solid #ccc;background:white;border-radius:4px;cursor:pointer;font-weight:bold;">+</button>
+          <button style="margin-left:auto;padding:6px 12px;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.9rem;">Remove</button>
         </div>
       </div>
     `;
-    div.querySelectorAll('.cart-item-qty button')[0].onclick = () => updateCartQty(item.id, item.quantity - 1);
-    div.querySelectorAll('.cart-item-qty button')[1].onclick = () => updateCartQty(item.id, item.quantity + 1);
-    div.querySelectorAll('.cart-item-qty button')[3].onclick = () => removeFromCart(item.id);
+
+    const buttons = div.querySelectorAll('button');
+    buttons[0].onclick = () => updateCartQty(item.id, item.quantity - 1);
+    buttons[1].onclick = () => updateCartQty(item.id, item.quantity + 1);
+    buttons[3].onclick = () => removeFromCart(item.id);
+
     itemsEl.appendChild(div);
   });
 
   const delivery = Number(DELIVERY_FEE);
   const total = subtotal + delivery;
   totalsEl.innerHTML = `
-    <div>Subtotal: ৳${subtotal.toFixed(2)}</div>
-    <div>Delivery: ৳${delivery.toFixed(2)}</div>
-    <div style="font-size:1.2rem; margin-top:8px;">Total: ৳${total.toFixed(2)}</div>
+    <div style="padding:12px 0; border-top:1px solid #eee;">
+      <div style="margin-bottom:4px;">Subtotal: ৳${subtotal.toFixed(2)}</div>
+      <div style="margin-bottom:8px;">Delivery: ৳${delivery.toFixed(2)}</div>
+      <div style="font-size:1.2rem; font-weight:bold;">Total: ৳${total.toFixed(2)}</div>
+    </div>
   `;
 }
 
@@ -162,8 +179,6 @@ function createProductCard(p, products) {
   const finalPrice = hasDiscount ? price - Number(p.discount) : price;
   const images = p.images || [];
 
-  const isInStock = Number(p.stock) > 0 && p.availability === 'Ready';
-
   const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
   let slug = p.name.toLowerCase().replace(/\s+/g, '-');
   if (sameName.length > 1 && p.color) slug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
@@ -174,7 +189,7 @@ function createProductCard(p, products) {
     <img src="${images[0] || ''}" alt="${p.name}" onerror="this.src=''; this.alt='Image not available';">
     <div class="badges">
       ${p.hotDeal ? `<span class="badge hot">HOT DEAL</span>` : ''}
-      ${isInStock ? `<span class="badge new">IN STOCK</span>` : ''}
+      ${Number(p.stock) > 0 && p.availability === 'Ready' ? `<span class="badge new">IN STOCK</span>` : ''}
       ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
       ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
       ${p.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
@@ -186,7 +201,6 @@ function createProductCard(p, products) {
     </div>
   `;
 
-  // Horizontal button container
   const buttonContainer = document.createElement('div');
   buttonContainer.style.display = 'flex';
   buttonContainer.style.justifyContent = 'space-between';
@@ -237,6 +251,7 @@ async function loadProducts() {
     return [];
   }
 }
+
 async function loadOrders() {
   try {
     const q = query(collection(db, 'orders'), orderBy('timeISO', 'desc'));
@@ -247,6 +262,7 @@ async function loadOrders() {
     return [];
   }
 }
+
 function shuffle(array) {
   return array.slice().sort(() => Math.random() - 0.5);
 }
@@ -268,16 +284,19 @@ function createShimmerCard() {
   `;
   return card;
 }
+
 function createMainImageShimmer() {
   const img = document.createElement('div');
   img.className = 'shimmer-image-placeholder';
   return img;
 }
+
 function createThumbnailShimmer() {
   const thumb = document.createElement('div');
   thumb.className = 'thumbnail shimmer-thumbnail';
   return thumb;
 }
+
 function createInfoLineShimmer() {
   const line = document.createElement('div');
   line.className = 'shimmer-line';
@@ -300,6 +319,7 @@ async function initHomePage() {
   random4.forEach(p => interestSection.appendChild(createProductCard(p, products)));
   setupImageViewer();
 }
+
 async function initProductsPage() {
   const title = document.getElementById('products-title');
   const list = document.getElementById('product-list');
@@ -317,6 +337,7 @@ async function initProductsPage() {
   filtered.forEach(p => list.appendChild(createProductCard(p, products)));
   setupImageViewer();
 }
+
 async function initProductPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const urlSlug = urlParams.get('slug');
@@ -325,7 +346,7 @@ async function initProductPage() {
     return;
   }
 
-  // Shimmer placeholders
+  // Shimmer
   const mainImg = document.getElementById('main-image');
   const thumbnailGallery = document.getElementById('thumbnail-gallery');
   const nameEl = document.getElementById('product-name');
@@ -340,7 +361,7 @@ async function initProductPage() {
   nameEl.innerHTML = ''; nameEl.appendChild(createInfoLineShimmer()); nameEl.appendChild(createInfoLineShimmer());
   colorEl.innerHTML = ''; colorEl.appendChild(createInfoLineShimmer());
   priceEl.innerHTML = ''; priceEl.appendChild(createInfoLineShimmer());
-  badgesEl.innerHTML = ''; for (let i = 0; i < 2; i++) { badgesEl.appendChild(document.createElement('div')).className = 'shimmer-badge'; }
+  badgesEl.innerHTML = ''; for (let i = 0; i < 2; i++) { const b = document.createElement('div'); b.className = 'shimmer-badge'; badgesEl.appendChild(b); }
   specEl.innerHTML = ''; for (let i = 0; i < 3; i++) specEl.appendChild(createInfoLineShimmer());
   descEl.innerHTML = ''; for (let i = 0; i < 5; i++) descEl.appendChild(createInfoLineShimmer());
   orderRow.innerHTML = ''; orderRow.appendChild(createInfoLineShimmer());
@@ -359,7 +380,7 @@ async function initProductPage() {
     return;
   }
 
-  // Fill real data
+  // Fill data
   const newMainImg = document.createElement('img');
   newMainImg.id = 'main-image';
   newMainImg.src = product.images[0] || '';
@@ -373,17 +394,12 @@ async function initProductPage() {
   const finalPrice = hasDiscount ? price - Number(product.discount) : price;
   priceEl.innerHTML = hasDiscount ? `<s>৳${price.toFixed(2)}</s> ৳${finalPrice.toFixed(2)}` : `৳${finalPrice.toFixed(2)}`;
 
-  badgesEl.innerHTML = '';
-  const isUpcoming = product.availability === 'Upcoming';
-  const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
-  const isPreOrder = product.availability === 'Pre Order';
-  const isInStock = Number(product.stock) > 0 && product.availability === 'Ready';
   badgesEl.innerHTML = `
     ${product.hotDeal ? `<span class="badge hot">HOT DEAL</span>` : ''}
-    ${isInStock ? `<span class="badge new">IN STOCK</span>` : ''}
-    ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
+    ${Number(product.stock) > 0 && product.availability === 'Ready' ? `<span class="badge new">IN STOCK</span>` : ''}
+    ${product.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
     ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
-    ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ''}
+    ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
   `;
 
   specEl.textContent = product.description || '';
@@ -403,16 +419,21 @@ async function initProductPage() {
     thumbnailGallery.appendChild(thumb);
   });
 
-  // Order row: Quantity + Add to Cart + Buy Now
+  // Order row
   orderRow.innerHTML = '';
+  const isUpcoming = product.availability === 'Upcoming';
+  const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
+  const isPreOrder = product.availability === 'Pre Order';
+
   if (!isUpcoming && !isOOS) {
     const qtyWrapper = document.createElement('div');
     qtyWrapper.style.marginBottom = '12px';
     qtyWrapper.innerHTML = `
-      <label style="display:block; margin-bottom:4px;">Quantity</label>
-      <input class="qty" type="number" min="1" value="1" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:8px;" ${isPreOrder ? '' : `max="${product.stock}"`}>
+      <label style="display:block; margin-bottom:4px; font-weight:600;">Quantity</label>
+      <input class="qty" type="number" min="1" value="1" style="width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px;">
     `;
     const qtyInput = qtyWrapper.querySelector('.qty');
+    qtyInput.max = isPreOrder ? '' : product.stock;
     qtyInput.addEventListener('input', () => {
       let val = parseInt(qtyInput.value) || 1;
       if (val < 1) val = 1;
@@ -498,9 +519,9 @@ function showCheckoutModal(multi = false, product = null) {
       subtotal += tot;
       if (item.availability === 'Pre Order') hasPre = true;
       multiList.innerHTML += `
-        <div class="co-item">
-          <h4>${item.name}</h4>
-          <div class="muted">Color: ${item.color || '-'}</div>
+        <div class="co-item" style="padding:8px 0; border-bottom:1px solid #eee;">
+          <h4 style="margin:0 0 4px 0;">${item.name}</h4>
+          <div class="muted">${item.color ? 'Color: ' + item.color : ''}</div>
           <div>Qty: ${item.quantity} × ৳${fp.toFixed(2)} = ৳${tot.toFixed(2)}</div>
         </div>
       `;
@@ -630,6 +651,7 @@ function setupCheckout() {
         cart = [];
         saveCart();
         updateCartCount();
+        renderCart();
       }
       document.getElementById('checkout-modal').classList.remove('show');
     } catch (err) {
@@ -638,7 +660,6 @@ function setupCheckout() {
   };
 }
 
-// ====== ADMIN SECTION (unchanged from your original) ======
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
@@ -1029,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isProduct) await initProductPage();
   if (isStatus) setupStatusForm();
 
-  // Admin setup (unchanged)
+  // Admin login/setup (your original)
   const loginPanel = document.getElementById('login-panel');
   const adminPanel = document.getElementById('admin-panel');
   const addForm = document.getElementById('add-product-form');
@@ -1063,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Cart UI bindings
+  // Cart bindings
   updateCartCount();
   document.getElementById('cart-btn')?.addEventListener('click', openCart);
   document.getElementById('close-cart')?.addEventListener('click', closeCart);
