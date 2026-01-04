@@ -3,85 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shopping Cart</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png">
+  <title>Cart</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
   <link rel="stylesheet" href="style.css">
   <script type="module" src="script.js"></script>
-  <style>
-    .cart-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px;
-      background: var(--card);
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    .cart-item img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    .cart-item-info {
-      flex: 1;
-    }
-    .cart-item-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .remove-cart {
-      background: var(--danger);
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .cart-qty {
-      width: 60px;
-      padding: 6px;
-      text-align: center;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-    }
-    #cart-empty {
-      text-align: center;
-      color: var(--muted);
-      padding: 40px;
-    }
-  </style>
 </head>
 <body>
-  <header class="site-header">
-    <nav>
-      <a href="index.html" class="logo"><img src="logo.png" alt="Logo" style="height:40px;"></a>
-      <div class="nav-links">
-        <a href="products.html">Products</a>
-        <a href="status.html">Order Status</a>
-        <a href="cart.html">Cart</a>
-        <a href="admin.html">Admin</a>
-      </div>
-    </nav>
-  </header>
+  <header class="site-header"> (same) </header>
 
-  <div class="container">
-    <h1>Shopping Cart</h1>
-    <div id="cart-items"></div>
-    <div id="cart-summary" style="margin-top:20px; text-align:right; display:none;">
-      <h3>Products Total: ৳<span id="cart-total">0</span></h3>
-      <button id="checkout-from-cart" style="padding:12px 24px; font-size:1.1rem;">Proceed to Checkout</button>
-    </div>
-  </div>
+ <main class="container">
+    <h1>My Cart</h1>
+    <div id="cart-list" class="product-list"></div>
+    <div id="cart-total" class="price"></div>
+    <button id="checkout-cart">Checkout</button>
+  </main>
 
-  <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; color: #000000; margin-top:40px;">
-    <div>
-      <a href="https://www.facebook.com/thegeek.shop0" target="_blank"><img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;"></a>
-      <a href="https://www.instagram.com/thegeek.shop0" target="_blank"><img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;"></a>
-      <a href="https://wa.me/01960902526" target="_blank"><img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;"></a>
-    </div>
-    <p>&copy; All rights reserved by The Geek Shop</p>
-  </footer>
+<footer> (same) </footer>
 </body>
 </html>
