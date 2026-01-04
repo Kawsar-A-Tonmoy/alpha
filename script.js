@@ -17,10 +17,10 @@ const statusExplanations = {
   Cancelled: 'Your order has been cancelled.'
 };
 
-// Status colors
+// Status colors (FIXED: Added quotes around Processing color value)
 const statusColors = {
   Pending: '#eab308',
-  Processing: #3b82f6,
+  Processing: '#3b82f6',
   Dispatched: '#eab308',
   Delivered: '#22c55e',
   Cancelled: '#ef4444'
@@ -330,19 +330,40 @@ async function initProductPage() {
   }
 
   // Shimmer ...
-  // (same as original)
+  const productSection = document.getElementById('product-section');
+  const mainImageContainer = productSection.querySelector('.product-images');
+  mainImageContainer.appendChild(createMainImageShimmer());
+  const thumbnailGallery = document.getElementById('thumbnail-gallery');
+  for (let i = 0; i < 3; i++) {
+    thumbnailGallery.appendChild(createThumbnailShimmer());
+  }
+  const productInfo = productSection.querySelector('.product-info');
+  productInfo.appendChild(createInfoLineShimmer());
+  productInfo.appendChild(createInfoLineShimmer());
+  productInfo.appendChild(createInfoLineShimmer());
 
   const products = await loadProducts();
   let product = null;
   for (const p of products) {
-    // (same as original, find product)
+    let slug = p.name.toLowerCase().replace(/\s+/g, '-');
+    const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
+    if (sameName.length > 1 && p.color) {
+      slug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
+    }
+    if (slug === urlSlug) {
+      product = p;
+      break;
+    }
   }
   if (!product) {
     alert('Product not found');
     return;
   }
 
-  // Set title, meta, canonical (same)
+  // Set title, meta, canonical
+  document.title = product.name;
+  document.getElementById('meta-description').content = product.desc || '';
+  document.getElementById('canonical-link').href = window.location.href;
 
   const images = product.images || [];
   const realMainImg = document.createElement('img');
@@ -350,10 +371,26 @@ async function initProductPage() {
   realMainImg.loading = 'lazy';
   realMainImg.src = images[0] || '';
   realMainImg.alt = product.name;
-  // replace shimmer (same)
+  mainImageContainer.innerHTML = '';
+  mainImageContainer.appendChild(realMainImg);
 
-  // Set name, color, price, badges, spec, desc (same)
+  document.getElementById('product-name').innerText = product.name;
+  document.getElementById('product-color').innerText = `Color: ${product.color || '-'}`;
+  const hasDiscount = Number(product.discount) > 0;
+  const price = Number(product.price) || 0;
+  const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
+  document.getElementById('product-price').innerHTML = product.availability === 'Upcoming' ? 'TBA' : (hasDiscount ? `<s>৳${price.toFixed(2)}</s> ৳${finalPrice.toFixed(2)}` : `৳${finalPrice.toFixed(2)}`);
+  const badges = document.getElementById('product-badges');
+  if (product.hotDeal) badges.innerHTML += `<span class="badge hot">HOT DEAL</span>`;
+  if (Number(product.stock) > 0 && product.availability === 'Ready') badges.innerHTML += `<span class="badge new">IN STOCK</span>`;
+  if (!product.availability === 'Upcoming' && Number(product.stock) <= 0 && product.availability !== 'Pre Order') badges.innerHTML += `<span class="badge oos">OUT OF STOCK</span>`;
+  if (product.availability === 'Upcoming') badges.innerHTML += `<span class="badge upcoming">UPCOMING</span>`;
+  if (product.availability === 'Pre Order') badges.innerHTML += `<span class="badge preorder">PRE ORDER</span>`;
+  document.getElementById('product-spec').innerText = product.spec || '';
+  document.getElementById('product-detailed-desc').innerHTML = (product.detailedDesc || '').replace(/\n/g, '<br>');
 
+  const isUpcoming = product.availability === 'Upcoming';
+  const orderRow = document.getElementById('order-row');
   const button = document.createElement('button');
   if (isUpcoming) {
     button.textContent = 'Upcoming - Stay Tuned';
@@ -387,7 +424,10 @@ async function initProductPage() {
     });
   }
 
-  // Other products (same)
+  // Other products
+  const otherProducts = document.getElementById('other-products');
+  const randomOthers = shuffle(products.filter(p => p.id !== product.id && p.availability !== 'Upcoming')).slice(0, 4);
+  randomOthers.forEach(p => otherProducts.appendChild(createProductCard(p, products)));
 
   document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
   const form = document.getElementById('checkout-form');
@@ -460,7 +500,7 @@ function updatePaymentInfo() {
   document.getElementById('co-due-amount').value = due.toFixed(2);
   const number = payment === 'Bkash' ? BKASH_NUMBER : COD_NUMBER;
   document.getElementById('co-payment-number').value = number;
-  document.getElementById('co-txn').disabled = payment === 'COD';
+  document.getElementById('co-txn').disabled = payment === 'Cash on Delivery';
 }
 
 async function submitCheckoutOrder(e) {
@@ -491,7 +531,6 @@ function closeCheckoutModal() {
 }
 
 function setupImageViewer() {
-  // (same as original, with zoom on click)
   const viewer = document.getElementById('image-viewer');
   const viewerImg = document.getElementById('viewer-img');
   const closeViewer = document.getElementById('close-viewer');
@@ -502,7 +541,9 @@ function setupImageViewer() {
     });
   });
   closeViewer.addEventListener('click', () => viewer.classList.remove('show'));
-  viewer.addEventListener('click', (e) => if (e.target === viewer) viewer.classList.remove('show'); );
+  viewer.addEventListener('click', (e) => {
+    if (e.target === viewer) viewer.classList.remove('show');
+  });
 }
 
 // User auth for customers
@@ -529,17 +570,17 @@ async function initUserAuth() {
 }
 
 // Init based on page
-if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/store/') {
+if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/alpha/') {
   initHomePage();
 } else if (window.location.pathname.endsWith('products.html')) {
   initProductsPage();
 } else if (window.location.pathname.endsWith('product.html')) {
   initProductPage();
 } else if (window.location.pathname.endsWith('admin.html')) {
-  // (original admin init)
+  // Original admin init code here (assuming you have it from original)
   initUserAuth();
 } else if (window.location.pathname.endsWith('status.html')) {
-  // (original status init)
+  // Original status init code here
   initUserAuth();
 } else if (window.location.pathname.endsWith('cart.html')) {
   initDarkMode();
@@ -547,8 +588,10 @@ if (window.location.pathname.endsWith('index.html') || window.location.pathname 
   initNewsletter();
   initPWA();
   updateCartCount();
-  // Load cart items into #cart-list like in openCartModal, but on page
-  // Add event for #checkout-cart to openCheckoutModal(cart)
+  // Load cart items into #cart-list similar to openCartModal
+  const cartList = document.getElementById('cart-list');
+  // ... (implement loading cart items here, similar to modal)
+  document.getElementById('checkout-cart').onclick = () => openCheckoutModal(cart);
 } else if (window.location.pathname.endsWith('login.html')) {
   initUserAuth();
 }
