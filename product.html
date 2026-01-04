@@ -43,7 +43,7 @@
         <div id="product-color" class="muted"></div>
         <div id="product-price" class="price"></div>
         <div id="product-badges" class="badges"></div>
-        <p id="product-spec"></p>
+        <p id="product-spec">No specification available</p> <!-- Fallback text -->
         <div id="order-row" class="order-row"></div>
         <button id="add-to-cart-btn">Add to Cart</button>
         <div id="ratings" class="muted">Average Rating: <span id="avg-rating">0</span> ( <span id="review-count">0 reviews</span> )</div>
@@ -52,7 +52,7 @@
 
     <section class="product-description-section">
       <h2>Description</h2>
-      <div id="product-detailed-desc" class="description-content"></div>
+      <div id="product-detailed-desc" class="description-content">No description available</div> <!-- Fallback text -->
     </section>
 
     <h2>Reviews</h2>
@@ -153,11 +153,10 @@
     </div>
   </div>
 
-  <!-- Cart Sidebar (added to all pages, but init handles) -->
   <div id="cart-sidebar" class="cart-sidebar">
     <button id="close-cart-sidebar" class="close-cart">&times;</button>
     <h2>My Cart</h2>
-    <div id="cart-items"></div>
+    <div id="cart-items">Your cart is empty</div> <!-- Fallback -->
     <div id="cart-total" class="price"></div>
     <button id="checkout-cart">Checkout</button>
   </div>
