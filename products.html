@@ -9,7 +9,7 @@
   <script type="module" src="script.js"></script>
 </head>
 <body>
-   <header class="site-header">
+  <header class="site-header">
     <nav>
       <a href="index.html" class="logo">
         <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
@@ -19,7 +19,7 @@
         <a href="status.html">Order Status</a>
         <a href="admin.html">Admin</a>
         <input id="search-input" type="search" placeholder="Search products..." style="padding: 6px 10px; border-radius: 8px; border: 1px solid #e5e7eb; margin-left: 14px;">
-        <a href="cart.html" id="cart-link">Cart <span id="cart-count">0</span></a>
+        <a href="#" id="cart-link">Cart <span id="cart-count">0</span></a>
         <button id="dark-mode-toggle">Toggle Dark Mode</button>
         <a href="login.html">Login/Register</a>
       </div>
@@ -29,18 +29,23 @@
  <main class="container products">
     <div id="filters" class="sidebar card">
       <h3>Filters</h3>
-      <div>
-        <label>Price Min</label>
+      <div class="filter-group">
+        <h4>Price Range</h4>
+        <label>Min Price</label>
         <input id="filter-price-min" type="number" placeholder="Min">
-      </div>
-      <div>
-        <label>Price Max</label>
+        <label>Max Price</label>
         <input id="filter-price-max" type="number" placeholder="Max">
       </div>
-      <div id="color-filters"></div>
-      <div id="availability-filters"></div>
-      <label><input type="checkbox" id="filter-hot-deal"> Hot Deals Only</label>
-      <button id="apply-filters">Apply</button>
+      <div class="filter-group">
+        <h4>Colors</h4>
+        <div id="color-filters"></div>
+      </div>
+      <div class="filter-group">
+        <h4>Availability</h4>
+        <div id="availability-filters"></div>
+      </div>
+      <label class="hot-deal-label"><input type="checkbox" id="filter-hot-deal"> Hot Deals Only</label>
+      <button id="clear-filters" class="secondary">Clear Filters</button>
     </div>
     <div class="main-content">
       <h1 id="products-title">Products</h1>
@@ -53,7 +58,34 @@
     <img id="viewer-img" src="" alt="">
   </div>
 
-<footer> (same) </footer>
-</body>
+  <!-- Cart Sidebar -->
+  <div id="cart-sidebar" class="cart-sidebar">
+    <button id="close-cart-sidebar" class="close-cart">&times;</button>
+    <h2>My Cart</h2>
+    <div id="cart-items"></div>
+    <div id="cart-total" class="price"></div>
+    <button id="checkout-cart">Checkout</button>
+  </div>
 
+  <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; color: #000000; font-family: Arial, sans-serif;">
+    <div>
+      <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+      </a>
+      <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+      </a>
+      <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
+        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
+      </a>
+    </div>
+    <h3>Newsletter</h3>
+    <form id="newsletter-form" style="max-width: 400px; margin: 0 auto;">
+      <input type="email" placeholder="Your email" required style="padding: 10px; width: 70%; border-radius: 8px; border: 1px solid #e5e7eb;">
+      <button type="submit" style="padding: 10px;">Subscribe</button>
+    </form>
+    <p>&copy; All rights reserved by The Geek Shop</p>
+    <a href="blog.html">Blog</a>
+  </footer>
+</body>
 </html>
