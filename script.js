@@ -17,7 +17,7 @@ const statusExplanations = {
   Cancelled: 'Your order has been cancelled.'
 };
 
-// Status colors (FIXED: Added quotes around Processing color value)
+// Status colors (FIXED: Added quotes to all values for consistency)
 const statusColors = {
   Pending: '#eab308',
   Processing: '#3b82f6',
@@ -161,11 +161,13 @@ function addToCart(productId, qty = 1) {
 
 function updateCartCount() {
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
-  document.getElementById('cart-count').innerText = count;
+  const cartCountEl = document.getElementById('cart-count');
+  if (cartCountEl) cartCountEl.innerText = count;
 }
 
 async function openCartModal() {
   const modal = document.getElementById('cart-modal');
+  if (!modal) return;
   modal.classList.add('show');
   const itemsDiv = document.getElementById('cart-items');
   itemsDiv.innerHTML = '';
@@ -193,41 +195,53 @@ function initDarkMode() {
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark');
   }
-  document.getElementById('dark-mode-toggle').addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark') ? 'true' : 'false');
-  });
+  const toggleBtn = document.getElementById('dark-mode-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark') ? 'true' : 'false');
+    });
+  }
 }
 
 function initSearch() {
   const searchInput = document.getElementById('search-input');
-  searchInput.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    if (window.location.pathname.includes('products.html')) {
-      const list = document.getElementById('product-list');
-      const cards = list.querySelectorAll('.product-card');
-      cards.forEach(card => {
-        const name = card.querySelector('h3').textContent.toLowerCase();
-        card.style.display = name.includes(term) ? '' : 'none';
-      });
-    } else {
-      window.location.href = `products.html?search=${encodeURIComponent(term)}`;
-    }
-  });
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      if (window.location.pathname.includes('products.html')) {
+        const list = document.getElementById('product-list');
+        const cards = list.querySelectorAll('.product-card');
+        cards.forEach(card => {
+          const name = card.querySelector('h3').textContent.toLowerCase();
+          card.style.display = name.includes(term) ? '' : 'none';
+        });
+      } else {
+        window.location.href = `products.html?search=${encodeURIComponent(term)}`;
+      }
+    });
+  }
 }
 
 function initNewsletter() {
-  document.getElementById('newsletter-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = e.target.querySelector('input[type="email"]').value;
-    await addDoc(collection(db, 'subscribers'), { email, time: new Date().toISOString() });
-    alert('Subscribed!');
-  });
+  const form = document.getElementById('newsletter-form');
+  if (form) {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = e.target.querySelector('input[type="email"]').value;
+      try {
+        await addDoc(collection(db, 'subscribers'), { email, time: new Date().toISOString() });
+        alert('Subscribed!');
+      } catch (err) {
+        console.error('Subscription error:', err);
+      }
+    });
+  }
 }
 
 function initPWA() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/serviceworker.js');
+    navigator.serviceWorker.register('/serviceworker.js').catch(err => console.error('PWA registration failed:', err));
   }
 }
 
@@ -295,7 +309,8 @@ function initFilters(products) {
     label.innerHTML = `<input type="checkbox" class="filter-avail" value="${avail}"> ${avail}`;
     availFilters.appendChild(label);
   });
-  document.getElementById('apply-filters').addEventListener('click', () => applyFilters(products));
+  const applyBtn = document.getElementById('apply-filters');
+  if (applyBtn) applyBtn.addEventListener('click', () => applyFilters(products));
 }
 
 function applyFilters(products) {
@@ -329,7 +344,7 @@ async function initProductPage() {
     return;
   }
 
-  // Shimmer ...
+  // Shimmer
   const productSection = document.getElementById('product-section');
   const mainImageContainer = productSection.querySelector('.product-images');
   mainImageContainer.appendChild(createMainImageShimmer());
@@ -362,8 +377,10 @@ async function initProductPage() {
 
   // Set title, meta, canonical
   document.title = product.name;
-  document.getElementById('meta-description').content = product.desc || '';
-  document.getElementById('canonical-link').href = window.location.href;
+  const metaDesc = document.getElementById('meta-description');
+  if (metaDesc) metaDesc.content = product.desc || '';
+  const canonical = document.getElementById('canonical-link');
+  if (canonical) canonical.href = window.location.href;
 
   const images = product.images || [];
   const realMainImg = document.createElement('img');
@@ -383,7 +400,7 @@ async function initProductPage() {
   const badges = document.getElementById('product-badges');
   if (product.hotDeal) badges.innerHTML += `<span class="badge hot">HOT DEAL</span>`;
   if (Number(product.stock) > 0 && product.availability === 'Ready') badges.innerHTML += `<span class="badge new">IN STOCK</span>`;
-  if (!product.availability === 'Upcoming' && Number(product.stock) <= 0 && product.availability !== 'Pre Order') badges.innerHTML += `<span class="badge oos">OUT OF STOCK</span>`;
+  if (product.availability !== 'Upcoming' && Number(product.stock) <= 0 && product.availability !== 'Pre Order') badges.innerHTML += `<span class="badge oos">OUT OF STOCK</span>`; // FIXED logical error
   if (product.availability === 'Upcoming') badges.innerHTML += `<span class="badge upcoming">UPCOMING</span>`;
   if (product.availability === 'Pre Order') badges.innerHTML += `<span class="badge preorder">PRE ORDER</span>`;
   document.getElementById('product-spec').innerText = product.spec || '';
@@ -409,7 +426,8 @@ async function initProductPage() {
   orderRow.innerHTML = '';
   orderRow.appendChild(button);
 
-  document.getElementById('add-to-cart-btn').addEventListener('click', () => addToCart(product.id));
+  const addToCartBtn = document.getElementById('add-to-cart-btn');
+  if (addToCartBtn) addToCartBtn.addEventListener('click', () => addToCart(product.id));
 
   thumbnailGallery.innerHTML = '';
   if (images.length > 1) {
@@ -429,45 +447,60 @@ async function initProductPage() {
   const randomOthers = shuffle(products.filter(p => p.id !== product.id && p.availability !== 'Upcoming')).slice(0, 4);
   randomOthers.forEach(p => otherProducts.appendChild(createProductCard(p, products)));
 
-  document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  if (closeModalBtn) closeModalBtn.onclick = closeCheckoutModal;
   const form = document.getElementById('checkout-form');
-  form.addEventListener('submit', submitCheckoutOrder);
-  document.getElementById('co-payment').addEventListener('change', updatePaymentInfo);
+  if (form) form.addEventListener('submit', submitCheckoutOrder);
+  const paymentSelect = document.getElementById('co-payment');
+  if (paymentSelect) paymentSelect.addEventListener('change', updatePaymentInfo);
   setupImageViewer();
   initReviews(product.id);
 }
 
 async function initReviews(productId) {
   const reviewsList = document.getElementById('reviews-list');
-  const snap = await getDocs(query(collection(db, 'reviews'), where('productId', '==', productId)));
-  reviewsList.innerHTML = '';
-  let totalRating = 0;
-  snap.docs.forEach(d => {
-    const r = d.data();
-    const div = document.createElement('div');
-    div.innerHTML = `<p>Rating: ${r.rating} - ${r.text}</p>`;
-    reviewsList.appendChild(div);
-    totalRating += r.rating;
-  });
-  const count = snap.docs.length;
-  document.getElementById('avg-rating').innerText = count ? (totalRating / count).toFixed(1) : '0';
-  document.getElementById('review-count').innerText = count;
+  if (!reviewsList) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'reviews'), where('productId', '==', productId)));
+    reviewsList.innerHTML = '';
+    let totalRating = 0;
+    snap.docs.forEach(d => {
+      const r = d.data();
+      const div = document.createElement('div');
+      div.innerHTML = `<p>Rating: ${r.rating} - ${r.text}</p>`;
+      reviewsList.appendChild(div);
+      totalRating += r.rating;
+    });
+    const count = snap.docs.length;
+    document.getElementById('avg-rating').innerText = count ? (totalRating / count).toFixed(1) : '0';
+    document.getElementById('review-count').innerText = count;
+  } catch (err) {
+    console.error('Reviews error:', err);
+  }
 
-  document.getElementById('review-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    if (!auth.currentUser) {
-      alert('Login to review');
-      return;
-    }
-    const text = document.getElementById('review-text').value;
-    const rating = Number(document.getElementById('review-rating').value);
-    await addDoc(collection(db, 'reviews'), { productId, text, rating, userId: auth.currentUser.uid, time: new Date().toISOString() });
-    initReviews(productId);
-  });
+  const reviewForm = document.getElementById('review-form');
+  if (reviewForm) {
+    reviewForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!auth.currentUser) {
+        alert('Login to review');
+        return;
+      }
+      const text = document.getElementById('review-text').value;
+      const rating = Number(document.getElementById('review-rating').value);
+      try {
+        await addDoc(collection(db, 'reviews'), { productId, text, rating, userId: auth.currentUser.uid, time: new Date().toISOString() });
+        initReviews(productId);
+      } catch (err) {
+        console.error('Review submit error:', err);
+      }
+    });
+  }
 }
 
 async function openCheckoutModal(items, isPreOrder = false) {
   const modal = document.getElementById('checkout-modal');
+  if (!modal) return;
   modal.classList.add('show');
   const itemsDiv = document.getElementById('checkout-items');
   itemsDiv.innerHTML = '';
@@ -518,20 +551,26 @@ async function submitCheckoutOrder(e) {
     timeISO: new Date().toISOString(),
     status: 'Pending'
   };
-  await addDoc(collection(db, 'orders'), data);
-  cart = [];
-  localStorage.setItem('cart', JSON.stringify(cart));
-  updateCartCount();
-  closeCheckoutModal();
-  alert('Order placed!');
+  try {
+    await addDoc(collection(db, 'orders'), data);
+    cart = [];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    closeCheckoutModal();
+    alert('Order placed!');
+  } catch (err) {
+    console.error('Order error:', err);
+  }
 }
 
 function closeCheckoutModal() {
-  document.getElementById('checkout-modal').classList.remove('show');
+  const modal = document.getElementById('checkout-modal');
+  if (modal) modal.classList.remove('show');
 }
 
 function setupImageViewer() {
   const viewer = document.getElementById('image-viewer');
+  if (!viewer) return;
   const viewerImg = document.getElementById('viewer-img');
   const closeViewer = document.getElementById('close-viewer');
   document.querySelectorAll('.product-card img, #main-image, .thumbnail').forEach(img => {
@@ -550,48 +589,78 @@ function setupImageViewer() {
 async function initUserAuth() {
   onAuthStateChanged(auth, user => {
     if (user) {
-      // Update UI for logged in
+      // Update UI for logged in (e.g., show username)
     }
   });
-  document.getElementById('login-form-user')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = document.getElementById('user-email').value;
-    const pass = document.getElementById('user-pass').value;
-    await signInWithEmailAndPassword(auth, email, pass);
-    window.location.href = 'index.html';
-  });
-  document.getElementById('register-form')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = document.getElementById('reg-email').value;
-    const pass = document.getElementById('reg-pass').value;
-    await createUserWithEmailAndPassword(auth, email, pass);
-    window.location.href = 'index.html';
-  });
+  const loginForm = document.getElementById('login-form-user');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('user-email').value;
+      const pass = document.getElementById('user-pass').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        window.location.href = 'index.html';
+      } catch (err) {
+        console.error('Login error:', err);
+      }
+    });
+  }
+  const registerForm = document.getElementById('register-form');
+  if (registerForm) {
+    registerForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-pass').value;
+      try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        window.location.href = 'index.html';
+      } catch (err) {
+        console.error('Register error:', err);
+      }
+    });
+  }
 }
 
 // Init based on page
-if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/alpha/') {
+const path = window.location.pathname;
+if (path.endsWith('index.html') || path === '/alpha/') {
   initHomePage();
-} else if (window.location.pathname.endsWith('products.html')) {
+} else if (path.endsWith('products.html')) {
   initProductsPage();
-} else if (window.location.pathname.endsWith('product.html')) {
+} else if (path.endsWith('product.html')) {
   initProductPage();
-} else if (window.location.pathname.endsWith('admin.html')) {
-  // Original admin init code here (assuming you have it from original)
+} else if (path.endsWith('admin.html')) {
+  // Add admin init if needed
   initUserAuth();
-} else if (window.location.pathname.endsWith('status.html')) {
-  // Original status init code here
+} else if (path.endsWith('status.html')) {
+  // Add status init if needed
   initUserAuth();
-} else if (window.location.pathname.endsWith('cart.html')) {
+} else if (path.endsWith('cart.html')) {
   initDarkMode();
   initSearch();
   initNewsletter();
   initPWA();
   updateCartCount();
-  // Load cart items into #cart-list similar to openCartModal
   const cartList = document.getElementById('cart-list');
-  // ... (implement loading cart items here, similar to modal)
-  document.getElementById('checkout-cart').onclick = () => openCheckoutModal(cart);
-} else if (window.location.pathname.endsWith('login.html')) {
+  const cartTotal = document.getElementById('cart-total');
+  if (cartList && cartTotal) {
+    cartList.innerHTML = '';
+    let total = 0;
+    loadProducts().then(products => {
+      cart.forEach(item => {
+        const p = products.find(p => p.id === item.id);
+        if (p) {
+          const card = createProductCard(p, products); // Reuse card for display
+          cartList.appendChild(card);
+          total += (p.price - p.discount) * item.qty;
+        }
+      });
+      cartTotal.innerText = `Total: ৳${total}`;
+    }).catch(err => console.error('Cart load error:', err));
+  }
+  const checkoutBtn = document.getElementById('checkout-cart');
+  if (checkoutBtn) checkoutBtn.addEventListener('click', () => openCheckoutModal(cart));
+} else if (path.endsWith('login.html')) {
   initUserAuth();
 }
