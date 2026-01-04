@@ -358,8 +358,81 @@ async function initProductPage() {
     alert('Product not found');
     return;
   }
+async function openCartSidebar() {
+  const sidebar = document.getElementById('cart-sidebar');
+  if (!sidebar) {
+    console.error('Cart sidebar not found on page');
+    return;
+  }
+  sidebar.classList.add('open');
+  const itemsDiv = document.getElementById('cart-items');
+  const totalEl = document.getElementById('cart-total');
+  if (!itemsDiv || !totalEl) {
+    console.error('Cart elements missing');
+    return;
+  }
+  itemsDiv.innerHTML = cart.length === 0 ? 'Your cart is empty' : '';
+  let total = 0;
+  const products = await loadProducts();
+  cart.forEach(item => {
+    const p = products.find(p => p.id === item.id);
+    if (p) {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'cart-item';
+      itemDiv.innerHTML = `
+        <h3>${p.name}</h3>
+        <p>Qty: ${item.qty} - Price: ৳${(p.price - p.discount) * item.qty}</p>
+      `;
+      itemsDiv.appendChild(itemDiv);
+      total += (p.price - p.discount) * item.qty;
+    } else {
+      console.warn('Missing product for cart item:', item.id);
+    }
+  });
+  totalEl.innerText = `Total: ৳${total}`;
+  const checkoutBtn = document.getElementById('checkout-cart');
+  if (checkoutBtn) {
+    checkoutBtn.onclick = () => openCheckoutModal(cart);
+  } else {
+    console.error('Checkout button missing');
+  }
+  const closeBtn = document.getElementById('close-cart-sidebar');
+  if (closeBtn) {
+    closeBtn.onclick = () => sidebar.classList.remove('open');
+  } else {
+    console.error('Close button missing');
+  }
+}
 
-  // Shimmer
+function initCart() {
+  const cartLink = document.getElementById('cart-link');
+  if (cartLink) {
+    cartLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCartSidebar();
+    });
+  } else {
+    console.error('Cart link not found');
+  }
+}
+
+async function initProductPage() {
+  initDarkMode();
+  initSearch();
+  initNewsletter();
+  initPWA();
+  updateCartCount();
+  initCart(); // Ensure cart init
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSlug = urlParams.get('slug');
+  if (!urlSlug) {
+    console.error('No slug in URL');
+    alert('Product not found - missing slug');
+    return;
+  }
+  console.log('Fetching product for slug:', urlSlug);
+
+  // Shimmer...
   const productSection = document.getElementById('product-section');
   const mainImageContainer = productSection.querySelector('.product-images');
   mainImageContainer.appendChild(createMainImageShimmer());
@@ -372,16 +445,12 @@ async function initProductPage() {
   productInfo.appendChild(createInfoLineShimmer());
   productInfo.appendChild(createInfoLineShimmer());
 
-  let products;
-  try {
-    products = await loadProducts();
-  } catch (err) {
-    console.error('Failed to load products:', err);
-    // Clear shimmers on error
+  const products = await loadProducts();
+  if (products.length === 0) {
+    console.error('No products loaded from Firebase');
     mainImageContainer.innerHTML = '';
     thumbnailGallery.innerHTML = '';
-    productInfo.innerHTML = '';
-    alert('Error loading product data');
+    productInfo.innerHTML = '<p>Error: No products available. Check Firebase connection.</p>';
     return;
   }
 
@@ -398,22 +467,19 @@ async function initProductPage() {
     }
   }
   if (!product) {
-    console.error('Product not found for slug:', urlSlug);
+    console.error('No matching product for slug:', urlSlug);
     mainImageContainer.innerHTML = '';
     thumbnailGallery.innerHTML = '';
-    productInfo.innerHTML = '';
+    productInfo.innerHTML = '<p>Product not found. Try a different slug from the products page.</p>';
     alert('Product not found');
     return;
   }
-
-  console.log('Loaded product:', product); // Debug
+  console.log('Product data:', product); // Debug fields
 
   // Set title, meta, canonical
-  document.title = product.name;
-  const metaDesc = document.getElementById('meta-description');
-  if (metaDesc) metaDesc.content = product.desc || '';
-  const canonical = document.getElementById('canonical-link');
-  if (canonical) canonical.href = window.location.href;
+  document.title = product.name || 'Untitled Product';
+  document.getElementById('meta-description').content = product.desc || '';
+  document.getElementById('canonical-link').href = window.location.href;
 
   const images = product.images || [];
   const realMainImg = document.createElement('img');
@@ -424,20 +490,21 @@ async function initProductPage() {
   mainImageContainer.innerHTML = '';
   mainImageContainer.appendChild(realMainImg);
 
-  document.getElementById('product-name').innerText = product.name;
+  document.getElementById('product-name').innerText = product.name || 'No name';
   document.getElementById('product-color').innerText = `Color: ${product.color || '-'}`;
   const hasDiscount = Number(product.discount) > 0;
   const price = Number(product.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
   document.getElementById('product-price').innerHTML = product.availability === 'Upcoming' ? 'TBA' : (hasDiscount ? `<s>৳${price.toFixed(2)}</s> ৳${finalPrice.toFixed(2)}` : `৳${finalPrice.toFixed(2)}`);
   const badges = document.getElementById('product-badges');
+  badges.innerHTML = '';
   if (product.hotDeal) badges.innerHTML += `<span class="badge hot">HOT DEAL</span>`;
   if (Number(product.stock) > 0 && product.availability === 'Ready') badges.innerHTML += `<span class="badge new">IN STOCK</span>`;
   if (product.availability !== 'Upcoming' && Number(product.stock) <= 0 && product.availability !== 'Pre Order') badges.innerHTML += `<span class="badge oos">OUT OF STOCK</span>`;
   if (product.availability === 'Upcoming') badges.innerHTML += `<span class="badge upcoming">UPCOMING</span>`;
   if (product.availability === 'Pre Order') badges.innerHTML += `<span class="badge preorder">PRE ORDER</span>`;
-  document.getElementById('product-spec').innerText = product.desc || product.spec || 'No specification available'; // Fallback to desc if spec missing
-  document.getElementById('product-detailed-desc').innerHTML = (product.desc || product.detailedDesc || '').replace(/\n/g, '<br>'); // Fallback
+  document.getElementById('product-spec').innerText = product.spec || product.desc || 'No specification available';
+  document.getElementById('product-detailed-desc').innerHTML = (product.detailedDesc || product.desc || 'No description available').replace(/\n/g, '<br>');
 
   const isUpcoming = product.availability === 'Upcoming';
   const orderRow = document.getElementById('order-row');
@@ -473,6 +540,8 @@ async function initProductPage() {
       thumb.onclick = () => { realMainImg.src = src; };
       thumbnailGallery.appendChild(thumb);
     });
+  } else {
+    console.log('Only one image - no thumbnails');
   }
 
   // Other products
@@ -488,7 +557,6 @@ async function initProductPage() {
   if (paymentSelect) paymentSelect.addEventListener('change', updatePaymentInfo);
   setupImageViewer();
   initReviews(product.id);
-  initCart();
 }
 
 function initCart() {
@@ -516,3 +584,4 @@ if (path.endsWith('index.html') || path === '/alpha/') {
 } else if (path.endsWith('login.html')) {
   initUserAuth();
 }
+
