@@ -16,8 +16,22 @@
   <script type="module" src="script.js"></script>
 </head>
 <body>
-  <header class="site-header"> (same as updated index.html, with search, cart, dark toggle) </header>
-
+   <header class="site-header">
+    <nav>
+      <a href="index.html" class="logo">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="status.html">Order Status</a>
+        <a href="admin.html">Admin</a>
+        <input id="search-input" type="search" placeholder="Search products..." style="padding: 6px 10px; border-radius: 8px; border: 1px solid #e5e7eb; margin-left: 14px;">
+        <a href="cart.html" id="cart-link">Cart <span id="cart-count">0</span></a>
+        <button id="dark-mode-toggle">Toggle Dark Mode</button>
+        <a href="login.html">Login/Register</a>
+      </div>
+    </nav>
+  </header>
   <main class="container">
     <div id="product-section" class="product-detail">
       <div class="product-images">
@@ -154,4 +168,5 @@
 
   <footer> (same as updated index.html, with newsletter) </footer>
 </body>
+
 </html>
