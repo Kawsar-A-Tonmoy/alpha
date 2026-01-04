@@ -497,3 +497,38 @@ footer {
   height: 16px;
   margin: 4px 0;
 }
+.close-viewer, .close-cart {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    display: none; /* Hide by default */
+}
+.image-viewer.show .close-viewer, .cart-sidebar.open .close-cart {
+    display: block; /* Show when active */
+}
+
+.cart-sidebar {
+  position: fixed;
+  top: 0;
+  right: -350px;
+  width: 350px;
+  height: 100%;
+  background: var(--card);
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+  transition: right 0.3s ease;
+  z-index: 100;
+  padding: 16px;
+  overflow-y: auto;
+}
+.cart-sidebar.open {
+  right: 0;
+}
+.cart-items div {
+  border-bottom: 1px solid var(--glass-border);
+  padding: 8px 0;
+}
