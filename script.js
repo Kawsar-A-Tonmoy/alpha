@@ -126,7 +126,7 @@ function updateCartUI() {
           <button onclick="updateCartQuantity('${item.id}', ${item.qty - 1})">-</button>
           <span>${item.qty}</span>
           <button onclick="updateCartQuantity('${item.id}', ${item.qty + 1})">+</button>
-          <button style="background:#dc2626; margin-left:auto;" onclick="removeFromCart('${item.id}')">Remove</button>
+         <button class="remove-btn" onclick="removeFromCart('${item.id}')" title="Remove item">🗑️</button>
         </div>
       </div>
     `;
@@ -651,29 +651,38 @@ async function initProductPage() {
   orderRow.appendChild(button);
 
   // Add to Cart Button
-  const addToCartBtn = document.createElement('button');
-  addToCartBtn.textContent = 'Add to Cart';
+const addToCartBtn = document.createElement('button');
+  addToCartBtn.innerHTML = '🛒';
+  addToCartBtn.title = 'Add to Cart';
   addToCartBtn.style.marginTop = '16px';
   addToCartBtn.style.width = '100%';
   addToCartBtn.style.padding = '14px';
+  addToCartBtn.style.fontSize = '24px';
   addToCartBtn.style.backgroundColor = '#10b981';
   addToCartBtn.style.color = 'white';
   addToCartBtn.style.border = 'none';
-  addToCartBtn.style.borderRadius = '8px';
-  addToCartBtn.style.fontSize = '16px';
-  addToCartBtn.style.fontWeight = '600';
+  addToCartBtn.style.borderRadius = '12px';
+  addToCartBtn.style.cursor = 'pointer';
+  addToCartBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
 
+  const isUpcoming = product.availability === 'Upcoming';
   const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
+
   if (isUpcoming || isOOS) {
-    addToCartBtn.textContent = isUpcoming ? 'Upcoming' : 'Out of Stock';
+    addToCartBtn.innerHTML = isUpcoming ? '⏳' : '❌';
+    addToCartBtn.title = isUpcoming ? 'Upcoming' : 'Out of Stock';
     addToCartBtn.disabled = true;
     addToCartBtn.style.backgroundColor = '#6b7280';
+    addToCartBtn.style.cursor = 'not-allowed';
   } else {
     addToCartBtn.onclick = () => {
-      const qty = Number(document.getElementById('co-qty')?.value) || 1;
+      const qtyInput = document.getElementById('co-qty');
+      const qty = qtyInput ? Number(qtyInput.value) || 1 : 1;
       addToCart(product.id, qty);
+      alert('Added to cart!');
     };
   }
+
   orderRow.appendChild(addToCartBtn);
 
   // Thumbnails
@@ -1014,3 +1023,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 });
+
