@@ -67,7 +67,6 @@ function addToCart(productId, qty = 1) {
     });
   }
   saveCart(cart);
-  alert('Added to cart!');
 }
 
 function removeFromCart(productId) {
@@ -1405,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
