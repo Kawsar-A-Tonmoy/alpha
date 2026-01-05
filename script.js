@@ -1211,23 +1211,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         payNowEl.style.display = 'block';
         dueEl.style.display = 'block';
       } else if (method === 'Bkash') {
-        payNowEl.value = total.toFixed(2);
-        dueEl.value = "0.00";
-        numberEl.value = BKASH_NUMBER;
-        noteEl.textContent = `Send full amount ৳${total.toFixed(2)} to ${BKASH_NUMBER} and provide transaction ID.`;
-        txnEl.required = true;
-        payNowEl.style.display = 'block';
-        dueEl.style.display = 'block';
-      } else if (method === 'Cash on Delivery') {
-        payNowEl.value = deliveryFee.toFixed(2);
-        dueEl.value = subtotal.toFixed(2);
-        numberEl.value = COD_NUMBER;
-        noteEl.textContent = `Pay ৳${deliveryFee} to delivery agent. Remaining on delivery.`;
-        txnEl.required = false;
-        txnEl.value = '';
-        payNowEl.style.display = 'block';
-        dueEl.style.display = 'block';
-      } else {
+    paymentNumberEl.value = BKASH_NUMBER;
+    noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    txnEl.required = true;
+    payNowEl.style.display = 'block';
+    dueEl.style.display = 'block';
+  } else if (method === 'Cash on Delivery') {
+    paymentNumberEl.value = COD_NUMBER;
+    noteEl.textContent = `Pay on delivery to ${COD_NUMBER}.`;
+    txnEl.required = false;
+    txnEl.value = '';
+    payNowEl.style.display = 'block';
+    dueEl.style.display = 'block';
+  } else {
         payNowEl.style.display = 'none';
         dueEl.style.display = 'none';
         numberEl.value = '';
@@ -1404,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
