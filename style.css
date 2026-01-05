@@ -242,7 +242,7 @@ footer {
     right: 20px;
     background: none;
     border: none;
-    color: white;
+    color: #111827;
     font-size: 30px;
     cursor: pointer;
 }
@@ -715,3 +715,4 @@ footer {
 .remove-btn:hover {
   background: #b91c1c !important;
 }
+
