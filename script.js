@@ -675,7 +675,7 @@ async function initProductPage() {
 const addToCartBtn = document.createElement('button');
   addToCartBtn.innerHTML = '🛒';
   addToCartBtn.title = 'Add to Cart';
-  addToCartBtn.style.marginTop = '16px';
+  addToCartBtn.style.marginTop = '';
   addToCartBtn.style.width = '100%';
   addToCartBtn.style.padding = '14px';
   addToCartBtn.style.fontSize = '24px';
@@ -1043,6 +1043,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 });
+
 
 
 
