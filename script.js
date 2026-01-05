@@ -1005,7 +1005,7 @@ function logoutAdmin() {
       orderRowElement.appendChild(addBtn);
     }
   }
-}
+})
 
 function setupImageViewer() {
   document.querySelectorAll('.product-card img, .thumbnail, #main-image').forEach(img => {
@@ -1312,3 +1312,4 @@ document.getElementById('cart-checkout-form')?.addEventListener('submit', async 
   }
 
 });
+
