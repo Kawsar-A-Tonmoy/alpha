@@ -654,4 +654,64 @@ footer {
     width: 100%;
     right: -100%;
   }
+
+}
+/* Make main Order/Pre-Order button bigger and prominent */
+#order-row > button:first-child {
+  padding: 16px !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+}
+
+/* Style the cart icon button */
+#order-row button:nth-child(2) {
+  transition: all 0.3s ease;
+}
+
+#order-row button:nth-child(2):hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Cart slider item controls - better spacing and style */
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.cart-item-controls button {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-item-controls button:nth-child(1),
+.cart-item-controls button:nth-child(3) {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.cart-item-controls button:nth-child(1):hover,
+.cart-item-controls button:nth-child(3):hover {
+  background: #d1d5db;
+}
+
+.remove-btn {
+  background: #dc2626 !important;
+  color: white !important;
+  margin-left: auto !important;
+}
+
+.remove-btn:hover {
+  background: #b91c1c !important;
 }
