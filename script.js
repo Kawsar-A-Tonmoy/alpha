@@ -665,7 +665,6 @@ const addToCartBtn = document.createElement('button');
   addToCartBtn.style.cursor = 'pointer';
   addToCartBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
 
-  const isUpcoming = product.availability === 'Upcoming';
   const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
 
   if (isUpcoming || isOOS) {
@@ -1023,4 +1022,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 });
+
 
