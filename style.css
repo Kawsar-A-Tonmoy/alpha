@@ -752,19 +752,32 @@ footer {
 }
 
 #cart-co-note {
-  margin: 15px 0;
-  padding: 14px;
-  background: linear-gradient(to bottom, #fffbeb, #fefce8);
-  border-left: 4px solid #f59e0b;
+  margin: 12px 0;
+  padding: 10px 12px;
+  background-color: #fffbeb; /* light yellow background */
+  border: 1px solid #fcd34d;
   border-radius: 8px;
-  color: #78350f;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.6;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-line; /* Preserves line breaks if needed */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  color: #92400e;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;        /* Break long words */
+  overflow-wrap: break-word;    /* Modern standard */
+  white-space: normal;          /* Allow wrapping */
+  max-width: 100%;              /* Never exceed container */
+  box-sizing: border-box;
+}
+
+/* Also ensure the modal content doesn't allow horizontal overflow */
+.modal-content {
+  overflow-x: hidden; /* Prevent horizontal scrolling/shifting */
+  max-width: 90vw;    /* Limit width on small screens */
+}
+
+/* If your modal has a form wrapper, constrain it too */
+#cart-checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 
