@@ -751,6 +751,21 @@ footer {
   background: #b91c1c !important;
 }
 
+#cart-co-note {
+  margin: 15px 0;
+  padding: 14px;
+  background: linear-gradient(to bottom, #fffbeb, #fefce8);
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  color: #78350f;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-line; /* Preserves line breaks if needed */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
 
 
 
