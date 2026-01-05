@@ -116,6 +116,7 @@ function updateCartUI() {
 
     const div = document.createElement('div');
     div.className = 'cart-item';
+
     div.innerHTML = `
       <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
       <div class="cart-item-info">
@@ -123,19 +124,39 @@ function updateCartUI() {
         <div class="muted">Color: ${item.color || '-'}</div>
         <div>৳${item.price} × ${item.qty} = ৳${itemTotal}</div>
         <div class="cart-item-controls">
-          <button onclick="updateCartQuantity('${item.id}', ${item.qty - 1})">-</button>
-          <span>${item.qty}</span>
-          <button onclick="updateCartQuantity('${item.id}', ${item.qty + 1})">+</button>
-         <button class="remove-btn" onclick="removeFromCart('${item.id}')" title="Remove item">🗑️</button>
+          <button class="qty-minus" title="Decrease">-</button>
+          <span class="qty-display">${item.qty}</span>
+          <button class="qty-plus" title="Increase">+</button>
+          <button class="remove-btn" title="Remove item">🗑️</button>
         </div>
       </div>
     `;
+
+    // Attach event listeners properly (this is the key fix!)
+    const minusBtn = div.querySelector('.qty-minus');
+    const plusBtn = div.querySelector('.qty-plus');
+    const removeBtn = div.querySelector('.remove-btn');
+    const qtyDisplay = div.querySelector('.qty-display');
+
+    minusBtn.addEventListener('click', () => {
+      updateCartQuantity(item.id, item.qty - 1);
+      qtyDisplay.textContent = Math.max(1, item.qty - 1); // immediate feedback
+    });
+
+    plusBtn.addEventListener('click', () => {
+      updateCartQuantity(item.id, item.qty + 1);
+      qtyDisplay.textContent = item.qty + 1; // immediate feedback
+    });
+
+    removeBtn.addEventListener('click', () => {
+      removeFromCart(item.id);
+    });
+
     itemsContainer.appendChild(div);
   });
 
   if (totalEl) totalEl.innerHTML = `<strong>Total: ৳${total}</strong>`;
 }
-
 // Global products map for cart
 const productsMap = new Map();
 
@@ -1022,5 +1043,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 });
+
 
 
