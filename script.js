@@ -706,6 +706,39 @@ async function initProductPage() {
   orderRow.innerHTML = '';
   orderRow.appendChild(button);
 
+  // Add to Cart Button
+const addToCartBtn = document.createElement('button');
+  addToCartBtn.innerHTML = '🛒';
+  addToCartBtn.title = 'Add to Cart';
+  addToCartBtn.style.marginTop = '';
+  addToCartBtn.style.width = '100%';
+  addToCartBtn.style.padding = '14px';
+  addToCartBtn.style.fontSize = '24px';
+  addToCartBtn.style.backgroundColor = '#10b981';
+  addToCartBtn.style.color = 'white';
+  addToCartBtn.style.border = 'none';
+  addToCartBtn.style.borderRadius = '12px';
+  addToCartBtn.style.cursor = 'pointer';
+  addToCartBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+
+  const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
+
+  if (isUpcoming || isOOS) {
+    addToCartBtn.innerHTML = isUpcoming ? '⏳' : '❌';
+    addToCartBtn.title = isUpcoming ? 'Upcoming' : 'Out of Stock';
+    addToCartBtn.disabled = true;
+    addToCartBtn.style.backgroundColor = '#6b7280';
+    addToCartBtn.style.cursor = 'not-allowed';
+  } else {
+    addToCartBtn.onclick = () => {
+      const qtyInput = document.getElementById('co-qty');
+      const qty = qtyInput ? Number(qtyInput.value) || 1 : 1;
+      addToCart(product.id, qty);
+      alert('Added to cart!');
+    };
+  }
+
+  orderRow.appendChild(addToCartBtn);
   thumbnailGallery.innerHTML = '';
   if (images.length > 1) {
     images.slice(1).forEach(src => {
@@ -1357,4 +1390,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
