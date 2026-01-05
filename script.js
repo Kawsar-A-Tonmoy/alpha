@@ -1182,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
         txnEl.required = true;
         payNowEl.value = total.toFixed(2);
-        dueEl.value = 0.toFixed(2);
+        dueEl.value = (0).toFixed(2);
         payNowEl.style.display = 'block';
         dueEl.style.display = 'block';
       } else if (method === 'Cash on Delivery') {
@@ -1357,3 +1357,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
