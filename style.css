@@ -684,7 +684,7 @@ footer {
 #order-row button:nth-child(2) {
   flex-shrink: 0;            /* Never shrinks */
   width: 60px !important;
-  height: 60px !important;
+  height: 54px !important;
   min-width: 60px !important;
   padding: 0 !important;
   font-size: 30px !important;
@@ -750,6 +750,7 @@ footer {
 .remove-btn:hover {
   background: #b91c1c !important;
 }
+
 
 
 
