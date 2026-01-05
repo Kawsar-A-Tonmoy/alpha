@@ -1106,7 +1106,8 @@ document.getElementById('checkout-cart')?.addEventListener('click', async () => 
   document.getElementById('cart-co-name').value = '';
   document.getElementById('cart-co-phone').value = '';
   document.getElementById('cart-co-address').value = '';
-  document.getElementById('cart-co-policy')?.checked &&= false;
+  const policy = document.getElementById('cart-co-policy');
+  if (policy) policy.checked = false;
 
   // Show/hide pay-now and due fields initially hidden
   document.getElementById('cart-co-pay-now').style.display = 'none';
@@ -1312,5 +1313,6 @@ document.getElementById('cart-checkout-form')?.addEventListener('submit', async 
   }
 
 });
+
 
 
