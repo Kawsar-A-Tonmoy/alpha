@@ -1251,10 +1251,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('cart-checkout-modal').classList.remove('show');
   });
 
-  // Submit cart order
+  // Submit cart order (FIXED: reads before writes)
   document.getElementById('cart-checkout-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.querySelector('#cart-checkout-form button[type="submit"]');
+    if (!btn) return;
     btn.disabled = true;
 
     if (!document.getElementById('cart-co-policy').checked) {
@@ -1325,23 +1326,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       await runTransaction(db, async (transaction) => {
-        for (const item of items) {
-          const productRef = doc(db, 'products', item.productId);
-          const snap = await transaction.get(productRef);
+        // === STEP 1: READ ALL products first ===
+        const productRefs = items.map(item => doc(db, 'products', item.productId));
+        const productSnaps = await Promise.all(productRefs.map(ref => transaction.get(ref)));
+
+        // === STEP 2: Validate stock and schedule updates ===
+        for (let i = 0; i < items.length; i++) {
+          const snap = productSnaps[i];
           if (!snap.exists()) throw new Error('Product not found');
 
           const data = snap.data();
           const currentStock = Number(data.stock);
+          const item = items[i];
+
           if (currentStock !== -1 && data.availability !== 'Pre Order' && currentStock < item.quantity) {
             throw new Error(`Not enough stock for ${item.productName}. Only ${currentStock} left.`);
           }
+
           if (currentStock !== -1 && data.availability !== 'Pre Order') {
-            transaction.update(productRef, { stock: currentStock - item.quantity });
+            transaction.update(productRefs[i], { stock: currentStock - item.quantity });
           }
         }
 
-        // Create ONE order document with multiple items
-       const newOrderRef = doc(collection(db, 'orders'));
+        // === STEP 3: Create the order ===
+        const newOrderRef = doc(collection(db, 'orders'));
         transaction.set(newOrderRef, orderData);
       });
 
@@ -1350,7 +1358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateCartUI();
       document.getElementById('cart-checkout-modal').classList.remove('show');
     } catch (err) {
-      console.error(err);
+      console.error('Error placing order:', err);
       alert('Error placing order: ' + err.message);
     } finally {
       btn.disabled = false;
@@ -1405,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
