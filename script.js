@@ -1341,7 +1341,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Create ONE order document with multiple items
-        transaction.set(doc(collection(db, 'orders')), orderData);
+       const newOrderRef = doc(collection(db, 'orders'));
+        transaction.set(newOrderRef, orderData);
       });
 
       alert('Order placed successfully!');
@@ -1404,6 +1405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
