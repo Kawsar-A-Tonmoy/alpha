@@ -657,7 +657,133 @@ async function initProductPage() {
   document.querySelector('#meta-description').setAttribute('content', product.metaDescription || '');
   const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
   let slug = product.name.toLowerCase().replace(/\s+/g, '-');
-  if (...(truncated 5571 characters)...ock: Number(document.getElementById('add-stock').value) || 0,
+  if (sameName.length > 1 && product.color) {
+    slug += '-' + product.color.toLowerCase().replace(/\s+/g, '-');
+  }
+  document.getElementById('canonical-link').href = `/product/${slug}`;
+
+  const images = product.images || [];
+  const realMainImg = document.createElement('img');
+  realMainImg.id = 'main-image';
+  realMainImg.src = images[0] || '';
+  realMainImg.alt = product.name;
+  document.querySelector('.shimmer-image-placeholder').parentNode.replaceChild(realMainImg, document.querySelector('.shimmer-image-placeholder'));
+
+  nameEl.innerHTML = product.name;
+  colorEl.innerText = `Color: ${product.color || '-'}`;
+
+  const isUpcoming = product.availability === 'Upcoming';
+  const hasDiscount = Number(product.discount) > 0;
+  const price = Number(product.price) || 0;
+  const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
+  const isInStock = Number(product.stock) > 0 && product.availability === 'Ready';
+
+  priceEl.innerHTML = isUpcoming ? 'TBA' : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`;
+
+  badgesEl.innerHTML = `
+    ${product.hotDeal ? `<span class="badge hot">HOT DEAL</span>` : ''}
+    ${isInStock ? `<span class="badge new">IN STOCK</span>` : ''}
+    ${!isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order' ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
+    ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
+    ${product.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
+  `;
+
+  specEl.innerText = product.description || '';
+  descEl.innerHTML = product.detailedDescription ? product.detailedDescription.replace(/\n/g, '') : '';
+
+  const button = document.createElement('button');
+  if (isUpcoming) {
+    button.textContent = 'Upcoming - Stay Tuned';
+    button.disabled = true;
+  } else if (product.availability === 'Pre Order') {
+    button.className = 'preorder-btn';
+    button.textContent = 'Pre Order';
+    button.onclick = () => openCheckoutModal(product.id, true);
+  } else if (Number(product.stock) > 0) {
+    button.textContent = 'Order Now';
+    button.onclick = () => openCheckoutModal(product.id);
+  } else {
+    button.textContent = 'Out of Stock';
+    button.disabled = true;
+  }
+  orderRow.innerHTML = '';
+  orderRow.appendChild(button);
+
+  // Add to Cart Button
+const addToCartBtn = document.createElement('button');
+  addToCartBtn.innerHTML = '🛒';
+  addToCartBtn.title = 'Add to Cart';
+  addToCartBtn.style.marginTop = '';
+  addToCartBtn.style.width = '100%';
+  addToCartBtn.style.padding = '14px';
+  addToCartBtn.style.fontSize = '24px';
+  addToCartBtn.style.backgroundColor = '#10b981';
+  addToCartBtn.style.color = 'white';
+  addToCartBtn.style.border = 'none';
+  addToCartBtn.style.borderRadius = '12px';
+  addToCartBtn.style.cursor = 'pointer';
+  addToCartBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+
+  const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
+
+  if (isUpcoming || isOOS) {
+    addToCartBtn.innerHTML = isUpcoming ? '⏳' : '❌';
+    addToCartBtn.title = isUpcoming ? 'Upcoming' : 'Out of Stock';
+    addToCartBtn.disabled = true;
+    addToCartBtn.style.backgroundColor = '#6b7280';
+    addToCartBtn.style.cursor = 'not-allowed';
+  } else {
+    addToCartBtn.onclick = () => {
+      const qtyInput = document.getElementById('co-qty');
+      const qty = qtyInput ? Number(qtyInput.value) || 1 : 1;
+      addToCart(product.id, qty);
+      alert('Added to cart!');
+    };
+  }
+
+  orderRow.appendChild(addToCartBtn);
+  thumbnailGallery.innerHTML = '';
+  if (images.length > 1) {
+    images.slice(1).forEach(src => {
+      const thumb = document.createElement('img');
+      thumb.src = src;
+      thumb.alt = product.name;
+      thumb.className = 'thumbnail';
+      thumb.onclick = () => { realMainImg.src = src; };
+      thumbnailGallery.appendChild(thumb);
+    });
+  }
+
+  otherSection.innerHTML = '';
+  const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== product.id);
+  const random4 = shuffle(eligible).slice(0, 4);
+  random4.forEach(p => otherSection.appendChild(createProductCard(p, products)));
+
+  document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
+  const form = document.getElementById('checkout-form');
+  form.addEventListener('submit', submitCheckoutOrder);
+  document.getElementById('co-payment').addEventListener('change', handlePaymentChange);
+  document.getElementById('co-qty').addEventListener('input', updateTotalInModal);
+  document.getElementById('co-address').addEventListener('input', updateDeliveryCharge);
+  setupImageViewer();
+
+  realMainImg.addEventListener('click', () => {
+    document.getElementById('viewer-img').src = realMainImg.src;
+    document.getElementById('image-viewer').classList.add('show');
+  });
+}
+
+// ====== ADMIN: ADD PRODUCT ======
+async function addProduct(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('add-name').value.trim(),
+    price: document.getElementById('add-price').value.trim() === 'TBA' ? 'TBA' : Number(document.getElementById('add-price').value) || 0,
+    discount: Number(document.getElementById('add-discount').value) || 0,
+    images: document.getElementById('add-images').value.split(',').map(u => u.trim()).filter(u => u),
+    category: document.getElementById('add-category').value,
+    color: document.getElementById('add-color').value.trim(),
+    stock: Number(document.getElementById('add-stock').value) || 0,
     availability: document.getElementById('add-availability').value,
     hotDeal: !!document.getElementById('add-hotdeal')?.checked,
     description: document.getElementById('add-desc').value.trim(),
@@ -674,6 +800,7 @@ async function initProductPage() {
     alert('Error adding product: ' + err.message);
   }
 }
+
 
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
@@ -1268,3 +1395,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
