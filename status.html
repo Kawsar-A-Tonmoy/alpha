@@ -267,7 +267,12 @@ Returns may be declined if sufficient proof is not provided or if the product ap
     result.classList.add('show');
 
     try {
-     const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'), limit(20));
+    const q = query(
+  collection(db, 'orders'), 
+  where('phone', '==', phone), 
+  orderBy('timeISO', 'desc'), 
+  limit(20)
+);
       const snap = await getDocs(q);
       result.innerHTML = '';
 
@@ -375,6 +380,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
+
 
 
 
