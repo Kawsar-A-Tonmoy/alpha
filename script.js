@@ -2,11 +2,24 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { firebaseConfig, BKASH_NUMBER, COD_NUMBER, DELIVERY_FEE } from './config.js';
+import { serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const now = new Date();
+const day = String(now.getDate()).padStart(2, '0');
+const month = String(now.getMonth() + 1).padStart(2, '0');
+const year = now.getFullYear();
+const dateFormatted = `${day}/${month}/${year}`;
+
+await updateDoc(doc(db, "orders", orderId), {
+  status: "Delivered",
+  deliveredAt: serverTimestamp(),
+  deliveredAtFormatted: dateFormatted          // "06/01/2026"
+});
 
 // Status explanations
 const statusExplanations = {
@@ -1408,6 +1421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
