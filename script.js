@@ -400,6 +400,7 @@ function handlePaymentChange(e) {
   const noteEl = document.getElementById('co-note');
 
   if (method === 'Bkash') {
+     const upfront = Math.round((subtotal * 0.25) / 5) * 5;
     paymentNumberEl.value = BKASH_NUMBER;
     noteEl.textContent = `Send ৳${upfront} to ${BKASH_NUMBER} and enter transaction ID.`;
     txnEl.required = true;
@@ -1386,6 +1387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
