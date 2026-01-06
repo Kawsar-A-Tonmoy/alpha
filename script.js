@@ -401,13 +401,13 @@ function handlePaymentChange(e) {
 
   if (method === 'Bkash') {
     paymentNumberEl.value = BKASH_NUMBER;
-    noteEl.textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    noteEl.textContent = `Send ৳${upfront} to ${BKASH_NUMBER} and enter transaction ID.`;
     txnEl.required = true;
     payNowEl.style.display = 'block';
     dueEl.style.display = 'block';
   } else if (method === 'Cash on Delivery') {
     paymentNumberEl.value = COD_NUMBER;
-    noteEl.textContent = `Pay on delivery to ${COD_NUMBER}.`;
+    noteEl.textContent = `Pay delivery charge ৳${deliveryFee}. Remaining on delivery.`;
     txnEl.required = false;
     txnEl.value = '';
     payNowEl.style.display = 'block';
@@ -1206,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         payNowEl.value = upfront.toFixed(2);
         dueEl.value = (total - upfront).toFixed(2);
         numberEl.value = BKASH_NUMBER;
-        noteEl.textContent = `Send ৳${upfront} to ${BKASH_NUMBER} and enter transaction ID below.`;
+        noteEl.textContent = `Send ৳${upfront} to ${BKASH_NUMBER} and enter transaction ID.`;
         txnEl.required = true;
         payNowEl.style.display = 'block';
         dueEl.style.display = 'block';
@@ -1222,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         payNowEl.value = deliveryFee.toFixed(2);
         dueEl.value = subtotal.toFixed(2);
         numberEl.value = COD_NUMBER;
-        noteEl.textContent = `Pay ৳${deliveryFee} to delivery agent. Remaining on delivery.`;
+        noteEl.textContent = `Pay delivery charge ৳${deliveryFee}. Remaining on delivery.`;
         txnEl.required = false;
         txnEl.value = '';
         payNowEl.style.display = 'block';
@@ -1413,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
