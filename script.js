@@ -371,11 +371,11 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   document.getElementById('co-delivery').dataset.fee = deliveryFee;
 
   if (isPreOrder) {
-    const upfront = Math.round((unit * 0.25) / 5) * 5;
+    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
     document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
     document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
     document.getElementById('co-payment-number').value = BKASH_NUMBER;
-    document.getElementById('co-note').textContent = `Send ৳${upfront} to ${BKASH_NUMBER} and enter transaction ID`;
+    document.getElementById('co-note').textContent = `Send ৳${preOrderPrice} to ${BKASH_NUMBER} and enter transaction ID`;
     document.getElementById('co-pay-now').style.display = 'block';
     document.getElementById('co-due-amount').style.display = 'block';
   } else {
@@ -1388,6 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
