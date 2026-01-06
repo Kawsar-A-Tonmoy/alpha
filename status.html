@@ -254,6 +254,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
   const statusOrder = ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'];
 
   document.getElementById('status-form').addEventListener('submit', async e => {
@@ -269,13 +270,15 @@ Returns may be declined if sufficient proof is not provided or if the product ap
       const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'));
       const snap = await getDocs(q);
       result.innerHTML = '';
+
       if (snap.empty) {
-        result.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders for ${phone}</p>`;
+        result.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders found for ${phone}</p>`;
         return;
       }
 
+      // Load all products for images/lookup (optional, but nice)
       const prodSnap = await getDocs(collection(db, 'products'));
-      const prodMap = {}; 
+      const prodMap = {};
       prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
 
       const grid = document.createElement('div');
@@ -283,16 +286,35 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 
       snap.docs.forEach(doc => {
         const order = doc.data();
-        const product = prodMap[order.productId] || {};
-        const isPreOrder = product.availability === 'Pre Order';
-        const delivery = isPreOrder ? '20–40 days' : '2–5 days';
-        const avail = isPreOrder ? 'Pre-Order' : 'In Stock';
+        const cancelled = order.status === 'Cancelled';
         const curStat = order.status;
         const curIdx = statusOrder.indexOf(curStat);
-        const cancelled = curStat === 'Cancelled';
 
-        const card = document.createElement('div');
-        card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
+        // Determine if it's a single-product or multi-item (cart) order
+        const isMulti = order.items && Array.isArray(order.items) && order.items.length > 0;
+        const items = isMulti ? order.items : [{
+          productId: order.productId,
+          productName: order.productName || 'Unknown Product',
+          color: order.color || '',
+          quantity: order.quantity || 1
+        }];
+
+        // Build product list HTML
+        let productHTML = '';
+        items.forEach((item, index) => {
+          const prod = prodMap[item.productId] || {};
+          const isPreOrder = prod.availability === 'Pre Order';
+          const avail = isPreOrder ? 'Pre-Order' : 'In Stock';
+          const delivery = isPreOrder ? '20–40 days' : '2–5 days';
+
+          productHTML += `
+            <div style="margin-bottom: ${index < items.length - 1 ? '12px' : '0'}; padding-bottom: ${index < items.length - 1 ? '12px' : '0'}; ${index < items.length - 1 ? 'border-bottom: 1px dashed var(--glass-border);' : ''}">
+              <div><strong>${item.productName}</strong> ${item.color ? `(${item.color})` : ''}</div>
+              <div class="muted">Quantity: ${item.quantity}</div>
+              <div class="muted">${avail} • Est. Delivery: <strong>${delivery}</strong></div>
+            </div>
+          `;
+        });
 
         // Build status timeline
         let statusHTML = '';
@@ -307,12 +329,12 @@ Returns may be declined if sufficient proof is not provided or if the product ap
           let itemClass = '';
 
           if (isCancelled) {
-            icon = '✗';           // Real Cross symbol
+            icon = '✗';
             colorClass = 'status-red cancelled';
             textColor = '#ef4444';
             itemClass = 'cancelled';
           } else if (isCompleted || (isCurrent && !cancelled)) {
-            icon = '✓';       // Real Checkmark symbol
+            icon = '✓';
             colorClass = 'status-green';
             textColor = '#22c55e';
           }
@@ -324,23 +346,23 @@ Returns may be declined if sufficient proof is not provided or if the product ap
             </div>`;
         });
 
+        const card = document.createElement('div');
+        card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
+
         card.innerHTML = `
           <div class="order-status-left">
-            <div><strong>${order.productName}</strong></div>
-            <div class="muted">Color: ${order.color || '—'}</div>
-            <div class="muted">Quantity: ${order.quantity}</div>
-            <div class="price-line">
+            ${productHTML}
+            <div class="price-line" style="margin-top: 12px;">
               Paid: ৳${order.paid}
               ${order.due > 0 ? `<span style="color:#d32f2f"> (Due: ৳${order.due})</span>` : ''}
             </div>
-            <div class="muted">${avail}</div>
-            <div class="muted">Est. Delivery: <strong>${delivery}</strong></div>
-            <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString()}</div>
+            <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString('en-GB')}</div>
           </div>
           <div class="order-status-right">
             ${statusHTML}
           </div>
         `;
+
         grid.appendChild(card);
       });
 
@@ -353,6 +375,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
+
 
 
 
