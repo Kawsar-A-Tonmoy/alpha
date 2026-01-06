@@ -310,8 +310,16 @@ Returns may be declined if sufficient proof is not provided or if the product ap
           const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('en-GB') : 'N/A';
           deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
         } else {
-          const days = hasPreOrderItem ? '20–40 days' : '3–7 days';
-          deliveryText = `Est. Delivery: <strong>${days}</strong>`;
+          const orderDate = new Date(order.timeISO);
+          const minDays = hasPreOrderItem ? 20 : 3;
+          const maxDays = hasPreOrderItem ? 40 : 7;
+          const minDate = new Date(orderDate);
+          minDate.setDate(minDate.getDate() + minDays);
+          const maxDate = new Date(orderDate);
+          maxDate.setDate(maxDate.getDate() + maxDays);
+          const minStr = minDate.toLocaleDateString('en-GB');
+          const maxStr = maxDate.toLocaleDateString('en-GB');
+          deliveryText = `Est. Delivery: <strong>${minStr} – ${maxStr}</strong> (in ${minDays}–${maxDays} days)`;
         }
 
         // Build product list HTML
@@ -396,14 +404,3 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
