@@ -375,7 +375,7 @@ async function openCheckoutModal(productId, isPreOrder = false) {
     document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
     document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
     document.getElementById('co-payment-number').value = BKASH_NUMBER;
-    document.getElementById('co-note').textContent = `Send money to ${BKASH_NUMBER} and provide transaction ID.`;
+    document.getElementById('co-note').textContent = `Send ৳${upfront} to ${BKASH_NUMBER} and enter transaction ID`;
     document.getElementById('co-pay-now').style.display = 'block';
     document.getElementById('co-due-amount').style.display = 'block';
   } else {
@@ -1413,6 +1413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
