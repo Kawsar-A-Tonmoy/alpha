@@ -17,14 +17,13 @@
 </head>
 <body>
   <header class="site-header">
-     <nav>
+      <nav>
       <a href="index.html" class="logo">
         <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
       <div class="nav-links">
         <a href="products.html">Products</a>
         <a href="status.html">Order Status</a>
-        <a href="admin.html">Admin</a>
         <a id="cart-link" style="cursor: pointer;">Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
@@ -199,7 +198,7 @@
           <div><label>Pay Now (tk)</label><input id="cart-co-pay-now" readonly></div>
           <div><label>Due Amount (tk)</label><input id="cart-co-due-amount" readonly></div>
         </div>
-        <div><label>Transaction ID (if prepaid)</label><input id="cart-co-txn"></div>
+        <div><label>Transaction ID </label><input id="cart-co-txn"></div>
         <div><label><input type="checkbox" id="cart-co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
           <p id="cart-co-note" class="muted"></p>
         <button id="cart-place-order-btn" type="submit">Place Order</button>
@@ -225,5 +224,6 @@
 </body>
 
 </html>
+
 
 
