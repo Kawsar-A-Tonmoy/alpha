@@ -306,21 +306,32 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 
         // Final delivery estimate logic
         let deliveryText = '';
-        if (isDelivered) {
-          const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('en-GB') : 'N/A';
-          deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
-        } else {
-          const orderDate = new Date(order.timeISO);
-          const minDays = hasPreOrderItem ? 20 : 3;
-          const maxDays = hasPreOrderItem ? 40 : 7;
-          const minDate = new Date(orderDate);
-          minDate.setDate(minDate.getDate() + minDays);
-          const maxDate = new Date(orderDate);
-          maxDate.setDate(maxDate.getDate() + maxDays);
-          const minStr = minDate.toLocaleDateString('en-GB');
-          const maxStr = maxDate.toLocaleDateString('en-GB');
-          deliveryText = `Est. Delivery: <strong>${minStr} – ${maxStr}</strong> (in ${minDays}–${maxDays} days)`;
-        }
+       if (isDelivered) {
+  let deliveredDate = 'N/A';
+
+  // Use the pre-formatted date if available (new orders)
+  if (order.deliveredAtFormatted) {
+    deliveredDate = order.deliveredAtFormatted;  // e.g., "06/01/2026"
+  }
+  // Fallback for old orders that only have deliveredAt timestamp
+  else if (order.deliveredAt) {
+    const dateObj = order.deliveredAt.toDate();  // convert Firestore Timestamp
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    deliveredDate = `${day}/${month}/${year}`;
+  }
+  // Final fallback: if status is Delivered but no date field exists
+  else {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    deliveredDate = `${day}/${month}/${year}`;
+  }
+
+  deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
+}
 
         // Build product list HTML
         let productHTML = '';
@@ -404,3 +415,4 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
+
