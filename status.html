@@ -249,7 +249,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </footer>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-  import { getFirestore, collection, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   import { firebaseConfig } from './config.js';
 
   const app = initializeApp(firebaseConfig);
@@ -267,21 +267,16 @@ Returns may be declined if sufficient proof is not provided or if the product ap
     result.classList.add('show');
 
     try {
-    const q = query(
-  collection(db, 'orders'), 
-  where('phone', '==', phone), 
-  orderBy('timeISO', 'desc'), 
-  limit(20)
-);
+      const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'));
       const snap = await getDocs(q);
-      result.innerHTML = '';
 
+      result.innerHTML = '';
       if (snap.empty) {
         result.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders found for ${phone}</p>`;
         return;
       }
 
-      // Load all products for images/lookup (optional, but nice)
+      // Load products to check current availability (only for display logic)
       const prodSnap = await getDocs(collection(db, 'products'));
       const prodMap = {};
       prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
@@ -294,29 +289,43 @@ Returns may be declined if sufficient proof is not provided or if the product ap
         const cancelled = order.status === 'Cancelled';
         const curStat = order.status;
         const curIdx = statusOrder.indexOf(curStat);
+        const isDelivered = curStat === 'Delivered';
 
-        // Determine if it's a single-product or multi-item (cart) order
+        // Determine items (single or multi)
         const isMulti = order.items && Array.isArray(order.items) && order.items.length > 0;
         const items = isMulti ? order.items : [{
           productId: order.productId,
           productName: order.productName || 'Unknown Product',
           color: order.color || '',
-          quantity: order.quantity || 1
+          quantity: order.quantity || 1,
+          wasPreOrder: order.wasPreOrder || false  // fallback if old order
         }];
+
+        // Determine if ANY item was pre-order at time of purchase
+        const hasPreOrderItem = items.some(item => item.wasPreOrder === true);
+
+        // Final delivery estimate logic
+        let deliveryText = '';
+        if (isDelivered) {
+          const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('en-GB') : 'N/A';
+          deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
+        } else {
+          const days = hasPreOrderItem ? '20–40 days' : '3–7 days';
+          deliveryText = `Est. Delivery: <strong>${days}</strong>`;
+        }
 
         // Build product list HTML
         let productHTML = '';
         items.forEach((item, index) => {
           const prod = prodMap[item.productId] || {};
-          const isPreOrder = prod.availability === 'Pre Order';
-          const avail = isPreOrder ? 'Pre-Order' : 'In Stock';
-          const delivery = isPreOrder ? '20–40 days' : '2–5 days';
+          const currentIsPreOrder = prod.availability === 'Pre Order';
+          const avail = item.wasPreOrder ? 'Pre-Order' : (currentIsPreOrder ? 'Pre-Order' : 'In Stock');
 
           productHTML += `
             <div style="margin-bottom: ${index < items.length - 1 ? '12px' : '0'}; padding-bottom: ${index < items.length - 1 ? '12px' : '0'}; ${index < items.length - 1 ? 'border-bottom: 1px dashed var(--glass-border);' : ''}">
               <div><strong>${item.productName}</strong> ${item.color ? `(${item.color})` : ''}</div>
               <div class="muted">Quantity: ${item.quantity}</div>
-              <div class="muted">${avail} • Est. Delivery: <strong>${delivery}</strong></div>
+              <div class="muted">${avail} • ${deliveryText}</div>
             </div>
           `;
         });
@@ -342,6 +351,13 @@ Returns may be declined if sufficient proof is not provided or if the product ap
             icon = '✓';
             colorClass = 'status-green';
             textColor = '#22c55e';
+          }
+
+          // Special green highlight for Delivered
+          if (st === 'Delivered' && isDelivered) {
+            textColor = '#22c55e';
+            colorClass = 'status-green';
+            icon = '✓';
           }
 
           statusHTML += `
@@ -380,6 +396,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
+
 
 
 
