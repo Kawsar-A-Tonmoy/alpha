@@ -1343,12 +1343,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isProducts = !!document.getElementById('product-list');
   const isProduct = !!document.getElementById('product-section');
   const isAdmin = !!document.getElementById('admin-panel');
-  const isStatus = !!document.getElementById('status-form');
 
   if (isHome) await initHomePage();
   if (isProducts) await initProductsPage();
   if (isProduct) await initProductPage();
-  if (isStatus) setupStatusForm();
 
   const loginPanel = document.getElementById('login-panel');
   const adminPanel = document.getElementById('admin-panel');
@@ -1388,6 +1386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
