@@ -480,6 +480,7 @@ async function submitCheckoutOrder(e) {
 
   const currentProduct = products.find(p => p.id === productId);  // products is already loaded earlier
 
+
 const orderData = {
   timeISO: new Date().toISOString(),
   productId,
@@ -1395,4 +1396,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
