@@ -769,31 +769,6 @@ const addToCartBtn = document.createElement('button');
   });
 }
 
-// ====== ORDER STATUS PAGE ======
-function setupStatusForm() {
-  const form = document.getElementById('status-form');
-  if (!form) return;
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const txn = document.getElementById('txn-id').value.trim();
-    if (!txn) return;
-    try {
-      const q = query(collection(db, 'orders'), where('transactionId', '==', txn));
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) {
-        alert('Order not found.');
-        return;
-      }
-      const order = snapshot.docs[0].data();
-      const status = order.status;
-      alert(`Status: ${status}\n${statusExplanations[status] || 'Unknown status.'}`);
-    } catch (err) {
-      console.error('Error fetching status:', err);
-      alert('Error fetching status: ' + err.message);
-    }
-  });
-}
-
 // ====== ADMIN: ADD PRODUCT ======
 async function addProduct(e) {
   e.preventDefault();
@@ -1413,6 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
