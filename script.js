@@ -371,7 +371,7 @@ async function openCheckoutModal(productId, isPreOrder = false) {
   document.getElementById('co-delivery').dataset.fee = deliveryFee;
 
   if (isPreOrder) {
-    const preOrderPrice = Math.round((unit * 0.25) / 5) * 5;
+    const upfront = Math.round((unit * 0.25) / 5) * 5;
     document.getElementById('co-pay-now').value = preOrderPrice.toFixed(2);
     document.getElementById('co-due-amount').value = (unit - preOrderPrice + deliveryFee).toFixed(2);
     document.getElementById('co-payment-number').value = BKASH_NUMBER;
@@ -1388,6 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
