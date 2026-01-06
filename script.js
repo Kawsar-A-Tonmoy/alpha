@@ -478,25 +478,28 @@ async function submitCheckoutOrder(e) {
 
   const total = (qty * unit) + delivery;
 
-  const orderData = {
-    timeISO: new Date().toISOString(),
-    productId,
-    productName: document.getElementById('co-product-name').value,
-    color: document.getElementById('co-color').value,
-    unitPrice: unit,
-    quantity: qty,
-    deliveryFee: delivery,
-    total,
-    paid: Number(document.getElementById('co-pay-now').value) || 0,
-    due: Number(document.getElementById('co-due-amount').value) || 0,
-    customerName: document.getElementById('co-name').value.trim(),
-    phone: document.getElementById('co-phone').value.trim(),
-    address: document.getElementById('co-address').value.trim(),
-    paymentMethod: document.getElementById('co-payment').value,
-    paymentNumber: document.getElementById('co-payment-number').value.trim(),
-    transactionId: document.getElementById('co-txn').value.trim().toUpperCase(),
-    status: 'Pending'
-  };
+  const currentProduct = products.find(p => p.id === productId);  // products is already loaded earlier
+
+const orderData = {
+  timeISO: new Date().toISOString(),
+  productId,
+  productName: document.getElementById('co-product-name').value,
+  color: document.getElementById('co-color').value,
+  unitPrice: unit,
+  quantity: qty,
+  deliveryFee: delivery,
+  total,
+  paid: Number(document.getElementById('co-pay-now').value) || 0,
+  due: Number(document.getElementById('co-due-amount').value) || 0,
+  customerName: document.getElementById('co-name').value.trim(),
+  phone: document.getElementById('co-phone').value.trim(),
+  address: document.getElementById('co-address').value.trim(),
+  paymentMethod: document.getElementById('co-payment').value,
+  paymentNumber: document.getElementById('co-payment-number').value.trim(),
+  transactionId: document.getElementById('co-txn').value.trim().toUpperCase(),
+  status: 'Pending',
+  wasPreOrder: currentProduct?.availability === 'Pre Order' 
+};
 
   if (!orderData.customerName || !orderData.phone || !orderData.address || !orderData.paymentMethod) {
     alert('Please fill all required fields.');
@@ -1253,21 +1256,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     let hasPreOrder = false;
 
     const items = cart.map(item => {
-      const p = products.find(pr => pr.id === item.id);
-      if (!p) throw new Error('Product missing');
-      const unitPrice = Number(p.price) - Number(p.discount || 0);
-      subtotal += unitPrice * item.qty;
-      if (p.availability === 'Pre Order') hasPreOrder = true;
+  const p = products.find(pr => pr.id === item.id);
+  if (!p) throw new Error('Product missing');
+  const unitPrice = Number(p.price) - Number(p.discount || 0);
 
-      return {
-        productId: item.id,
-        productName: item.name,
-        color: item.color || '',
-        unitPrice,
-        quantity: item.qty
-      };
-    });
-
+  return {
+    productId: item.id,
+    productName: item.name,
+    color: item.color || '',
+    unitPrice,
+    quantity: item.qty,
+    wasPreOrder: p.availability === 'Pre Order'  // ← NEW LINE
+  };
+});
     const total = subtotal + deliveryFee;
     const paid = Number(document.getElementById('cart-co-pay-now').value) || 0;
     const due = Number(document.getElementById('cart-co-due-amount').value) || 0;
@@ -1387,6 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
