@@ -249,7 +249,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </footer>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-  import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  import { getFirestore, collection, query, where, getDocs, orderBy, limit } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   import { firebaseConfig } from './config.js';
 
   const app = initializeApp(firebaseConfig);
@@ -375,6 +375,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
+
 
 
 
