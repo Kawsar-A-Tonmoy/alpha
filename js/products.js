@@ -4,10 +4,10 @@ import { db, getDocs, collection, query, orderBy } from './firebase.js';
 export const productsMap = new Map();
 
 export const categories = [
-  { name: 'Keycaps', bg: 'k.png' },
-  { name: 'Switches', bg: 's.png' },
-  { name: 'Keyboard and Mouse', bg: 'k&b.png' },
-  { name: 'Accessories and Collectables', bg: 'c&a.png' }
+  { name: 'Keycaps', bg: 'assets/k.png' },
+  { name: 'Switches', bg: 'assets/s.png' },
+  { name: 'Keyboard and Mouse', bg: 'assets/k&b.png' },
+  { name: 'Accessories and Collectables', bg: 'assets/c&a.png' }
 ];
 
 export async function loadProducts() {
@@ -88,4 +88,5 @@ export function createCategoryCard(c) {
     window.location.href = `products.html?category=${encodeURIComponent(c.name)}`;
   });
   return card;
+
 }
