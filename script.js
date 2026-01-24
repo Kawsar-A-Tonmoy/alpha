@@ -804,6 +804,13 @@ async function addProduct(e) {
     metaTitle: document.getElementById('add-meta-title').value.trim(),
     metaDescription: document.getElementById('add-meta-desc').value.trim()
   };
+  const filters = {};
+document.querySelectorAll('#add-filters input:checked').forEach(cb => {
+  const sec = cb.dataset.section;
+  if (!filters[sec]) filters[sec] = [];
+  filters[sec].push(cb.value);
+});
+data.filters = filters;
   try {
     await addDoc(collection(db, 'products'), data);
     e.target.reset();
@@ -1109,7 +1116,9 @@ function logoutAdmin() {
 // ====== MAIN INIT ======
 document.addEventListener('DOMContentLoaded', async () => {
   updateCartUI();
-
+await renderSectionsTable();
+populateAddFilters();
+document.getElementById('add-section-form')?.addEventListener('submit', addSection);
   // Cart controls
   document.getElementById('cart-link')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1399,8 +1408,91 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   }
+// ====== FILTER SECTIONS MANAGEMENT ======
+async function loadSections() {
+  try {
+    const snapshot = await getDocs(collection(db, 'filterSections'));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (err) {
+    console.error('Error loading sections:', err);
+    return [];
+  }
+}
 
+async function renderSectionsTable() {
+  const sections = await loadSections();
+  const tbody = document.getElementById('sections-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  sections.forEach(sec => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${sec.name}</td>
+      <td contenteditable="true">${sec.tags?.join(', ') || ''}</td>
+      <td>
+        <button class="danger" onclick="deleteSection('${sec.id}')">Delete</button>
+      </td>
+    `;
+    const tagsCell = tr.querySelector('td[contenteditable]');
+    tagsCell.addEventListener('blur', () => editTags(sec.id, tagsCell.textContent));
+    tbody.appendChild(tr);
+  });
+}
+
+async function addSection(e) {
+  e.preventDefault();
+  const name = document.getElementById('add-section-name').value.trim();
+  if (!name) return alert('Section name required!');
+  try {
+    await addDoc(collection(db, 'filterSections'), { name, tags: [] });
+    document.getElementById('add-section-name').value = '';
+    renderSectionsTable();
+  } catch (err) {
+    alert('Error adding section: ' + err.message);
+  }
+}
+
+async function editTags(id, text) {
+  const tags = text.split(',').map(t => t.trim()).filter(t => t);
+  try {
+    await updateDoc(doc(db, 'filterSections', id), { tags });
+    renderSectionsTable();  // Refresh
+  } catch (err) {
+    alert('Error updating tags: ' + err.message);
+  }
+}
+
+async function deleteSection(id) {
+  if (!confirm('Delete this section?')) return;
+  try {
+    await deleteDoc(doc(db, 'filterSections', id));
+    renderSectionsTable();
+  } catch (err) {
+    alert('Error deleting: ' + err.message);
+  }
+}
+
+// Populate filters for add product form
+async function populateAddFilters() {
+  const sections = await loadSections();
+  const container = document.getElementById('add-filters');
+  if (!container) return;
+  container.innerHTML = '';
+
+  sections.forEach(sec => {
+    const div = document.createElement('div');
+    div.innerHTML = `<h4>${sec.name}</h4>`;
+    sec.tags.forEach(tag => {
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" value="${tag}" data-section="${sec.name}"> ${tag}`;
+      div.appendChild(label);
+    });
+    container.appendChild(div);
+  });
+}
 });
+
 
 
 
