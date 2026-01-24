@@ -159,6 +159,14 @@ function updateCartUI() {
 // Global products map for cart
 const productsMap = new Map();
 
+let currentFilters = {
+  minPrice: 0,
+  maxPrice: Infinity,
+  attributes: {} // { key: Set(values) }
+};
+
+let allProducts = [];
+
 // Categories for home
 const categories = [
   { name: 'Keycaps', bg: 'k.png' },
@@ -189,6 +197,194 @@ async function loadOrders() {
   } catch (err) {
     console.error('Error loading orders:', err);
     return [];
+  }
+}
+
+// ====== FILTER SYSTEM ======
+function renderFilterSections(products) {
+  const container = document.getElementById('filter-sections');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  const attrMap = new Map();
+
+  products.forEach(p => {
+    if (p.attributes && typeof p.attributes === 'object') {
+      Object.entries(p.attributes).forEach(([key, value]) => {
+        if (!attrMap.has(key)) attrMap.set(key, new Set());
+        attrMap.get(key).add(value);
+      });
+    }
+  });
+
+  const colorValues = new Set();
+  products.forEach(p => {
+    if (p.color && p.color.trim()) colorValues.add(p.color.trim());
+  });
+  if (colorValues.size > 0) {
+    attrMap.set('Color', colorValues);
+  }
+
+  const sortedKeys = Array.from(attrMap.keys()).sort((a, b) => {
+    if (a === 'Color') return -1;
+    if (b === 'Color') return 1;
+    return a.localeCompare(b);
+  });
+
+  sortedKeys.forEach(key => {
+    const values = Array.from(attrMap.get(key)).sort();
+    if (values.length === 0) return;
+
+    const section = document.createElement('div');
+    section.className = 'filter-section';
+    section.innerHTML = `<h4>${key}</h4>`;
+
+    values.forEach(val => {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = val;
+      input.dataset.key = key;
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(` ${val}`));
+      section.appendChild(label);
+    });
+
+    container.appendChild(section);
+  });
+}
+
+function setupPriceRange() {
+  const minInput = document.getElementById('min-price-input');
+  const maxInput = document.getElementById('max-price-input');
+  const minSlider = document.getElementById('min-price-slider');
+  const maxSlider = document.getElementById('max-price-slider');
+
+  if (!minInput || !maxInput || !minSlider || !maxSlider) return;
+
+  let globalMin = Infinity;
+  let globalMax = 0;
+  allProducts.forEach(p => {
+    const price = Number(p.price) - Number(p.discount || 0);
+    if (price > 0) {
+      globalMin = Math.min(globalMin, price);
+      globalMax = Math.max(globalMax, price);
+    }
+  });
+
+  if (globalMin === Infinity) globalMin = 0;
+  if (globalMax === 0) globalMax = 100000;
+
+  minSlider.min = globalMin;
+  minSlider.max = globalMax;
+  maxSlider.min = globalMin;
+  maxSlider.max = globalMax;
+
+  minInput.min = globalMin;
+  maxInput.min = globalMin;
+  minInput.max = globalMax;
+  maxInput.max = globalMax;
+
+  minInput.value = globalMin;
+  maxInput.value = globalMax;
+  minSlider.value = globalMin;
+  maxSlider.value = globalMax;
+
+  const sync = (source, target) => {
+    target.value = source.value;
+  };
+
+  minInput.addEventListener('input', () => {
+    let val = Number(minInput.value);
+    if (val > Number(maxInput.value)) val = Number(maxInput.value);
+    minSlider.value = val;
+    sync(minInput, minSlider);
+  });
+
+  maxInput.addEventListener('input', () => {
+    let val = Number(maxInput.value);
+    if (val < Number(minInput.value)) val = Number(minInput.value);
+    maxSlider.value = val;
+    sync(maxInput, maxSlider);
+  });
+
+  minSlider.addEventListener('input', () => sync(minSlider, minInput));
+  maxSlider.addEventListener('input', () => sync(maxSlider, maxInput));
+}
+
+function applyFilters() {
+  const minPrice = Number(document.getElementById('min-price-input')?.value) || 0;
+  const maxPrice = Number(document.getElementById('max-price-input')?.value) || Infinity;
+
+  currentFilters.minPrice = minPrice;
+  currentFilters.maxPrice = maxPrice;
+  currentFilters.attributes = {};
+
+  document.querySelectorAll('#filter-sections input[type="checkbox"]:checked').forEach(cb => {
+    const key = cb.dataset.key;
+    const val = cb.value;
+    if (!currentFilters.attributes[key]) currentFilters.attributes[key] = new Set();
+    currentFilters.attributes[key].add(val);
+  });
+
+  const filtered = allProducts.filter(p => {
+    const price = Number(p.price) - Number(p.discount || 0);
+
+    if (price < minPrice || price > maxPrice) return false;
+
+    for (const [key, values] of Object.entries(currentFilters.attributes)) {
+      let productValue;
+      if (key === 'Color') {
+        productValue = p.color;
+      } else {
+        productValue = p.attributes?.[key];
+      }
+
+      if (!productValue || !values.has(productValue)) return false;
+    }
+
+    return true;
+  });
+
+  const container = document.getElementById('product-list');
+  if (container) {
+    container.innerHTML = '';
+    filtered.forEach(p => {
+      container.appendChild(createProductCard(p, allProducts));
+    });
+  }
+}
+
+function clearFilters() {
+  document.querySelectorAll('#filter-sections input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+  });
+
+  const minInput = document.getElementById('min-price-input');
+  const maxInput = document.getElementById('max-price-input');
+  const minSlider = document.getElementById('min-price-slider');
+  const maxSlider = document.getElementById('max-price-slider');
+
+  if (minInput && maxInput && minSlider && maxSlider) {
+    minInput.value = minSlider.min;
+    maxInput.value = maxSlider.max;
+    minSlider.value = minSlider.min;
+    maxSlider.value = maxSlider.max;
+  }
+
+  currentFilters = {
+    minPrice: 0,
+    maxPrice: Infinity,
+    attributes: {}
+  };
+
+  const container = document.getElementById('product-list');
+  if (container) {
+    container.innerHTML = '';
+    allProducts.forEach(p => {
+      container.appendChild(createProductCard(p, allProducts));
+    });
   }
 }
 
@@ -788,56 +984,56 @@ const addToCartBtn = document.createElement('button');
 // ====== ADMIN: ADD PRODUCT ======
 async function addProduct(e) {
   e.preventDefault();
-
-  // Get all form values
-  const name = document.getElementById('add-name').value.trim();
-  const price = Number(document.getElementById('add-price').value) || 0;
-  const discount = Number(document.getElementById('add-discount').value) || 0;
-  const images = document.getElementById('add-images').value.split(',').map(url => url.trim()).filter(Boolean);
+  const name = document.getElementById('add-name').value;
+  const price = document.getElementById('add-price').value;
+  const discount = document.getElementById('add-discount').value;
+  const images = document.getElementById('add-images').value.split(',').map(url => url.trim());
   const category = document.getElementById('add-category').value;
-  const color = document.getElementById('add-color').value.trim();
-  const stock = Number(document.getElementById('add-stock').value) || 0;
+  const color = document.getElementById('add-color').value;
+  const stock = document.getElementById('add-stock').value;
   const availability = document.getElementById('add-availability').value;
-  const hotDeal = document.getElementById('add-hotdeal').checked;
-  const desc = document.getElementById('add-desc').value.trim();
-  const detailedDesc = document.getElementById('add-detailed-desc').value.trim();
+  const hotdeal = document.getElementById('add-hotdeal').checked;
+  const desc = document.getElementById('add-desc').value;
+  const detailedDesc = document.getElementById('add-detailed-desc').value;
+  const metaTitle = document.getElementById('add-meta-title').value;
+  const metaDesc = document.getElementById('add-meta-desc').value;
 
-  // ─── IMPORTANT: Read the tags field correctly ───
-  const tagsInput = document.getElementById('add-tags');
-  const tags = tagsInput && tagsInput.value 
-    ? tagsInput.value.split(',').map(t => t.trim()).filter(t => t) 
-    : [];
-
-  const metaTitle = document.getElementById('add-meta-title').value.trim();
-  const metaDesc = document.getElementById('add-meta-desc').value.trim();
-
-  const data = {
-    name,
-    price,
-    discount,
-    images,
-    category,
-    color,
-    stock,
-    availability,
-    hotDeal,
-    desc,
-    detailedDesc,
-    tags,                  // ← This line saves the tags array!
-    metaTitle,
-    metaDesc
-  };
+  // New part for attributes (tags)
+  const attributesStr = document.getElementById('add-attributes').value;
+  const attributes = {};
+  if (attributesStr) {
+    attributesStr.split(',').forEach(pair => {
+      const [key, value] = pair.trim().split(':');
+      if (key && value) attributes[key.trim()] = value.trim();
+    });
+  }
 
   try {
-    await addDoc(collection(db, 'products'), data);
-    alert('Product added successfully!');
+    await addDoc(collection(db, 'products'), {
+      name,
+      price,
+      discount,
+      images,
+      category,
+      color,
+      stock,
+      availability,
+      hotdeal,
+      desc,
+      detailedDesc,
+      metaTitle,
+      metaDesc,
+      attributes  // New: save the tags
+    });
+    alert('Product added!');
     document.getElementById('add-product-form').reset();
-    await renderDataTable();  // Refresh the table
+    await renderDataTable();
   } catch (err) {
-    console.error('Add product error:', err);
-    alert('Failed to add product: ' + err.message);
+    console.error('Error adding product:', err);
+    alert('Error adding product');
   }
 }
+
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
@@ -1118,111 +1314,7 @@ async function renderOrdersTable() {
     tbody.appendChild(detailsRow);
   });
 }
-async function initProductsPageWithFilter() {
-  const productList = document.getElementById('product-list');
-  if (!productList) return;
 
-  // 1. Show loading cards first
-  productList.innerHTML = '';
-  for (let i = 0; i < 8; i++) {
-    productList.appendChild(createShimmerCard());
-  }
-
-  // 2. Load all products
-  let products = await loadProducts();
-
-  // 3. If we are in a category page (?category=xxx)
-  const urlParams = new URLSearchParams(window.location.search);
-  const category = urlParams.get('category');
-  if (category) {
-    const title = document.getElementById('products-title');
-    if (title) title.textContent = category;
-    products = products.filter(p => p.category === category);
-  }
-
-  let visibleProducts = [...products];
-
-  // 4. Function that draws the product cards
-  function showProducts(list) {
-    productList.innerHTML = '';
-    list.forEach(product => {
-      productList.appendChild(createProductCard(product, products));
-    });
-  }
-
-  showProducts(visibleProducts);
-
-  // 5. Collect all unique tags
-  const allTags = new Set();
-  products.forEach(p => {
-    if (p.tags && Array.isArray(p.tags)) {
-      p.tags.forEach(tag => allTags.add(tag));
-    }
-  });
-
-  // 6. Put checkboxes inside the filter panel
-  const tagsBox = document.getElementById('tags-filter');
-  if (tagsBox) {
-    tagsBox.innerHTML = '<h3>Tags</h3>';
-    [...allTags].sort().forEach(tag => {
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${tag}"> ${tag}`;
-      label.style.display = 'block';
-      label.style.margin = '6px 0';
-      tagsBox.appendChild(label);
-    });
-  }
-
-  // 7. Connect the buttons
-  const openFilterBtn   = document.getElementById('filter-toggle');
-  const filterPanel     = document.getElementById('filter-slider');
-  const closeFilterBtn  = document.getElementById('close-filter');
-  const applyBtn        = document.getElementById('apply-filter');
-  const clearBtn        = document.getElementById('clear-filter');
-
-  if (openFilterBtn) {
-    openFilterBtn.onclick = () => filterPanel.classList.add('open');
-  }
-  if (closeFilterBtn) {
-    closeFilterBtn.onclick = () => filterPanel.classList.remove('open');
-  }
-
-  if (applyBtn) {
-    applyBtn.onclick = () => {
-      // Read checked tags
-      const checked = Array.from(tagsBox.querySelectorAll('input:checked'))
-                           .map(box => box.value);
-
-      // Read price range
-      const minP = Number(document.getElementById('min-price')?.value) || 0;
-      const maxP = Number(document.getElementById('max-price')?.value) || 9999999;
-
-      // Filter products
-      visibleProducts = products.filter(p => {
-        const priceAfterDiscount = p.price - (p.discount || 0);
-        const priceIsOk = priceAfterDiscount >= minP && priceAfterDiscount <= maxP;
-        const tagIsOk   = checked.length === 0 || 
-                         (p.tags && p.tags.some(t => checked.includes(t)));
-
-        return priceIsOk && tagIsOk;
-      });
-
-      showProducts(visibleProducts);
-      filterPanel.classList.remove('open');
-    };
-  }
-
-  if (clearBtn) {
-    clearBtn.onclick = () => {
-      tagsBox.querySelectorAll('input[type="checkbox"]').forEach(box => {
-        box.checked = false;
-      });
-      document.getElementById('min-price').value = '';
-      document.getElementById('max-price').value = '';
-      applyBtn.click();   // re-apply (shows all again)
-    };
-  }
-}
 // ====== AUTH ======
 function logoutAdmin() {
   try {
@@ -1237,7 +1329,61 @@ function logoutAdmin() {
 // ====== MAIN INIT ======
 document.addEventListener('DOMContentLoaded', async () => {
   updateCartUI();
+async function initProductsPageWithFilters() {
+  allProducts = await loadProducts();
+  renderFilterSections(allProducts);
+  setupPriceRange();
 
+  document.getElementById('filter-toggle')?.addEventListener('click', () => {
+    document.getElementById('filter-slider').classList.add('open');
+  });
+
+  document.getElementById('close-filter')?.addEventListener('click', () => {
+    document.getElementById('filter-slider').classList.remove('open');
+  });
+
+  document.getElementById('apply-filters')?.addEventListener('click', applyFilters);
+  document.getElementById('clear-filters')?.addEventListener('click', clearFilters);
+
+  const container = document.getElementById('product-list');
+  if (container) {
+    container.innerHTML = '';
+    allProducts.forEach(p => {
+      container.appendChild(createProductCard(p, allProducts));
+    });
+  }
+}
+
+async function initCategoryPageWithFilters() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get('category') || 'Unknown';
+  document.getElementById('category-title').textContent = category;
+
+  allProducts = await loadProducts();
+  allProducts = allProducts.filter(p => p.category === category);
+
+  renderFilterSections(allProducts);
+  setupPriceRange();
+
+  document.getElementById('filter-toggle')?.addEventListener('click', () => {
+    document.getElementById('filter-slider').classList.add('open');
+  });
+
+  document.getElementById('close-filter')?.addEventListener('click', () => {
+    document.getElementById('filter-slider').classList.remove('open');
+  });
+
+  document.getElementById('apply-filters')?.addEventListener('click', applyFilters);
+  document.getElementById('clear-filters')?.addEventListener('click', clearFilters);
+
+  const container = document.getElementById('product-list');
+  if (container) {
+    container.innerHTML = '';
+    allProducts.forEach(p => {
+      container.appendChild(createProductCard(p, allProducts));
+    });
+  }
+}
   // Cart controls
   document.getElementById('cart-link')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1488,9 +1634,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isAdmin = !!document.getElementById('admin-panel');
 
   if (isHome) await initHomePage();
-  if (isProducts) await initProductsPageWithFilter();
+  if (isProducts) await initProductsPage();
   if (isProduct) await initProductPage();
-
 
   const loginPanel = document.getElementById('login-panel');
   const adminPanel = document.getElementById('admin-panel');
@@ -1530,9 +1675,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
-
-
-
 
 
 

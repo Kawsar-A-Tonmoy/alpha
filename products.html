@@ -12,23 +12,23 @@
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
   <script type="module" src="script.js"></script>
-<!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '655776497078930');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '655776497078930');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
 </head>
 <body>
   <header class="site-header">
@@ -44,23 +44,23 @@ src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
     </nav>
   </header>
 
- <main class="container">
-    <div class="panel-header">
+  <main class="container">
+    <div class="title-row">
       <h1 id="products-title">Products</h1>
-      <button id="filter-toggle">Filter</button>
+      <button id="filter-toggle">Filters</button>
     </div>
     
     <div id="product-list" class="product-list"></div>
   </main>
 
   <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">&times;</button>
+    <button id="close-viewer" class="close-viewer">×</button>
     <img id="viewer-img" src="" alt="">
   </div>
 
   <!-- Cart Slider -->
   <div id="cart-slider" class="cart-slider">
-    <button id="close-cart" class="close-viewer">&times;</button>
+    <button id="close-cart" class="close-viewer">×</button>
     <h2>Shopping Cart</h2>
     <div id="cart-items" class="cart-items"></div>
     <div id="cart-total" class="cart-total"><strong>Total: ৳0</strong></div>
@@ -70,19 +70,31 @@ src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
 
   <!-- Filter Slider -->
   <div id="filter-slider" class="filter-slider">
-    <button id="close-filter" class="close-viewer">&times;</button>
+    <button id="close-filter" class="close-viewer">×</button>
     <h2>Filters</h2>
-    <div id="tags-filter">
-      <h3>Tags</h3>
-      <!-- Checkboxes will be added dynamically -->
+
+    <div id="price-range-section">
+      <h3>Price Range (৳)</h3>
+      <div class="row price-range-row">
+        <div>
+          <label>Min</label>
+          <input type="number" id="min-price-input" min="0" step="100">
+          <input type="range" id="min-price-slider" min="0" step="100">
+        </div>
+        <div>
+          <label>Max</label>
+          <input type="number" id="max-price-input" min="0" step="100">
+          <input type="range" id="max-price-slider" min="0" step="100">
+        </div>
+      </div>
     </div>
-    <div>
-      <h3>Price Range (tk)</h3>
-      <input id="min-price" type="number" placeholder="Min Price">
-      <input id="max-price" type="number" placeholder="Max Price">
+
+    <div id="filter-sections"></div>
+
+    <div class="row filter-actions">
+      <button id="apply-filters">Apply Filters</button>
+      <button id="clear-filters" class="danger">Clear Filters</button>
     </div>
-    <button id="apply-filter">Apply Filters</button>
-    <button id="clear-filter">Clear Filters</button>
   </div>
 
   <!-- Cart Checkout Modal -->
@@ -143,3 +155,4 @@ src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
 </body>
 
 </html>
+

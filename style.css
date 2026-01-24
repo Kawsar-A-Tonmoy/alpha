@@ -751,7 +751,7 @@ footer {
   background: #b91c1c !important;
 }
 
-/* Filter Slider */
+/* === Filter Slider === */
 .filter-slider {
   position: fixed;
   top: 0;
@@ -767,28 +767,102 @@ footer {
   display: flex;
   flex-direction: column;
 }
+
 .filter-slider.open {
   left: 0;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
+.filter-slider h2 {
+  margin-top: 0;
+}
+
+.price-range-row {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.price-range-row label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.price-range-row input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.price-range-row input[type="range"] {
+  width: 100%;
+}
+
+.filter-section {
+  margin: 20px 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-section h4 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.filter-section label {
+  display: block;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+.filter-actions {
+  margin-top: 24px;
+  gap: 12px;
+}
+
+.filter-actions button {
+  flex: 1;
+  padding: 12px;
+}
+
+/* Title row with Filters button */
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.title-row h1 {
+  margin: 0;
+}
+
+#filter-toggle, #apply-filters, #clear-filters {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#clear-filters.danger {
+  background: var(--danger);
+}
+
+#clear-filters.danger:hover {
+  background: #b91c1c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .filter-slider {
     width: 100%;
     left: -100%;
   }
-}
 
-/* Filter button (icon-like) */
-#filter-toggle {
-  background: var(--accent);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-#filter-toggle:hover {
-  background: #374151;
+  .price-range-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 
