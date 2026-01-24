@@ -2,24 +2,11 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { firebaseConfig, BKASH_NUMBER, COD_NUMBER, DELIVERY_FEE } from './config.js';
-import { serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const now = new Date();
-const day = String(now.getDate()).padStart(2, '0');
-const month = String(now.getMonth() + 1).padStart(2, '0');
-const year = now.getFullYear();
-const dateFormatted = `${day}/${month}/${year}`;
-
-await updateDoc(doc(db, "orders", orderId), {
-  status: "Delivered",
-  deliveredAt: serverTimestamp(),
-  deliveredAtFormatted: dateFormatted          // "06/01/2026"
-});
 
 // Status explanations
 const statusExplanations = {
@@ -306,7 +293,7 @@ function setupImageViewer() {
 
   if (!viewer || !viewerImg || !closeViewer) return;
 
-  document.querySelectorAll('.product-card img, .thumbnail, #main-image').forEach(img => {
+  document.querySelectorAll('.product-card img, #main-image').forEach(img => {
     img.style.cursor = 'pointer';
     img.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -562,7 +549,6 @@ async function submitCheckoutOrder(e) {
     btn.disabled = false;
   }
 }
-
 // ====== PAGE INIT ======
 async function initHomePage() {
   const interestSection = document.getElementById('interest-products');
@@ -827,7 +813,6 @@ async function addProduct(e) {
   }
 }
 
-
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
@@ -1074,13 +1059,7 @@ async function renderOrdersTable() {
     select.addEventListener('change', async (e) => {
       try {
         const newStatus = e.target.value;
-        const updates = { status: newStatus };
-        if (newStatus === 'Delivered') {
-          updates.deliveredAt = new Date().toISOString();
-          updates.paid = Number(o.paid) + Number(o.due);
-          updates.due = 0;
-        }
-        await updateDoc(doc(db, 'orders', o.id), updates);
+        await updateDoc(doc(db, 'orders', o.id), { status: newStatus });
         select.style.backgroundColor = statusColors[newStatus];
       } catch (err) {
         console.error('Error updating order status:', err);
@@ -1114,7 +1093,111 @@ async function renderOrdersTable() {
     tbody.appendChild(detailsRow);
   });
 }
+async function initProductsPageWithFilter() {
+  const productList = document.getElementById('product-list');
+  if (!productList) return;
 
+  // 1. Show loading cards first
+  productList.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    productList.appendChild(createShimmerCard());
+  }
+
+  // 2. Load all products
+  let products = await loadProducts();
+
+  // 3. If we are in a category page (?category=xxx)
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get('category');
+  if (category) {
+    const title = document.getElementById('products-title');
+    if (title) title.textContent = category;
+    products = products.filter(p => p.category === category);
+  }
+
+  let visibleProducts = [...products];
+
+  // 4. Function that draws the product cards
+  function showProducts(list) {
+    productList.innerHTML = '';
+    list.forEach(product => {
+      productList.appendChild(createProductCard(product, products));
+    });
+  }
+
+  showProducts(visibleProducts);
+
+  // 5. Collect all unique tags
+  const allTags = new Set();
+  products.forEach(p => {
+    if (p.tags && Array.isArray(p.tags)) {
+      p.tags.forEach(tag => allTags.add(tag));
+    }
+  });
+
+  // 6. Put checkboxes inside the filter panel
+  const tagsBox = document.getElementById('tags-filter');
+  if (tagsBox) {
+    tagsBox.innerHTML = '<h3>Tags</h3>';
+    [...allTags].sort().forEach(tag => {
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" value="${tag}"> ${tag}`;
+      label.style.display = 'block';
+      label.style.margin = '6px 0';
+      tagsBox.appendChild(label);
+    });
+  }
+
+  // 7. Connect the buttons
+  const openFilterBtn   = document.getElementById('filter-toggle');
+  const filterPanel     = document.getElementById('filter-slider');
+  const closeFilterBtn  = document.getElementById('close-filter');
+  const applyBtn        = document.getElementById('apply-filter');
+  const clearBtn        = document.getElementById('clear-filter');
+
+  if (openFilterBtn) {
+    openFilterBtn.onclick = () => filterPanel.classList.add('open');
+  }
+  if (closeFilterBtn) {
+    closeFilterBtn.onclick = () => filterPanel.classList.remove('open');
+  }
+
+  if (applyBtn) {
+    applyBtn.onclick = () => {
+      // Read checked tags
+      const checked = Array.from(tagsBox.querySelectorAll('input:checked'))
+                           .map(box => box.value);
+
+      // Read price range
+      const minP = Number(document.getElementById('min-price')?.value) || 0;
+      const maxP = Number(document.getElementById('max-price')?.value) || 9999999;
+
+      // Filter products
+      visibleProducts = products.filter(p => {
+        const priceAfterDiscount = p.price - (p.discount || 0);
+        const priceIsOk = priceAfterDiscount >= minP && priceAfterDiscount <= maxP;
+        const tagIsOk   = checked.length === 0 || 
+                         (p.tags && p.tags.some(t => checked.includes(t)));
+
+        return priceIsOk && tagIsOk;
+      });
+
+      showProducts(visibleProducts);
+      filterPanel.classList.remove('open');
+    };
+  }
+
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      tagsBox.querySelectorAll('input[type="checkbox"]').forEach(box => {
+        box.checked = false;
+      });
+      document.getElementById('min-price').value = '';
+      document.getElementById('max-price').value = '';
+      applyBtn.click();   // re-apply (shows all again)
+    };
+  }
+}
 // ====== AUTH ======
 function logoutAdmin() {
   try {
@@ -1380,6 +1463,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isAdmin = !!document.getElementById('admin-panel');
 
   if (isHome) await initHomePage();
+  if (isProducts) await initProductsPageWithFilter();
+  if (isProduct) await initProductPage();const isHome = !!document.getElementById('interest-products');
+  const isProducts = !!document.getElementById('product-list');
+  const isProduct = !!document.getElementById('product-section');
+  const isAdmin = !!document.getElementById('admin-panel');
+
+  if (isHome) await initHomePage();
   if (isProducts) await initProductsPage();
   if (isProduct) await initProductPage();
 
@@ -1421,6 +1511,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

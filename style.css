@@ -751,7 +751,45 @@ footer {
   background: #b91c1c !important;
 }
 
+/* Filter Slider */
+.filter-slider {
+  position: fixed;
+  top: 0;
+  left: -400px;
+  width: 380px;
+  height: 100%;
+  background: var(--card);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  transition: left 0.3s ease;
+  z-index: 100;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.filter-slider.open {
+  left: 0;
+}
 
+/* Responsive */
+@media (max-width: 480px) {
+  .filter-slider {
+    width: 100%;
+    left: -100%;
+  }
+}
+
+/* Filter button (icon-like) */
+#filter-toggle {
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#filter-toggle:hover {
+  background: #374151;
+}
 
 
 
