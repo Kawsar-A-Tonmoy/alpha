@@ -90,39 +90,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   maxPrice = Math.ceil(maxPrice / 100) * 100 || 100000;
 
-const maxSlider = document.getElementById('max-slider');
-const maxInput  = document.getElementById('filter-max-price');
+  const maxSlider = document.getElementById('max-slider');
+  const maxInput  = document.getElementById('filter-max-price');
 
-if (maxSlider) {
-  maxSlider.max = maxPrice;
-  maxSlider.value = maxPrice;
-  maxInput.placeholder = maxPrice.toLocaleString();
-}
+  if (maxSlider) {
+    maxSlider.max = maxPrice;
+    maxSlider.value = maxPrice;
+    maxInput.placeholder = maxPrice.toLocaleString();
+  }
 
-// Sync slider ↔ input (only max now)
-maxSlider?.addEventListener('input', () => {
-  let v = Number(maxSlider.value);
-  maxInput.value = v;
-});
+  // Sync slider ↔ input (only max)
+  maxSlider?.addEventListener('input', () => {
+    let v = Number(maxSlider.value);
+    maxInput.value = v;
+  });
 
-maxInput?.addEventListener('input', () => {
-  let v = Number(maxInput.value) || maxPrice;
-  if (v > maxPrice) v = maxPrice;
-  if (v < 0) v = 0;  // Prevent negative
-  maxSlider.value = v;
-});
+  maxInput?.addEventListener('input', () => {
+    let v = Number(maxInput.value) || maxPrice;
+    if (v > maxPrice) v = maxPrice;
+    if (v < 0) v = 0;
+    maxSlider.value = v;
+  });
 
   // Apply filter
   document.getElementById('filter-form')?.addEventListener('submit', e => {
     e.preventDefault();
 
     const maxP = Number(maxInput?.value) || Infinity;
-
     const selected = getCurrentFilters();
 
     let filtered = allProducts.filter(p => {
       const price = Number(p.price) - Number(p.discount || 0);
-      if ( price > maxP) return false;
+      if (price > maxP) return false;
 
       for (const section in selected) {
         if (!p.filters?.[section] || 
@@ -133,7 +132,12 @@ maxInput?.addEventListener('input', () => {
       return true;
     });
 
-    // Optional: keep category filter from URL if present
+    // Force full list when no tags are selected AND price is unrestricted
+    if (Object.keys(selected).length === 0 && maxP === Infinity) {
+      filtered = allProducts;
+    }
+
+    // Keep category filter from URL if present
     const urlParams = new URLSearchParams(window.location.search);
     const cat = urlParams.get('category');
     if (cat) {
@@ -153,17 +157,36 @@ maxInput?.addEventListener('input', () => {
     document.getElementById('filter-slider')?.classList.remove('open');
   });
 
-  // Clear filters
+  // Clear filters – now directly rebuilds the list (fixes "no products" bug)
   document.getElementById('clear-filter')?.addEventListener('click', () => {
-if (maxInput) maxInput.value = '';
-if (maxSlider) maxSlider.value = maxPrice;
+    if (maxInput) maxInput.value = '';
+    if (maxSlider) maxSlider.value = maxPrice;
 
     document.querySelectorAll('#filter-tags input[type="checkbox"]').forEach(cb => {
       cb.checked = false;
     });
 
-    // Re-apply (shows all)
-    document.getElementById('filter-form')?.dispatchEvent(new Event('submit'));
+    // Directly show (almost) all products – respecting category if present
+    listEl.innerHTML = '';
+
+    let displayProducts = allProducts;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const cat = urlParams.get('category');
+    if (cat) {
+      displayProducts = allProducts.filter(p => p.category === decodeURIComponent(cat));
+    }
+
+    if (displayProducts.length === 0) {
+      listEl.innerHTML = '<p style="text-align:center; padding:40px;">No products in this category.</p>';
+    } else {
+      displayProducts.forEach(p => {
+        const card = createProductCard(p, displayProducts);
+        listEl.appendChild(card);
+      });
+    }
+
+    document.getElementById('filter-slider')?.classList.remove('open');
   });
 
   // Open / close slider
@@ -174,5 +197,4 @@ if (maxSlider) maxSlider.value = maxPrice;
   document.getElementById('close-filter')?.addEventListener('click', () => {
     document.getElementById('filter-slider')?.classList.remove('open');
   });
-
 });
