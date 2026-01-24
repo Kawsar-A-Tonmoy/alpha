@@ -788,31 +788,56 @@ const addToCartBtn = document.createElement('button');
 // ====== ADMIN: ADD PRODUCT ======
 async function addProduct(e) {
   e.preventDefault();
+
+  // Get all form values
+  const name = document.getElementById('add-name').value.trim();
+  const price = Number(document.getElementById('add-price').value) || 0;
+  const discount = Number(document.getElementById('add-discount').value) || 0;
+  const images = document.getElementById('add-images').value.split(',').map(url => url.trim()).filter(Boolean);
+  const category = document.getElementById('add-category').value;
+  const color = document.getElementById('add-color').value.trim();
+  const stock = Number(document.getElementById('add-stock').value) || 0;
+  const availability = document.getElementById('add-availability').value;
+  const hotDeal = document.getElementById('add-hotdeal').checked;
+  const desc = document.getElementById('add-desc').value.trim();
+  const detailedDesc = document.getElementById('add-detailed-desc').value.trim();
+
+  // ─── IMPORTANT: Read the tags field correctly ───
+  const tagsInput = document.getElementById('add-tags');
+  const tags = tagsInput && tagsInput.value 
+    ? tagsInput.value.split(',').map(t => t.trim()).filter(t => t) 
+    : [];
+
+  const metaTitle = document.getElementById('add-meta-title').value.trim();
+  const metaDesc = document.getElementById('add-meta-desc').value.trim();
+
   const data = {
-    name: document.getElementById('add-name').value.trim(),
-    price: document.getElementById('add-price').value.trim() === 'TBA' ? 'TBA' : Number(document.getElementById('add-price').value) || 0,
-    discount: Number(document.getElementById('add-discount').value) || 0,
-    images: document.getElementById('add-images').value.split(',').map(u => u.trim()).filter(u => u),
-    category: document.getElementById('add-category').value,
-    color: document.getElementById('add-color').value.trim(),
-    stock: Number(document.getElementById('add-stock').value) || 0,
-    availability: document.getElementById('add-availability').value,
-    hotDeal: !!document.getElementById('add-hotdeal')?.checked,
-    description: document.getElementById('add-desc').value.trim(),
-    detailedDescription: document.getElementById('add-detailed-desc').value.trim(),
-    metaTitle: document.getElementById('add-meta-title').value.trim(),
-    metaDescription: document.getElementById('add-meta-desc').value.trim()
+    name,
+    price,
+    discount,
+    images,
+    category,
+    color,
+    stock,
+    availability,
+    hotDeal,
+    desc,
+    detailedDesc,
+    tags,                  // ← This line saves the tags array!
+    metaTitle,
+    metaDesc
   };
+
   try {
     await addDoc(collection(db, 'products'), data);
-    e.target.reset();
-    renderDataTable();
+    alert('Product added successfully!');
+    document.getElementById('add-product-form').reset();
+    await renderDataTable();  // Refresh the table
   } catch (err) {
     console.error('Add product error:', err);
-    alert('Error adding product: ' + err.message);
+    alert('Failed to add product: ' + err.message);
   }
 }
-
 // ====== ADMIN: PRODUCTS TABLE ======
 async function renderDataTable() {
   const tbody = document.getElementById('products-body');
@@ -1505,6 +1530,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
