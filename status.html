@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Status</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png">
+  <link rel="icon" type="image/x-icon" href="assets/logo t.png">
   <link rel="stylesheet" href="style.css">
-  <script type="module" src="script.js"></script>
+  <script type="module" src="js/main.js"></script>
   <style>
     .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
    
@@ -235,13 +235,13 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
   <div>
     <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+      <img src="assets/facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
     </a>
     <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+      <img src="assets/instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
     </a>
         <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
-      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
+      <img src="assets/whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
     </a>
   </div>
  
@@ -250,7 +250,7 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
   import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-  import { firebaseConfig } from './config.js';
+  import { firebaseConfig } from 'js/config.js';
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -306,32 +306,13 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 
         // Final delivery estimate logic
         let deliveryText = '';
-       if (isDelivered) {
-  let deliveredDate = 'N/A';
-
-  // Use the pre-formatted date if available (new orders)
-  if (order.deliveredAtFormatted) {
-    deliveredDate = order.deliveredAtFormatted;  // e.g., "06/01/2026"
-  }
-  // Fallback for old orders that only have deliveredAt timestamp
-  else if (order.deliveredAt) {
-    const dateObj = order.deliveredAt.toDate();  // convert Firestore Timestamp
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const year = dateObj.getFullYear();
-    deliveredDate = `${day}/${month}/${year}`;
-  }
-  // Final fallback: if status is Delivered but no date field exists
-  else {
-    const today = new Date();
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const year = today.getFullYear();
-    deliveredDate = `${day}/${month}/${year}`;
-  }
-
-  deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
-}
+        if (isDelivered) {
+          const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('en-GB') : 'N/A';
+          deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
+        } else {
+          const days = hasPreOrderItem ? '20–40 days' : '3–7 days';
+          deliveryText = `Est. Delivery: <strong>${days}</strong>`;
+        }
 
         // Build product list HTML
         let productHTML = '';
@@ -415,4 +396,14 @@ Returns may be declined if sufficient proof is not provided or if the product ap
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
 

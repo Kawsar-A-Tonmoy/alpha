@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/style.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
     import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
   <header class="site-header">
      <nav>
       <a href="index.html" class="logo">
-        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+        <img src="assets/logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
       <div class="nav-links">
         <a href="products.html">Products</a>
@@ -110,10 +110,6 @@
           <label>Description (full section below images)</label>
           <textarea id="add-detailed-desc"></textarea>
         </div>
-        <div>
-          <label>Attributes (format: profile:cherry, max support:100, light transmission:yes, etc.)</label>
-          <textarea id="add-attributes" placeholder="e.g. profile:cherry, max support:100, light transmission:yes"></textarea>
-        </div>
         <h3>SEO Optimization</h3>
         <div>
           <label>Meta Title</label>
@@ -131,17 +127,16 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Image</th>
+              <th></th>
               <th>Name</th>
               <th>Price</th>
               <th>Category</th>
               <th>Color</th>
-              <th>Discount</th>
+              <th>Discount (tk)</th>
               <th>Stock</th>
               <th>Availability</th>
               <th>Badge</th>
               <th>Status</th>
-              <th>Attributes</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -154,6 +149,7 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th></th>
               <th>Time</th>
               <th>Product</th>
               <th>Color</th>
