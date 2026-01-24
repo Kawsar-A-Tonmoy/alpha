@@ -90,57 +90,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   maxPrice = Math.ceil(maxPrice / 100) * 100 || 100000;
 
-  const minSlider = document.getElementById('min-slider');
-  const maxSlider = document.getElementById('max-slider');
-  const minInput  = document.getElementById('filter-min-price');
-  const maxInput  = document.getElementById('filter-max-price');
+const maxSlider = document.getElementById('max-slider');
+const maxInput  = document.getElementById('filter-max-price');
 
-  if (minSlider && maxSlider) {
-    minSlider.max = maxPrice;
-    maxSlider.max = maxPrice;
-    maxSlider.value = maxPrice;
-    maxInput.placeholder = maxPrice.toLocaleString();
-  }
+if (maxSlider) {
+  maxSlider.max = maxPrice;
+  maxSlider.value = maxPrice;
+  maxInput.placeholder = maxPrice.toLocaleString();
+}
 
-  // Sync sliders ↔ inputs
-  minSlider?.addEventListener('input', () => {
-    let v = Number(minSlider.value);
-    if (v > Number(maxSlider.value)) v = Number(maxSlider.value);
-    minInput.value = v;
-  });
+// Sync slider ↔ input (only max now)
+maxSlider?.addEventListener('input', () => {
+  let v = Number(maxSlider.value);
+  maxInput.value = v;
+});
 
-  maxSlider?.addEventListener('input', () => {
-    let v = Number(maxSlider.value);
-    if (v < Number(minSlider.value)) v = Number(minSlider.value);
-    maxInput.value = v;
-  });
-
-  minInput?.addEventListener('input', () => {
-    let v = Number(minInput.value) || 0;
-    if (v < 0) v = 0;
-    if (v > Number(maxSlider.value)) v = Number(maxSlider.value);
-    minSlider.value = v;
-  });
-
-  maxInput?.addEventListener('input', () => {
-    let v = Number(maxInput.value) || maxPrice;
-    if (v > maxPrice) v = maxPrice;
-    if (v < Number(minSlider.value)) v = Number(minSlider.value);
-    maxSlider.value = v;
-  });
+maxInput?.addEventListener('input', () => {
+  let v = Number(maxInput.value) || maxPrice;
+  if (v > maxPrice) v = maxPrice;
+  if (v < 0) v = 0;  // Prevent negative
+  maxSlider.value = v;
+});
 
   // Apply filter
   document.getElementById('filter-form')?.addEventListener('submit', e => {
     e.preventDefault();
 
-    const minP = Number(minInput?.value) || 0;
     const maxP = Number(maxInput?.value) || Infinity;
 
     const selected = getCurrentFilters();
 
     let filtered = allProducts.filter(p => {
       const price = Number(p.price) - Number(p.discount || 0);
-      if (price < minP || price > maxP) return false;
+      if ( price > maxP) return false;
 
       for (const section in selected) {
         if (!p.filters?.[section] || 
@@ -173,10 +155,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Clear filters
   document.getElementById('clear-filter')?.addEventListener('click', () => {
-    if (minInput) minInput.value = '';
-    if (maxInput) maxInput.value = '';
-    if (minSlider) minSlider.value = 0;
-    if (maxSlider) maxSlider.value = maxPrice;
+if (maxInput) maxInput.value = '';
+if (maxSlider) maxSlider.value = maxPrice;
 
     document.querySelectorAll('#filter-tags input[type="checkbox"]').forEach(cb => {
       cb.checked = false;
@@ -194,4 +174,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('close-filter')?.addEventListener('click', () => {
     document.getElementById('filter-slider')?.classList.remove('open');
   });
+
 });
