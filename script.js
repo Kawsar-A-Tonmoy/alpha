@@ -1465,13 +1465,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isHome) await initHomePage();
   if (isProducts) await initProductsPageWithFilter();
   if (isProduct) await initProductPage();
-  const isProducts = !!document.getElementById('product-list');
-  const isProduct = !!document.getElementById('product-section');
-  const isAdmin = !!document.getElementById('admin-panel');
 
-  if (isHome) await initHomePage();
-  if (isProducts) await initProductsPage();
-  if (isProduct) await initProductPage();
 
   const loginPanel = document.getElementById('login-panel');
   const adminPanel = document.getElementById('admin-panel');
@@ -1511,6 +1505,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 });
+
 
 
 
