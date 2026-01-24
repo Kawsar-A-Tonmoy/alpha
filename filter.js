@@ -1,0 +1,197 @@
+// filter.js
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { firebaseConfig } from './config.js';
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let filterSections = [];
+
+async function loadFilterSections() {
+  try {
+    const snapshot = await getDocs(collection(db, 'filterSections'));
+    filterSections = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    window.filterSections = filterSections; // make accessible if needed
+    return filterSections;
+  } catch (err) {
+    console.error('Error loading filter sections:', err);
+    return [];
+  }
+}
+
+function renderFilterCheckboxes(containerId, selected = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  filterSections.forEach(sec => {
+    const sectionDiv = document.createElement('div');
+    sectionDiv.innerHTML = `<h3>${sec.name}</h3>`;
+
+    sec.tags?.forEach(tag => {
+      const label = document.createElement('label');
+      label.style.display = 'block';
+      label.style.margin = '6px 0';
+
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = `filter_${sec.name.replace(/\s+/g, '_')}`;
+      input.value = tag;
+
+      if (selected[sec.name]?.includes(tag)) {
+        input.checked = true;
+      }
+
+      label.appendChild(input);
+      label.append(` ${tag}`);
+      sectionDiv.appendChild(label);
+    });
+
+    container.appendChild(sectionDiv);
+  });
+}
+
+function getCurrentFilters() {
+  const filters = {};
+  filterSections.forEach(sec => {
+    const checked = document.querySelectorAll(
+      `#filter-tags input[name="filter_${sec.name.replace(/\s+/g, '_')}"]:checked`
+    );
+    if (checked.length > 0) {
+      filters[sec.name] = Array.from(checked).map(cb => cb.value);
+    }
+  });
+  return filters;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Only run on pages that need filtering
+  if (!document.getElementById('product-list') && 
+      !document.getElementById('categoryProducts')) {
+    return;
+  }
+
+  const listEl = document.getElementById('product-list') || document.getElementById('categoryProducts');
+  if (!listEl) return;
+
+  // Load filter sections once
+  await loadFilterSections();
+  renderFilterCheckboxes('filter-tags', {});
+
+  // Get current products (assuming script.js sets window.allProducts or window.productsMap)
+  const allProducts = window.allProducts || Array.from(window.productsMap?.values() || []);
+
+  // Find realistic max price
+  let maxPrice = 0;
+  allProducts.forEach(p => {
+    const effective = Number(p.price) - Number(p.discount || 0);
+    if (effective > maxPrice) maxPrice = effective;
+  });
+  maxPrice = Math.ceil(maxPrice / 100) * 100 || 100000;
+
+  const minSlider = document.getElementById('min-slider');
+  const maxSlider = document.getElementById('max-slider');
+  const minInput  = document.getElementById('filter-min-price');
+  const maxInput  = document.getElementById('filter-max-price');
+
+  if (minSlider && maxSlider) {
+    minSlider.max = maxPrice;
+    maxSlider.max = maxPrice;
+    maxSlider.value = maxPrice;
+    maxInput.placeholder = maxPrice.toLocaleString();
+  }
+
+  // Sync sliders ↔ inputs
+  minSlider?.addEventListener('input', () => {
+    let v = Number(minSlider.value);
+    if (v > Number(maxSlider.value)) v = Number(maxSlider.value);
+    minInput.value = v;
+  });
+
+  maxSlider?.addEventListener('input', () => {
+    let v = Number(maxSlider.value);
+    if (v < Number(minSlider.value)) v = Number(minSlider.value);
+    maxInput.value = v;
+  });
+
+  minInput?.addEventListener('input', () => {
+    let v = Number(minInput.value) || 0;
+    if (v < 0) v = 0;
+    if (v > Number(maxSlider.value)) v = Number(maxSlider.value);
+    minSlider.value = v;
+  });
+
+  maxInput?.addEventListener('input', () => {
+    let v = Number(maxInput.value) || maxPrice;
+    if (v > maxPrice) v = maxPrice;
+    if (v < Number(minSlider.value)) v = Number(minSlider.value);
+    maxSlider.value = v;
+  });
+
+  // Apply filter
+  document.getElementById('filter-form')?.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const minP = Number(minInput?.value) || 0;
+    const maxP = Number(maxInput?.value) || Infinity;
+
+    const selected = getCurrentFilters();
+
+    let filtered = allProducts.filter(p => {
+      const price = Number(p.price) - Number(p.discount || 0);
+      if (price < minP || price > maxP) return false;
+
+      for (const section in selected) {
+        if (!p.filters?.[section] || 
+            !selected[section].some(tag => p.filters[section].includes(tag))) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // Optional: keep category filter from URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const cat = urlParams.get('category');
+    if (cat) {
+      filtered = filtered.filter(p => p.category === decodeURIComponent(cat));
+    }
+
+    listEl.innerHTML = '';
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<p style="text-align:center; padding:40px;">No products match the selected filters.</p>';
+    } else {
+      filtered.forEach(p => {
+        const card = createProductCard(p, filtered); // assumes this function exists globally
+        listEl.appendChild(card);
+      });
+    }
+
+    document.getElementById('filter-slider')?.classList.remove('open');
+  });
+
+  // Clear filters
+  document.getElementById('clear-filter')?.addEventListener('click', () => {
+    if (minInput) minInput.value = '';
+    if (maxInput) maxInput.value = '';
+    if (minSlider) minSlider.value = 0;
+    if (maxSlider) maxSlider.value = maxPrice;
+
+    document.querySelectorAll('#filter-tags input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+    });
+
+    // Re-apply (shows all)
+    document.getElementById('filter-form')?.dispatchEvent(new Event('submit'));
+  });
+
+  // Open / close slider
+  document.getElementById('filter-btn')?.addEventListener('click', () => {
+    document.getElementById('filter-slider')?.classList.add('open');
+  });
+
+  document.getElementById('close-filter')?.addEventListener('click', () => {
+    document.getElementById('filter-slider')?.classList.remove('open');
+  });
+});

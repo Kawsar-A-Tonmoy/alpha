@@ -4,21 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products</title>
-  <link rel="icon" type="image/x-icon" href="assets/logo t.png"> 
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <link rel="stylesheet" href="style.css">
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
     import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
- <script type="module" src="js/main.js"></script>
-
+  <script type="module" src="script.js"></script>
+  <script type="module" src="filter.js"></script>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '655776497078930');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
 </head>
 <body>
+
   <header class="site-header">
-     <nav>
+    <nav>
       <a href="index.html" class="logo">
-        <img src="assets/logo.png" alt="The Geek Shop Logo" style="height: 40px;">
+        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
       </a>
       <div class="nav-links">
         <a href="products.html">Products</a>
@@ -28,20 +46,26 @@
     </nav>
   </header>
 
- <main class="container">
-    <h1 id="products-title">Products</h1>
+  <main class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1 id="products-title">Products</h1>
+      <button id="filter-btn" style="padding: 10px 18px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        Filters
+      </button>
+    </div>
     
     <div id="product-list" class="product-list"></div>
   </main>
 
+  <!-- Image viewer (if you use it) -->
   <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">&times;</button>
+    <button id="close-viewer" class="close-viewer">×</button>
     <img id="viewer-img" src="" alt="">
   </div>
 
   <!-- Cart Slider -->
   <div id="cart-slider" class="cart-slider">
-    <button id="close-cart" class="close-viewer">&times;</button>
+    <button id="close-cart" class="close-viewer">×</button>
     <h2>Shopping Cart</h2>
     <div id="cart-items" class="cart-items"></div>
     <div id="cart-total" class="cart-total"><strong>Total: ৳0</strong></div>
@@ -49,73 +73,53 @@
     <div id="cart-empty" class="muted" style="text-align:center; padding:20px; display:none;">Your cart is empty</div>
   </div>
 
-
-  <!-- Cart Slider -->
-  <div id="cart-slider" class="cart-slider">
-    <button id="close-cart" class="close-viewer">&times;</button>
-    <h2>Shopping Cart</h2>
-    <div id="cart-items" class="cart-items"></div>
-    <div id="cart-total" class="cart-total"><strong>Total: ৳0</strong></div>
-    <button id="checkout-cart" class="checkout-cart-btn">Checkout</button>
-    <div id="cart-empty" class="muted" style="text-align:center; padding:20px; display:none;">Your cart is empty</div>
-  </div>
-
-  <!-- Cart Checkout Modal -->
-  <div id="cart-checkout-modal" class="modal">
-    <div class="card modal-content">
-      <div class="modal-header">
-        <h2>Checkout (Cart)</h2>
-        <button id="cart-close-modal-btn">Close</button>
-      </div>
-      <form id="cart-checkout-form" class="form">
-        <div id="cart-co-items"></div>
-        <div class="row">
-          <div><label>Delivery Fee</label><input id="cart-co-delivery" readonly></div>
-          <div><label>Total Amount</label><input id="cart-co-total" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Name</label><input id="cart-co-name" required></div>
-          <div><label>Phone</label><input id="cart-co-phone" type="tel" required></div>
-        </div>
-        <div><label>Address</label><textarea id="cart-co-address" required></textarea></div>
-        <div class="row">
-          <div><label>Payment Method</label>
-            <select id="cart-co-payment" required>
-              <option value="">Select</option>
-              <option value="Cash on Delivery">Cash on Delivery</option>
-              <option value="Bkash">Bkash</option>
-            </select>
+  <!-- Filter Slider -->
+  <div id="filter-slider" class="filter-slider">
+    <button id="close-filter" class="close-viewer">×</button>
+    <h2>Filters</h2>
+    
+    <form id="filter-form">
+      <div>
+        <h3>Price Range</h3>
+        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+          <div style="flex:1;">
+            <label>Min</label>
+            <input type="number" id="filter-min-price" min="0" placeholder="0">
           </div>
-          <div><label>Pay to</label><input id="cart-co-payment-number" readonly></div>
+          <div style="flex:1;">
+            <label>Max</label>
+            <input type="number" id="filter-max-price" placeholder="Max">
+          </div>
         </div>
-        <div class="row">
-          <div><label>Pay Now (tk)</label><input id="cart-co-pay-now" readonly></div>
-          <div><label>Due Amount (tk)</label><input id="cart-co-due-amount" readonly></div>
+        <div id="price-slider" style="margin: 16px 0;">
+          <input type="range" id="min-slider" min="0" max="100000" value="0" step="100">
+          <input type="range" id="max-slider" min="0" max="100000" value="100000" step="100">
         </div>
-        <div><label>Transaction ID</label><input id="cart-co-txn"></div>
-        <div><label><input type="checkbox" id="cart-co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
-          <p id="cart-co-note" class="muted"></p>
-        <button id="cart-place-order-btn" type="submit">Place Order</button>
-      </form>
+      </div>
+
+      <div id="filter-tags"></div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="submit" style="flex:1; background: #10b981;">Apply Filters</button>
+        <button type="button" id="clear-filter" style="flex:1; background: #6b7280;">Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
+    <div>
+      <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+        <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
+      </a>
+      <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
+        <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
+      </a>
+      <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
+        <img src="whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
+      </a>
     </div>
-  
-  </div>
+    <p>© All rights reserved by The Geek Shop</p>
+  </footer>
 
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
-  <div>
-    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="assets/facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
-    </a>
-    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="assets/instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
-    </a>
-    <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
-      <img src="assets/whatsapp.png" alt="WhatsApp" style="width: 30px; height: 30px;">
-    </a>
-  </div>
-  <p>&copy; All rights reserved by The Geek Shop</p>
-</footer>
 </body>
-
 </html>
-
