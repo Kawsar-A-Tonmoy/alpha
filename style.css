@@ -751,131 +751,177 @@ footer {
   background: #b91c1c !important;
 }
 
+/* Filter Toggle Button */
+.filter-toggle-btn {
+  padding: 10px 20px;
+  background: var(--form-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+.filter-toggle-btn:hover {
+  background: #2563eb;
+}
 
-
-
-
-.filter-slider {
+/* Filter Sidebar – now using flex column */
+.filter-sidebar {
   position: fixed;
   top: 0;
-  left: -400px;
-  width: 380px;
+  left: -300px;
+  width: 300px;
   height: 100%;
   background: var(--card);
   box-shadow: 4px 0 20px rgba(0,0,0,0.15);
   transition: left 0.3s ease;
-  z-index: 100;
+  z-index: 99;
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;           /* important – prevents double scrollbar */
   display: flex;
   flex-direction: column;
 }
-
-.filter-slider.open {
+.filter-sidebar.open {
   left: 0;
 }
 
-.filter-slider h2 {
-  margin-top: 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.filter-slider .close-viewer {
+.close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 28px;
+  top: 10px;
+  right: 10px;
   background: none;
   border: none;
-  color: #374151;
+  font-size: 24px;
   cursor: pointer;
+  color: var(--text);
+  z-index: 10;
 }
 
-.filter-slider form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* Scrollable content area */
+.filter-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: 100px;          /* space for fixed buttons */
+  -webkit-overflow-scrolling: touch;
+  margin-right: -8px;             /* helps scrollbar not overlap content */
+  padding-right: 8px;
 }
 
-.filter-slider h3 {
-  margin: 0 0 12px;
-  font-size: 1.1rem;
-  color: #111827;
+/* Sticky buttons at bottom */
+.filter-buttons-fixed {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  padding: 16px 0 12px 0;
+  margin: 0 -20px;                /* full width – cancels sidebar padding */
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.08);
+  z-index: 5;
 }
 
-.filter-slider label {
-  display: block;
-  margin: 8px 0 4px;
-  font-size: 0.95rem;
-  color: #374151;
-}
-
-.filter-slider input[type="number"],
-.filter-slider input[type="range"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-#price-slider {
+.filter-buttons {
   display: flex;
   gap: 12px;
-  margin: 16px 0 8px;
+  padding: 0 20px;
 }
 
-#price-slider input[type="range"] {
+.filter-buttons button {
   flex: 1;
-}
-
-.filter-slider .tag-section {
-  margin-bottom: 8px;
-}
-
-.filter-slider .tag-section h4 {
-  margin: 0 0 8px;
-  font-size: 1rem;
-  color: #111827;
-}
-
-.filter-slider label[for^="filter_"] {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 6px 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
-.filter-slider button {
-  margin-top: 12px;
-  padding: 12px;
-  font-size: 1rem;
+#apply-filter {
+  background: var(--form-accent);
+  color: white;
 }
 
-.filter-slider button[type="button"] {
-  background: #6b7280;
+#apply-filter:hover {
+  background: #2563eb;
 }
 
-.filter-slider button[type="button"]:hover {
-  background: #4b5563;
+#clear-filter {
+  background: #e5e7eb;
+  color: var(--text);
 }
 
-/* Responsive - make filter full width on mobile */
-@media (max-width: 480px) {
-  .filter-slider {
+#clear-filter:hover {
+  background: #d1d5db;
+}
+
+/* Filter Sections (Stacked) */
+.filter-section {
+  margin-bottom: 24px;
+}
+.filter-section h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+.filter-section label {
+  display: block;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* Price Slider (Dual Thumb) */
+.price-slider-container {
+  position: relative;
+  height: 20px;
+}
+.price-slider-container input[type="range"] {
+  position: absolute;
+  width: 100%;
+  pointer-events: none;
+  appearance: none;
+  background: none;
+}
+.price-slider-container input[type="range"]::-webkit-slider-thumb {
+  pointer-events: all;
+  width: 20px;
+  height: 20px;
+  background: var(--form-accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.price-inputs {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.price-inputs input {
+  width: 50%;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .filter-sidebar {
     width: 100%;
     left: -100%;
   }
-
-  .filter-slider.open {
-    left: 0;
+  
+  .filter-buttons-fixed {
+    margin: 0 -20px;
   }
-
-  #price-slider {
+  
+  .header-row {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .filter-toggle-btn {
+    width: 100%;
   }
 }
+
+
+

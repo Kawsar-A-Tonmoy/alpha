@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Category</title>
   <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="../script.js"></script>
-  <script type="module" src="../filter.js"></script>
 </head>
 <body>
-
   <header class="header">
     <div class="logo">Keyboard Shop</div>
     <nav class="nav">
@@ -19,52 +16,15 @@
       <a id="adminLink" href="admin.html" style="display:none;">Admin</a>
     </nav>
   </header>
-
-  <main class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h1 id="category-title">Category Products</h1>
-      <button id="filter-btn" style="padding: 10px 18px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer;">
-        Filters
-      </button>
-    </div>
-
-    <section id="categoryProducts" style="display: flex; flex-wrap: wrap; justify-content: space-around; gap: 20px;"></section>
-  </main>
-
+  <section id="categoryProducts" style="display: flex; flex-wrap: wrap; justify-content: space-around;"></section>
   <footer>© 2025 Keyboard Shop</footer>
-
-  <!-- Filter Slider -->
-  <div id="filter-slider" class="filter-slider">
-    <button id="close-filter" class="close-viewer">×</button>
-    <h2>Filters</h2>
-    
-    <form id="filter-form">
-      <div>
-        <h3>Price Range</h3>
-        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-          <div style="flex:1;">
-            <label>Min</label>
-            <input type="number" id="filter-min-price" min="0" placeholder="0">
-          </div>
-          <div style="flex:1;">
-            <label>Max</label>
-            <input type="number" id="filter-max-price" placeholder="Max">
-          </div>
-        </div>
-        <div id="price-slider" style="margin: 16px 0;">
-          <input type="range" id="min-slider" min="0" max="100000" value="0" step="100">
-          <input type="range" id="max-slider" min="0" max="100000" value="100000" step="100">
-        </div>
-      </div>
-
-      <div id="filter-tags"></div>
-
-      <div style="display: flex; gap: 12px; margin-top: 24px;">
-        <button type="submit" style="flex:1; background: #10b981;">Apply Filters</button>
-        <button type="button" id="clear-filter" style="flex:1; background: #6b7280;">Clear</button>
-      </div>
-    </form>
-  </div>
-
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/products.js"></script>
+  <script type="module" src="js/cart.js"></script>
+  <script type="module">
+    import { loadCategoryProducts } from './js/products.js';
+    loadCategoryProducts();
+  </script>
 </body>
 </html>

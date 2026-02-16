@@ -12,24 +12,6 @@
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
   </script>
   <script type="module" src="script.js"></script>
-  <script type="module" src="filter.js"></script>
-  <!-- Meta Pixel Code -->
-  <script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '655776497078930');
-  fbq('track', 'PageView');
-  </script>
-  <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=655776497078930&ev=PageView&noscript=1"
-  /></noscript>
-  <!-- End Meta Pixel Code -->
 </head>
 <body>
 
@@ -47,17 +29,64 @@
   </header>
 
   <main class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="header-row" style="display: flex; justify-content: space-between; align-items: center;">
       <h1 id="products-title">Products</h1>
-      <button id="filter-btn" style="padding: 10px 18px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer;">
-        Filters
-      </button>
+      <button id="filter-btn" class="filter-toggle-btn">Filters</button>
+    </div>
+    
+    <!-- Filter Sidebar -->
+    <div id="filter-sidebar" class="filter-sidebar">
+      <h2>Filters</h2>
+      <button id="close-filter" class="close-btn">×</button>
+
+      <!-- NEW wrapper for scrollable content -->
+      <div class="filter-content">
+
+        <!-- Price Filter -->
+        <div class="filter-section">
+          <h3>Price Range</h3>
+          <div class="price-slider-container">
+            <input type="range" id="price-min-slider" min="0" max="10000" value="0">
+            <input type="range" id="price-max-slider" min="0" max="10000" value="10000">
+          </div>
+          <div class="price-inputs">
+            <input type="number" id="price-min-input" placeholder="Min" min="0">
+            <input type="number" id="price-max-input" placeholder="Max" min="0">
+          </div>
+        </div>
+        
+        <!-- Color Filter -->
+        <div class="filter-section" id="color-filter">
+          <h3>Color</h3>
+          <div id="color-options"></div> <!-- Checkboxes will be dynamically added -->
+        </div>
+        
+        <!-- Specs Filter (only for keycaps/keyboards) -->
+        <div class="filter-section" id="specs-filter" style="display: none;">
+          <h3>Specs</h3>
+          <div id="keys-options"></div>
+          <div id="print-options"></div>
+          <div id="layout-options"></div>
+          <div id="profile-options"></div>
+        </div>
+
+        <!-- You can add more filter sections here in the future -->
+
+      </div> <!-- end of .filter-content -->
+
+      <!-- Sticky buttons container -->
+      <div class="filter-buttons-fixed">
+        <div class="filter-buttons">
+          <button id="apply-filter">Apply</button>
+          <button id="clear-filter">Clear</button>
+        </div>
+      </div>
+
     </div>
     
     <div id="product-list" class="product-list"></div>
   </main>
 
-  <!-- Image viewer (if you use it) -->
   <div id="image-viewer" class="image-viewer">
     <button id="close-viewer" class="close-viewer">×</button>
     <img id="viewer-img" src="" alt="">
@@ -73,37 +102,44 @@
     <div id="cart-empty" class="muted" style="text-align:center; padding:20px; display:none;">Your cart is empty</div>
   </div>
 
-  <!-- Filter Slider -->
-  <div id="filter-slider" class="filter-slider">
-    <button id="close-filter" class="close-viewer">×</button>
-    <h2>Filters</h2>
-    
-    <form id="filter-form">
-      <div>
-        <h3>Price Range</h3>
-        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-          <div style="flex:1;">
-            <label>Min</label>
-            <input type="number" id="filter-min-price" min="0" placeholder="0">
-          </div>
-          <div style="flex:1;">
-            <label>Max</label>
-            <input type="number" id="filter-max-price" placeholder="Max">
-          </div>
-        </div>
-        <div id="price-slider" style="margin: 16px 0;">
-          <input type="range" id="min-slider" min="0" max="100000" value="0" step="100">
-          <input type="range" id="max-slider" min="0" max="100000" value="100000" step="100">
-        </div>
+  <!-- Cart Checkout Modal -->
+  <div id="cart-checkout-modal" class="modal">
+    <div class="card modal-content">
+      <div class="modal-header">
+        <h2>Checkout (Cart)</h2>
+        <button id="cart-close-modal-btn">Close</button>
       </div>
-
-      <div id="filter-tags"></div>
-
-      <div style="display: flex; gap: 12px; margin-top: 24px;">
-        <button type="submit" style="flex:1; background: #10b981;">Apply Filters</button>
-        <button type="button" id="clear-filter" style="flex:1; background: #6b7280;">Clear</button>
-      </div>
-    </form>
+      <form id="cart-checkout-form" class="form">
+        <div id="cart-co-items"></div>
+        <div class="row">
+          <div><label>Delivery Fee</label><input id="cart-co-delivery" readonly></div>
+          <div><label>Total Amount</label><input id="cart-co-total" readonly></div>
+        </div>
+        <div class="row">
+          <div><label>Name</label><input id="cart-co-name" required></div>
+          <div><label>Phone</label><input id="cart-co-phone" type="tel" required></div>
+        </div>
+        <div><label>Address</label><textarea id="cart-co-address" required></textarea></div>
+        <div class="row">
+          <div><label>Payment Method</label>
+            <select id="cart-co-payment" required>
+              <option value="">Select</option>
+              <option value="Cash on Delivery">Cash on Delivery</option>
+              <option value="Bkash">Bkash</option>
+            </select>
+          </div>
+          <div><label>Pay to</label><input id="cart-co-payment-number" readonly></div>
+        </div>
+        <div class="row">
+          <div><label>Pay Now (tk)</label><input id="cart-co-pay-now" readonly></div>
+          <div><label>Due Amount (tk)</label><input id="cart-co-due-amount" readonly></div>
+        </div>
+        <div><label>Transaction ID</label><input id="cart-co-txn"></div>
+        <div><label><input type="checkbox" id="cart-co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
+        <p id="cart-co-note" class="muted"></p>
+        <button id="cart-place-order-btn" type="submit">Place Order</button>
+      </form>
+    </div>
   </div>
 
   <footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color: #000000; font-family: Arial, sans-serif;">
