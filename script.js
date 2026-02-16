@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { firebaseConfig, BKASH_NUMBER, COD_NUMBER, DELIVERY_FEE } from './config.js';
 
 // Initialize Firebase
@@ -672,321 +672,332 @@ function renderFilters(products) {
 
   // Colors
   const colors = getUniqueValues(products, 'color');
-  const colorOptions = document.getElementById('filter-colors');
-  colorOptions.innerHTML = '';
-  colors.forEach(color => {
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${color}"> ${color}`;
-    colorOptions.appendChild(label);
+  const colorOptions = document.getElementById('color-options');
+  colorOptions.innerHTML = colors.map(color => `
+    <label><input type="checkbox" class="filter-checkbox" data-type="color" value="${color}"> ${color}</label>
+  `).join('');
+
+  // Specs - always show for all products
+  const specsFilter = document.getElementById('specs-filter');
+  specsFilter.style.display = 'block';
+
+  ['keys', 'print', 'layout', 'profile'].forEach(spec => {
+    const opts = getUniqueSpecs(products, spec);
+    const container = document.getElementById(`${spec}-options`);
+
+    if (opts.length === 0) {
+      container.style.display = 'none';
+    } else {
+      container.style.display = 'block';
+      container.innerHTML = `<h4>${spec.charAt(0).toUpperCase() + spec.slice(1)}</h4>` +
+        opts.map(val => `
+          <label><input type="checkbox" class="filter-checkbox" data-type="${spec}" value="${val}"> ${val}</label>
+        `).join('');
+    }
   });
-
-  // Availability
-  const availabilities = getUniqueValues(products, 'availability');
-  const availOptions = document.getElementById('filter-availability');
-  availOptions.innerHTML = '';
-  availabilities.forEach(avail => {
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${avail}"> ${avail}`;
-    availOptions.appendChild(label);
-  });
-
-  // Specs (for Keycaps category)
-  if (category === 'Keycaps') {
-    document.getElementById('keycap-filters').style.display = 'block';
-
-    // Keys
-    const keys = getUniqueSpecs(products, 'keys');
-    const keysOptions = document.getElementById('filter-keys');
-    keysOptions.innerHTML = '';
-    keys.forEach(k => {
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${k}"> ${k}`;
-      keysOptions.appendChild(label);
-    });
-
-    // Print
-    const prints = getUniqueSpecs(products, 'print');
-    const printOptions = document.getElementById('filter-print');
-    printOptions.innerHTML = '';
-    prints.forEach(pr => {
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${pr}"> ${pr}`;
-      printOptions.appendChild(label);
-    });
-
-    // Layout
-    const layouts = getUniqueSpecs(products, 'layout');
-    const layoutOptions = document.getElementById('filter-layout');
-    layoutOptions.innerHTML = '';
-    layouts.forEach(l => {
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${l}"> ${l}`;
-      layoutOptions.appendChild(label);
-    });
-
-    // Profile
-    const profiles = getUniqueSpecs(products, 'profile');
-    const profileOptions = document.getElementById('filter-profile');
-    profileOptions.innerHTML = '';
-    profiles.forEach(pro => {
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${pro}"> ${pro}`;
-      profileOptions.appendChild(label);
-    });
-  } else {
-    document.getElementById('keycap-filters').style.display = 'none';
-  }
-
-  // Hot Deal
-  const hotDealCheckbox = document.getElementById('filter-hotdeal');
-  hotDealCheckbox.checked = false;
 }
 
-// ====== HOME PAGE INIT ======
-async function initHomePage() {
-  const products = await loadProducts();
+function applyFilters(products) {
+  const minPrice = parseInt(document.getElementById('price-min-slider').value) || 0;
+  const maxPrice = parseInt(document.getElementById('price-max-slider').value) || Infinity;
 
-  const interestDiv = document.getElementById('interest-products');
-  interestDiv.innerHTML = '';
+  const selectedColors = [...document.querySelectorAll('.filter-checkbox[data-type="color"]:checked')].map(cb => cb.value);
+  const selectedSpecs = {};
+  ['keys', 'print', 'layout', 'profile'].forEach(spec => {
+    selectedSpecs[spec] = [...document.querySelectorAll(`.filter-checkbox[data-type="${spec}"]:checked`)].map(cb => cb.value);
+  });
 
-  // Show shimmers while loading
-  for (let i = 0; i < 4; i++) {
-    interestDiv.appendChild(createShimmerCard());
-  }
+  const filtered = products.filter(p => {
+    const price = Number(p.price) - Number(p.discount || 0);
+    if (price < minPrice || price > maxPrice) return false;
+    if (selectedColors.length > 0 && !selectedColors.includes(p.color)) return false;
 
-  const hotDeals = shuffle(products.filter(p => p.hotDeal)).slice(0, 8); // Adjust number as needed
-  interestDiv.innerHTML = '';
-  hotDeals.forEach(p => interestDiv.appendChild(createProductCard(p, products)));
+    const parsedSpecs = extractSpecsFromDescription(p.description || '');
 
-  const catDiv = document.getElementById('categories');
-  catDiv.innerHTML = '';
-  categories.forEach(c => catDiv.appendChild(createCategoryCard(c)));
-
-  // New Added Products
-  const newDiv = document.getElementById('new-products');
-  if (newDiv) {
-    newDiv.innerHTML = '';
-
-    // Show shimmers while loading
-    for (let i = 0; i < 4; i++) {
-      newDiv.appendChild(createShimmerCard());
+    for (const spec in selectedSpecs) {
+      if (selectedSpecs[spec].length > 0 && !selectedSpecs[spec].includes(parsedSpecs[spec])) return false;
     }
+    return true;
+  });
 
-    // Query for new products (assuming createdAt exists; top 8 newest)
-    const newQ = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(8));
-    const newSnap = await getDocs(newQ);
-    const newProducts = newSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const container = document.getElementById('product-list') || document.getElementById('categoryProducts');
+  container.innerHTML = '';
+  filtered.forEach(p => container.appendChild(createProductCard(p, products)));
+}
 
-    newDiv.innerHTML = '';
-    newProducts.forEach(p => newDiv.appendChild(createProductCard(p, products)));
-  }
+function setupFilterListeners(products) {
+  document.getElementById('filter-btn')?.addEventListener('click', () => {
+    document.getElementById('filter-sidebar').classList.add('open');
+  });
+
+  document.getElementById('close-filter')?.addEventListener('click', () => {
+    document.getElementById('filter-sidebar').classList.remove('open');
+  });
+
+  document.getElementById('apply-filter')?.addEventListener('click', () => {
+    applyFilters(products);
+    document.getElementById('filter-sidebar').classList.remove('open');
+  });
+
+  document.getElementById('clear-filter')?.addEventListener('click', () => {
+    const minSlider = document.getElementById('price-min-slider');
+    const maxSlider = document.getElementById('price-max-slider');
+    minSlider.value = minSlider.min;
+    maxSlider.value = maxSlider.max;
+    document.getElementById('price-min-input').value = minSlider.min;
+    document.getElementById('price-max-input').value = maxSlider.max;
+
+    document.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+
+    applyFilters(products);
+    document.getElementById('filter-sidebar').classList.remove('open');
+  });
+}
+
+// ====== PAGE INIT ======
+async function initHomePage() {
+  const interestSection = document.getElementById('interest-products');
+  const categoriesSection = document.getElementById('categories');
+  if (!interestSection || !categoriesSection) return;
+
+  categories.forEach(c => categoriesSection.appendChild(createCategoryCard(c)));
+
+  for (let i = 0; i < 4; i++) interestSection.appendChild(createShimmerCard());
+
+  const products = await loadProducts();
+  interestSection.innerHTML = '';
+
+  const eligible = products.filter(p => p.availability !== 'Upcoming');
+  const random4 = shuffle(eligible).slice(0, 4);
+
+  random4.forEach(p => interestSection.appendChild(createProductCard(p, products)));
 
   setupImageViewer();
 }
 
-// ====== PRODUCTS PAGE INIT ======
 async function initProductsPage() {
-  const products = await loadProducts();
-  const productList = document.getElementById('product-list');
-  productList.innerHTML = '';
-
-  // Show shimmers
-  for (let i = 0; i < 8; i++) {
-    productList.appendChild(createShimmerCard());
-  }
+  const title = document.getElementById('products-title');
+  const list = document.getElementById('product-list');
+  if (!list) return;
 
   const urlParams = new URLSearchParams(window.location.search);
-  const category = urlParams.get('category') || 'All';
+  const category = urlParams.get('category');
+  if (category) title.innerText = category;
+  else title.innerText = 'All Products';
 
-  let filteredProducts = category === 'All' ? products : products.filter(p => p.category === category);
+  for (let i = 0; i < 8; i++) list.appendChild(createShimmerCard());
 
-  productList.innerHTML = '';
-  filteredProducts.forEach(p => productList.appendChild(createProductCard(p, products)));
+  const allProducts = await loadProducts();
+  let currentProducts = category 
+    ? allProducts.filter(p => p.category === category)
+    : allProducts;
 
-  renderFilters(filteredProducts);
+  list.innerHTML = '';
 
-  // Setup filter listeners
-  const filters = document.querySelectorAll('#filters input');
-  filters.forEach(filter => {
-    filter.addEventListener('change', () => applyFilters(products, category));
-  });
+  renderFilters(currentProducts);
+  setupFilterListeners(currentProducts);
+  applyFilters(currentProducts);
 
   setupImageViewer();
 }
 
-function applyFilters(allProducts, category) {
-  let filtered = category === 'All' ? allProducts : allProducts.filter(p => p.category === category);
-
-  // Price range
-  const minPrice = parseInt(document.getElementById('price-min-slider').value);
-  const maxPrice = parseInt(document.getElementById('price-max-slider').value);
-  filtered = filtered.filter(p => {
-    const price = Number(p.price) - Number(p.discount || 0);
-    return price >= minPrice && price <= maxPrice;
-  });
-
-  // Colors
-  const selectedColors = Array.from(document.querySelectorAll('#filter-colors input:checked')).map(inp => inp.value);
-  if (selectedColors.length > 0) {
-    filtered = filtered.filter(p => selectedColors.includes(p.color));
-  }
-
-  // Availability
-  const selectedAvail = Array.from(document.querySelectorAll('#filter-availability input:checked')).map(inp => inp.value);
-  if (selectedAvail.length > 0) {
-    filtered = filtered.filter(p => selectedAvail.includes(p.availability));
-  }
-
-  // Hot Deal
-  const hotDeal = document.getElementById('filter-hotdeal').checked;
-  if (hotDeal) {
-    filtered = filtered.filter(p => p.hotDeal);
-  }
-
-  // Keycap specs
-  if (category === 'Keycaps') {
-    // Keys
-    const selectedKeys = Array.from(document.querySelectorAll('#filter-keys input:checked')).map(inp => inp.value);
-    if (selectedKeys.length > 0) {
-      filtered = filtered.filter(p => {
-        const specs = p.specs || extractSpecsFromDescription(p.description);
-        return selectedKeys.includes(specs.keys);
-      });
-    }
-
-    // Print
-    const selectedPrints = Array.from(document.querySelectorAll('#filter-print input:checked')).map(inp => inp.value);
-    if (selectedPrints.length > 0) {
-      filtered = filtered.filter(p => {
-        const specs = p.specs || extractSpecsFromDescription(p.description);
-        return selectedPrints.includes(specs.print);
-      });
-    }
-
-    // Layout
-    const selectedLayouts = Array.from(document.querySelectorAll('#filter-layout input:checked')).map(inp => inp.value);
-    if (selectedLayouts.length > 0) {
-      filtered = filtered.filter(p => {
-        const specs = p.specs || extractSpecsFromDescription(p.description);
-        return selectedLayouts.includes(specs.layout);
-      });
-    }
-
-    // Profile
-    const selectedProfiles = Array.from(document.querySelectorAll('#filter-profile input:checked')).map(inp => inp.value);
-    if (selectedProfiles.length > 0) {
-      filtered = filtered.filter(p => {
-        const specs = p.specs || extractSpecsFromDescription(p.description);
-        return selectedProfiles.includes(specs.profile);
-      });
-    }
-  }
-
-  const productList = document.getElementById('product-list');
-  productList.innerHTML = '';
-  filtered.forEach(p => productList.appendChild(createProductCard(p, allProducts)));
-}
-
-// ====== PRODUCT PAGE INIT ======
 async function initProductPage() {
-  const products = await loadProducts();
-  const slug = new URLSearchParams(window.location.search).get('slug');
-  if (!slug) return;
-
-  const product = products.find(p => {
-    const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
-    let pSlug = p.name.toLowerCase().replace(/\s+/g, '-');
-    if (sameName.length > 1 && p.color) {
-      pSlug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
-    }
-    return pSlug === slug;
-  });
-
-  if (!product) {
-    document.getElementById('product-section').innerHTML = '<h2>Product not found</h2>';
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSlug = urlParams.get('slug');
+  if (!urlSlug) {
+    alert('Product not found');
     return;
   }
 
+  // Shimmer placeholders (your existing code)
+  const mainImg = document.getElementById('main-image');
+  const thumbnailGallery = document.getElementById('thumbnail-gallery');
+  const nameEl = document.getElementById('product-name');
+  const colorEl = document.getElementById('product-color');
+  const priceEl = document.getElementById('product-price');
+  const badgesEl = document.getElementById('product-badges');
+  const specEl = document.getElementById('product-spec');
+  const descEl = document.getElementById('product-detailed-desc');
+  const orderRow = document.getElementById('order-row');
+
+  mainImg.parentNode.replaceChild(createMainImageShimmer(), mainImg);
+  nameEl.innerHTML = '';
+  nameEl.appendChild(createInfoLineShimmer());
+  nameEl.appendChild(createInfoLineShimmer());
+  colorEl.innerHTML = '';
+  colorEl.appendChild(createInfoLineShimmer());
+  priceEl.innerHTML = '';
+  priceEl.appendChild(createInfoLineShimmer());
+  badgesEl.innerHTML = '';
+  for (let i = 0; i < 2; i++) {
+    const badge = document.createElement('div');
+    badge.className = 'shimmer-badge';
+    badgesEl.appendChild(badge);
+  }
+  specEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const line = createInfoLineShimmer();
+    line.style.width = `${70 + Math.random() * 20}%`;
+    specEl.appendChild(line);
+  }
+  descEl.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const line = createInfoLineShimmer();
+    line.style.width = `${70 + Math.random() * 20}%`;
+    descEl.appendChild(line);
+  }
+  orderRow.innerHTML = '';
+  const btnShimmer = document.createElement('div');
+  btnShimmer.className = 'shimmer-button';
+  orderRow.appendChild(btnShimmer);
+
+  for (let i = 0; i < 3; i++) {
+    thumbnailGallery.appendChild(createThumbnailShimmer());
+  }
+
+  const otherSection = document.getElementById('other-products');
+  for (let i = 0; i < 4; i++) {
+    otherSection.appendChild(createShimmerCard());
+  }
+
+  const products = await loadProducts();
+  let product = null;
+  for (const p of products) {
+    const sameName = products.filter(other => other.name.toLowerCase() === p.name.toLowerCase());
+    let slug = p.name.toLowerCase().replace(/\s+/g, '-');
+    if (sameName.length > 1 && p.color) {
+      slug += '-' + p.color.toLowerCase().replace(/\s+/g, '-');
+    }
+    if (slug === urlSlug) {
+      product = p;
+      break;
+    }
+  }
+
+  if (!product) {
+    alert('Product not found');
+    return;
+  }
+
+  document.title = product.metaTitle || product.name;
+  document.querySelector('#meta-description').setAttribute('content', product.metaDescription || '');
+
+  const sameName = products.filter(p => p.name.toLowerCase() === product.name.toLowerCase());
+  let slug = product.name.toLowerCase().replace(/\s+/g, '-');
+  if (sameName.length > 1 && product.color) {
+    slug += '-' + product.color.toLowerCase().replace(/\s+/g, '-');
+  }
+  document.getElementById('canonical-link').href = `/product/${slug}`;
+
+  const images = product.images || [];
+  const realMainImg = document.createElement('img');
+  realMainImg.id = 'main-image';
+  realMainImg.src = images[0] || '';
+  realMainImg.alt = product.name;
+  document.querySelector('.shimmer-image-placeholder').parentNode.replaceChild(realMainImg, document.querySelector('.shimmer-image-placeholder'));
+
+  nameEl.innerHTML = product.name;
+  colorEl.innerText = `Color: ${product.color || '-'}`;
+
   const isUpcoming = product.availability === 'Upcoming';
-  const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
-  const isPreOrder = product.availability === 'Pre Order';
   const hasDiscount = Number(product.discount) > 0;
   const price = Number(product.price) || 0;
   const finalPrice = hasDiscount ? (price - Number(product.discount)) : price;
-  const images = product.images || [];
+  const isInStock = Number(product.stock) > 0 && product.availability === 'Ready';
 
-  // Populate meta
-  document.title = product.metaTitle || product.name;
-  const metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.content = product.metaDescription || product.description;
+  priceEl.innerHTML = isUpcoming ? 'TBA' : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ''}৳${finalPrice.toFixed(2)}`;
 
-  // Main image shimmer
-  const mainImage = document.getElementById('main-image');
-  mainImage.replaceWith(createMainImageShimmer());
-
-  // Thumbnails shimmer
-  const thumbnails = document.getElementById('thumbnails');
-  thumbnails.innerHTML = '';
-  for (let i = 0; i < 4; i++) {
-    thumbnails.appendChild(createThumbnailShimmer());
-  }
-
-  // Info shimmers
-  const info = document.getElementById('product-info');
-  info.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    info.appendChild(createInfoLineShimmer());
-  }
-
-  // Populate actual content
-  const newMainImage = document.createElement('img');
-  newMainImage.id = 'main-image';
-  newMainImage.src = images[0] || '';
-  newMainImage.alt = product.name;
-  document.querySelector('.product-images').replaceChild(newMainImage, document.querySelector('.shimmer-image-placeholder'));
-
-  thumbnails.innerHTML = '';
-  images.forEach((imgSrc, idx) => {
-    const thumb = document.createElement('img');
-    thumb.className = 'thumbnail';
-    thumb.src = imgSrc;
-    thumb.alt = `${product.name} thumbnail ${idx + 1}`;
-    thumb.addEventListener('click', () => {
-      newMainImage.src = imgSrc;
-    });
-    thumbnails.appendChild(thumb);
-  });
-
-  info.innerHTML = `
-    <h1>${product.name}</h1>
-    <div class="muted">Color: ${product.color || '-'}</div>
-    <div class="price">
-      ${isUpcoming ? `TBA` : `${hasDiscount ? `<s>৳${price.toFixed(2)}</s> ` : ``}৳${finalPrice.toFixed(2)}`}
-    </div>
-    <div class="badges">
-      ${product.hotDeal ? `<span class="badge hot">HOT DEAL</span>` : ''}
-      ${!isOOS && !isUpcoming && !isPreOrder ? `<span class="badge new">IN STOCK</span>` : ''}
-      ${isOOS ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
-      ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
-      ${isPreOrder ? `<span class="badge preorder">PRE ORDER</span>` : ''}
-    </div>
-    <p>${product.description ? product.description.replace(/\n/g, '<br>') : ''}</p>
-    <p>${product.detailedDescription ? product.detailedDescription.replace(/\n/g, '<br>') : ''}</p>
+  badgesEl.innerHTML = `
+    ${product.hotDeal ? `<span class="badge hot">HOT DEAL</span>` : ''}
+    ${isInStock ? `<span class="badge new">IN STOCK</span>` : ''}
+    ${!isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order' ? `<span class="badge oos">OUT OF STOCK</span>` : ''}
+    ${isUpcoming ? `<span class="badge upcoming">UPCOMING</span>` : ''}
+    ${product.availability === 'Pre Order' ? `<span class="badge preorder">PRE ORDER</span>` : ''}
   `;
 
-  const addToCartBtn = document.getElementById('add-to-cart-btn');
-  if (addToCartBtn) {
-    addToCartBtn.disabled = isOOS || isUpcoming;
-    addToCartBtn.addEventListener('click', () => addToCart(product.id));
+  specEl.innerText = product.description || '';
+  descEl.innerHTML = product.detailedDescription ? product.detailedDescription.replace(/\n/g, '') : '';
+
+  const button = document.createElement('button');
+  if (isUpcoming) {
+    button.textContent = 'Upcoming - Stay Tuned';
+    button.disabled = true;
+  } else if (product.availability === 'Pre Order') {
+    button.className = 'preorder-btn';
+    button.textContent = 'Pre Order';
+    button.onclick = () => openCheckoutModal(product.id, true);
+  } else if (Number(product.stock) > 0) {
+    button.textContent = 'Order Now';
+    button.onclick = () => openCheckoutModal(product.id);
+  } else {
+    button.textContent = 'Out of Stock';
+    button.disabled = true;
+  }
+  orderRow.innerHTML = '';
+  orderRow.appendChild(button);
+
+  const addToCartBtn = document.createElement('button');
+  addToCartBtn.innerHTML = '🛒';
+  addToCartBtn.title = 'Add to Cart';
+  addToCartBtn.style.marginTop = '';
+  addToCartBtn.style.width = '100%';
+  addToCartBtn.style.padding = '14px';
+  addToCartBtn.style.fontSize = '24px';
+  addToCartBtn.style.backgroundColor = '#10b981';
+  addToCartBtn.style.color = 'white';
+  addToCartBtn.style.border = 'none';
+  addToCartBtn.style.borderRadius = '12px';
+  addToCartBtn.style.cursor = 'pointer';
+  addToCartBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+
+  const isOOS = !isUpcoming && Number(product.stock) <= 0 && product.availability !== 'Pre Order';
+  if (isUpcoming || isOOS) {
+    addToCartBtn.innerHTML = isUpcoming ? '⏳' : '❌';
+    addToCartBtn.title = isUpcoming ? 'Upcoming' : 'Out of Stock';
+    addToCartBtn.disabled = true;
+    addToCartBtn.style.backgroundColor = '#6b7280';
+    addToCartBtn.style.cursor = 'not-allowed';
+  } else {
+    addToCartBtn.onclick = () => {
+      const qtyInput = document.getElementById('co-qty');
+      const qty = qtyInput ? Number(qtyInput.value) || 1 : 1;
+      addToCart(product.id, qty);
+      alert('Added to cart!');
+    };
+  }
+  orderRow.appendChild(addToCartBtn);
+
+  thumbnailGallery.innerHTML = '';
+  if (images.length > 1) {
+    images.slice(1).forEach(src => {
+      const thumb = document.createElement('img');
+      thumb.src = src;
+      thumb.alt = product.name;
+      thumb.className = 'thumbnail';
+      thumb.onclick = () => { realMainImg.src = src; };
+      thumbnailGallery.appendChild(thumb);
+    });
   }
 
-  const buyNowBtn = document.getElementById('buy-now-btn');
-  if (buyNowBtn) {
-    buyNowBtn.disabled = isOOS || isUpcoming;
-    buyNowBtn.addEventListener('click', () => openCheckoutModal(product.id, isPreOrder));
-  }
+  otherSection.innerHTML = '';
+  const eligible = products.filter(p => p.availability !== 'Upcoming' && p.id !== product.id);
+  const random4 = shuffle(eligible).slice(0, 4);
+  random4.forEach(p => otherSection.appendChild(createProductCard(p, products)));
+
+  document.getElementById('close-modal-btn').onclick = closeCheckoutModal;
+  const form = document.getElementById('checkout-form');
+  form.addEventListener('submit', submitCheckoutOrder);
+
+  document.getElementById('co-payment').addEventListener('change', handlePaymentChange);
+  document.getElementById('co-qty').addEventListener('input', updateTotalInModal);
+  document.getElementById('co-address').addEventListener('input', updateDeliveryCharge);
 
   setupImageViewer();
+
+  realMainImg.addEventListener('click', () => {
+    document.getElementById('viewer-img').src = realMainImg.src;
+    document.getElementById('image-viewer').classList.add('show');
+  });
 }
 
 // ====== ADMIN: ADD PRODUCT ======
@@ -1005,8 +1016,7 @@ async function addProduct(e) {
     description: document.getElementById('add-desc').value.trim(),
     detailedDescription: document.getElementById('add-detailed-desc').value.trim(),
     metaTitle: document.getElementById('add-meta-title').value.trim(),
-    metaDescription: document.getElementById('add-meta-desc').value.trim(),
-    createdAt: serverTimestamp()
+    metaDescription: document.getElementById('add-meta-desc').value.trim()
   };
 
   try {
@@ -1608,4 +1618,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   }
+});
+
+// Add this to the end of script.js (inside the DOMContentLoaded event listener)
+
+// FAQ Accordion Functionality
+document.querySelectorAll('.faq-question').forEach(question => {
+  question.addEventListener('click', () => {
+    const faqItem = question.closest('.faq-item');
+    const isActive = faqItem.classList.contains('active');
+    
+    // Close all other open FAQs to prevent layout breakage
+    document.querySelectorAll('.faq-item.active').forEach(item => {
+      if (item !== faqItem) {
+        item.classList.remove('active');
+        item.querySelector('.faq-question').classList.remove('active');
+      }
+    });
+    
+    faqItem.classList.toggle('active', !isActive);
+    question.classList.toggle('active', !isActive);
+  });
 });
