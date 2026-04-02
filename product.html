@@ -1,412 +1,65 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "on-secondary": "#00363f",
-            "primary-container": "#bd00ff",
-            "surface-bright": "#393939",
-            "tertiary": "#c4c5db",
-            "surface-dim": "#131313",
-            "inverse-on-surface": "#313030",
-            "surface-container-low": "#1c1b1b",
-            "background": "#131313",
-            "on-secondary-fixed-variant": "#004e5a",
-            "on-error-container": "#ffdad6",
-            "on-tertiary-fixed": "#181a2b",
-            "surface-container-lowest": "#0e0e0e",
-            "on-tertiary-container": "#fffeff",
-            "on-secondary-fixed": "#001f25",
-            "tertiary-fixed-dim": "#c4c5db",
-            "tertiary-fixed": "#e1e1f7",
-            "error-container": "#93000a",
-            "primary": "#ecb2ff",
-            "surface-container": "#20201f",
-            "primary-fixed": "#f8d8ff",
-            "inverse-primary": "#9900cf",
-            "secondary-fixed": "#a5eeff",
-            "on-primary-fixed-variant": "#74009f",
-            "on-secondary-container": "#005f6d",
-            "on-background": "#e5e2e1",
-            "on-surface-variant": "#d4c0d7",
-            "primary-fixed-dim": "#ecb2ff",
-            "on-primary-fixed": "#320047",
-            "secondary": "#b9f1ff",
-            "outline-variant": "#514255",
-            "surface-container-high": "#2a2a2a",
-            "surface-container-highest": "#353535",
-            "inverse-surface": "#e5e2e1",
-            "surface-variant": "#353535",
-            "surface-tint": "#ecb2ff",
-            "secondary-fixed-dim": "#00daf8",
-            "secondary-container": "#00e0ff",
-            "on-surface": "#e5e2e1",
-            "on-primary-container": "#ffffff",
-            "on-tertiary-fixed-variant": "#444558",
-            "error": "#ffb4ab",
-            "on-error": "#690005",
-            "on-primary": "#520071",
-            "outline": "#9d8ba0",
-            "on-tertiary": "#2d2f40",
-            "surface": "#131313",
-            "tertiary-container": "#737488"
-          },
-          fontFamily: {
-            "headline": ["Space Grotesk"],
-            "body": ["Inter"],
-            "label": ["Inter"]
-          },
-          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-        },
-      },
-    }
-  </script>
-<style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-    body {
-      background-color: #131313;
-      color: #e5e2e1;
-      font-family: 'Inter', sans-serif;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #1c1b1b;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #353535;
-      border-radius: 10px;
-    }
-  </style>
+<html class="dark" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product - The Geek Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script type="module" src="script.js"></script>
 </head>
-<body class="bg-background selection:bg-primary selection:text-on-primary-container">
-<!-- Top Navigation Bar -->
-<header class="fixed top-0 w-full z-50 bg-[#131313]/60 backdrop-blur-xl shadow-[0px_20px_40px_rgba(0,0,0,0.4)]">
-<nav class="flex items-center justify-between px-8 py-4 max-w-[1440px] mx-auto font-['Space_Grotesk'] tracking-tight">
-<div class="text-2xl font-bold tracking-tighter text-[#ecb2ff]">The Geek Shop</div>
-<div class="hidden md:flex items-center space-x-8">
-<a class="text-gray-400 hover:text-white transition-colors" href="#">Keyboards &amp; Mouse</a>
-<a class="text-gray-400 hover:text-white transition-colors" href="#">Switches</a>
-<a class="text-gray-400 hover:text-white transition-colors" href="#">Keycaps</a>
-<a class="text-gray-400 hover:text-white transition-colors" href="#">Accessories</a>
-<a class="text-gray-400 hover:text-white transition-colors" href="#">Collectibles</a>
-</div>
-<div class="flex items-center space-x-6">
-<button class="text-gray-400 hover:text-[#b9f1ff] active:scale-95 transition-all">
-<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
-</button>
-<button class="text-gray-400 hover:text-[#b9f1ff] active:scale-95 transition-all">
-<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-</button>
-</div>
-</nav>
-</header>
-<main class="pt-24 pb-16 px-4 md:px-8 max-w-[1440px] mx-auto">
-<!-- Product Hero Section -->
-<section class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
-<!-- Image Gallery -->
-<div class="lg:col-span-7 flex flex-col gap-4">
-<div class="aspect-[4/3] rounded-xl overflow-hidden bg-surface-container-low relative group">
-<img alt="Polaris 75% Custom Kit" class="w-full h-full object-cover" data-alt="Premium 75 percent custom mechanical keyboard kit in matte black finish with subtle cyan backlighting on dark desk setup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeUD8wxgOvaPJeeRWSFaJOuP2lUqhALXrQyw922105-d7kguCtjDamSPH0HVTVf3hMB_LeSHKkrXEu0OQDekMzlYujZu-423zXmEKkn64HwHrgT7cGNbrJsQ6pS8Dh5pf8tlZDtrZi-5dGjlStJ8s5hUwHp-O0OO0DSSuPRKPSY8N5bRP-YRLkSGCV7R17X7V4MfYtfbHVggKL-EHrOZUF9e1ZsSQssUboVpzSTi_SIyHJmdQSnnjCEWMx3UD-tLN_XQQnH3S2BmGW"/>
-<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<div class="grid grid-cols-3 gap-4">
-<div class="aspect-square rounded-lg overflow-hidden bg-surface-container-low border border-outline-variant/15">
-<img alt="Detail View 1" class="w-full h-full object-cover hover:scale-105 transition-transform" data-alt="Macro close-up shot of CNC machined aluminum keyboard case edges and mounting points showing high precision finish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAi3g57HAtaPgcAy5E79VE7vaIsvzZ7xHMV9GDfAhwTsu2ZSXAJzaKJ7keBcjq_7oUDwxWLt0gUwaKQ2rHqgiLiHW2SsgPjucOgFy6rzlq7gWf9Yhera_in_ltEq4eQJ9207OzPWXNdOym2CgTQrI8Kxsrj4EeBUZ2xpu-SmMIOA27uPgf4SZN0gM8Y_udBryw113UILlgOtBeMPqp2eDOCY6i6k_1bntBLpQJoNpSWdWCFcMjLR5wJB7IP1-jcb-6q7VOZEMx5je-Q"/>
-</div>
-<div class="aspect-square rounded-lg overflow-hidden bg-surface-container-low border border-outline-variant/15">
-<img alt="Detail View 2" class="w-full h-full object-cover hover:scale-105 transition-transform" data-alt="Rear view of custom mechanical keyboard showing brass weight engraving and typing angle profile on leather mat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUVCo4QS7VWQ82rwYUuMMGratTSjiLfha19KtXDAsJRXdNTyVjzlq0jJD_nK-114iWbQuBhrJLOdAYQ5Bw4gjGG3gy_HZoWVD5AEbOHCRfejagkZGx1MIJnlzUMQPSE_IC0LPTHIkN6UEKq9ekaWS088nJvB4BQqijQrOpaQM7i9VaZ0SuVa9dDSKYo3cTlm7ajPGkyHmMt7sWPC3BvXbRTugX1lS2GZsU3OJxlveaTPTNP9-PAMxpIR57zUOpftsHw62ug1dpmL2X"/>
-</div>
-<div class="aspect-square rounded-lg overflow-hidden bg-surface-container-low border border-outline-variant/15">
-<img alt="Detail View 3" class="w-full h-full object-cover hover:scale-105 transition-transform" data-alt="Internal view of hot-swappable PCB for custom keyboard showing precise electrical components and purple solder mask" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQeYz2UipD0mzAYgImqvO_04BuRlbKbnpFIKVrMhpkMEZGFPZ02CUuep63XF7I24bYBtMaJqSL06IDuPVpKjz6Xs0W5E4sMoGobrP7nlz5cnrrfG6PRRTrYp0Ozhd_W-7x4oxtTKsErVrQ3MmDkfRN1JOqx51l5-29LM7HtFeryRbPGnTJFKyzFxDjgNUp8SZDIIYYR59BNWS7hIx9qjOOr9C2mp4HPtCCbcb8Fr1eNxWQWg4kE-PAwBlOR9oWSRdQWJtrEmvHIB0v"/>
-</div>
-</div>
-</div>
-<!-- Purchase Details -->
-<div class="lg:col-span-5 flex flex-col">
-<div class="flex items-center gap-2 mb-4">
-<span class="bg-surface-container-highest px-3 py-1 rounded-full text-[10px] font-bold tracking-widest text-secondary-fixed-dim border border-secondary-fixed-dim/20 uppercase">
-            In Stock
-          </span>
-<span class="text-on-surface-variant text-sm font-medium">Kit Only</span>
-</div>
-<h1 class="text-4xl md:text-5xl font-headline font-bold tracking-tighter text-on-surface mb-6">
-          Polaris 75% Custom Kit
-        </h1>
-<div class="flex items-baseline gap-2 mb-8">
-<span class="text-3xl font-headline font-semibold text-secondary">৳35,000</span>
-<span class="text-on-surface-variant line-through text-sm">৳42,000</span>
-</div>
-<p class="text-on-surface-variant leading-relaxed mb-8">
-          The Polaris 75% is our flagship gasket-mount custom kit. Engineered for acoustics, this kit features a heavy brass weight, precision-milled aluminum housing, and a flexible PCB design that ensures every keystroke feels and sounds premium.
-        </p>
-<div class="space-y-6 mb-10">
-<div>
-<label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-3">Case Color</label>
-<div class="flex gap-3">
-<button class="w-10 h-10 rounded-full bg-surface-dim border-2 border-primary shadow-[0_0_10px_rgba(236,178,255,0.3)]"></button>
-<button class="w-10 h-10 rounded-full bg-[#2a2a2a] border border-outline-variant/30"></button>
-<button class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/30"></button>
-</div>
-</div>
-<div>
-<label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-3">Plate Material</label>
-<div class="grid grid-cols-2 gap-3">
-<button class="px-4 py-3 bg-surface-container-highest border border-primary text-primary text-xs font-semibold rounded-lg">Polycarbonate (Thocky)</button>
-<button class="px-4 py-3 bg-surface-container-low border border-outline-variant/20 text-on-surface-variant text-xs font-semibold rounded-lg hover:border-primary transition-colors">Brass (Clacky)</button>
-</div>
-</div>
-</div>
-<div class="flex gap-4 mt-auto">
-<button class="flex-1 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-headline font-bold rounded-lg shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
-            Add to Cart
-          </button>
-<button class="p-4 bg-surface-container-low border border-outline-variant/20 text-primary rounded-lg hover:bg-surface-container-high transition-colors">
-<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
-</button>
-</div>
-</div>
-</section>
-<!-- Technical Specs & In the Box -->
-<section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
-<div class="bg-surface-container-low p-8 rounded-xl border border-outline-variant/10">
-<h3 class="text-xl font-headline font-bold mb-6 text-primary flex items-center gap-2">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-          Technical Specs
-        </h3>
-<dl class="space-y-4">
-<div class="flex justify-between border-b border-outline-variant/10 pb-2">
-<dt class="text-on-surface-variant text-sm font-label uppercase tracking-widest">Weight</dt>
-<dd class="text-on-surface font-semibold">2.4kg (Assembled)</dd>
-</div>
-<div class="flex justify-between border-b border-outline-variant/10 pb-2">
-<dt class="text-on-surface-variant text-sm font-label uppercase tracking-widest">Material</dt>
-<dd class="text-on-surface font-semibold">6063 Aluminum Case</dd>
-</div>
-<div class="flex justify-between border-b border-outline-variant/10 pb-2">
-<dt class="text-on-surface-variant text-sm font-label uppercase tracking-widest">PCB</dt>
-<dd class="text-on-surface font-semibold">Hotswap, QMK/VIA Supported</dd>
-</div>
-<div class="flex justify-between border-b border-outline-variant/10 pb-2">
-<dt class="text-on-surface-variant text-sm font-label uppercase tracking-widest">Typing Angle</dt>
-<dd class="text-on-surface font-semibold">7.5 Degrees</dd>
-</div>
-<div class="flex justify-between border-b border-outline-variant/10 pb-2">
-<dt class="text-on-surface-variant text-sm font-label uppercase tracking-widest">Mounting</dt>
-<dd class="text-on-surface font-semibold">Gasket Mount (Silicone Socks)</dd>
-</div>
-</dl>
-</div>
-<div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 relative overflow-hidden group">
-<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
-<h3 class="text-xl font-headline font-bold mb-6 text-secondary flex items-center gap-2">
-<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
-          In the Box
-        </h3>
-<ul class="space-y-4">
-<li class="flex items-start gap-3">
-<span class="text-secondary mt-1">
-<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
-</span>
-<span class="text-on-surface">Top and Bottom Aluminum Case Housing</span>
-</li>
-<li class="flex items-start gap-3">
-<span class="text-secondary mt-1">
-<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
-</span>
-<span class="text-on-surface">Precision Hot-swappable Flex-cut PCB</span>
-</li>
-<li class="flex items-start gap-3">
-<span class="text-secondary mt-1">
-<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
-</span>
-<span class="text-on-surface">Selected Plate Material &amp; Gasket Set</span>
-</li>
-<li class="flex items-start gap-3">
-<span class="text-secondary mt-1">
-<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
-</span>
-<span class="text-on-surface">Case &amp; Plate Foam Kit (Poron)</span>
-</li>
-<li class="flex items-start gap-3">
-<span class="text-secondary mt-1">
-<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
-</span>
-<span class="text-on-surface">Coiled USB-C to USB-A Cable</span>
-</li>
-</ul>
-</div>
-</section>
-<!-- Suggestions Section -->
-<section class="mb-24">
-<h2 class="text-2xl font-headline font-bold mb-8 flex items-center gap-3">
-<span class="w-1 h-8 bg-primary rounded-full"></span>
-        Compatible Components
-      </h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<!-- Switch Suggestion -->
-<div class="bg-surface-container-low p-6 rounded-xl flex gap-6 items-center border border-outline-variant/10 hover:bg-surface-container-high transition-all">
-<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-<img alt="Linear Switches" class="w-full h-full object-cover" data-alt="Close up shot of premium creamy mechanical keyboard switches on a dark surface with teal light highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqHe2PcPTZd-qOdMEl1uGctRVGwdTo3cSgLzAIdBlZA2Bu5m_Bo5o6LxG41vv6NwTU4RpHnUgNsgrLbLC-KLQyrSKCvvCu160LVIpzftrueZoUG5Cm4VWVrbfC71h_2zt0NPtcStdFbajv3YzhclNm5FYQYOe1N-h0ohjlSjaNYdYamgRSeepLOQo9bUwtilkWsmSTRvqR9DA_kRB3N3s3EuyZEBZaT-om6-0UW1rnOt0eCAK4DQxHpHvLzTf0_6PMo3yRuMce5a6s"/>
-</div>
-<div>
-<h4 class="font-headline font-bold text-on-surface">Deep Sea Linear Switches</h4>
-<p class="text-sm text-on-surface-variant mb-3">Pre-lubed, 65g spring, incredibly smooth.</p>
-<button class="text-xs font-bold text-primary hover:underline uppercase tracking-widest">Add to Build +</button>
-</div>
-</div>
-<!-- Keycap Suggestion -->
-<div class="bg-surface-container-low p-6 rounded-xl flex gap-6 items-center border border-outline-variant/10 hover:bg-surface-container-high transition-all">
-<div class="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-<img alt="Keycaps" class="w-full h-full object-cover" data-alt="Top down view of custom PBT keycaps in gray and purple color scheme with cyber text legends" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATK7YGweRsEv_w7M8VI6-bjMVtDYsmWsEsNEM9SYTOhV6lZd1_c9nyusvo63ZNbOt7-0NO7PUceP1qmCzzcwoQCRNHZGu9wlq0cdl_UUS7K7A2AgRryiyY11ElPDRKatDDzgBIL2mIveGVbfVvxX5RRYV8KsFm4QMjWjhWD7vhwSuzWwCDZu7LEKAT02m9sGWYbEPRu8_ElDosqNzKUz1D2xDUqk1E2cFHyj93Jyb_N-x4AKMQq2XUFE-Z64BO-sRFQf5-igeOvQWu"/>
-</div>
-<div>
-<h4 class="font-headline font-bold text-on-surface">Cyberpunk PBT Keycaps</h4>
-<p class="text-sm text-on-surface-variant mb-3">Cherry profile, double-shot legends.</p>
-<button class="text-xs font-bold text-primary hover:underline uppercase tracking-widest">Add to Build +</button>
-</div>
-</div>
-</div>
-</section>
-<!-- User Reviews -->
-<section class="mb-24">
-<div class="flex justify-between items-end mb-8">
-<div>
-<h2 class="text-2xl font-headline font-bold mb-2">User Reviews</h2>
-<div class="flex items-center gap-2">
-<div class="flex text-primary">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star_half</span>
-</div>
-<span class="text-on-surface-variant text-sm font-medium">4.8 (124 reviews)</span>
-</div>
-</div>
-<button class="text-sm font-bold text-secondary-fixed-dim uppercase tracking-widest border-b border-secondary-fixed-dim/30 pb-1">Write Review</button>
-</div>
-<div class="space-y-6">
-<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
-<div class="flex justify-between mb-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold">MK</div>
-<div>
-<p class="text-sm font-bold">Mahir K.</p>
-<p class="text-[10px] text-on-surface-variant uppercase">Verified Buyer</p>
-</div>
-</div>
-<div class="text-xs text-on-surface-variant">2 days ago</div>
-</div>
-<p class="text-on-surface-variant leading-relaxed">The sound profile on this thing with the PC plate is absolutely thocky heaven. The gasket system is flexible enough to feel premium but not too mushy. Absolute beast of a 75% board.</p>
-</div>
-<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
-<div class="flex justify-between mb-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold">AR</div>
-<div>
-<p class="text-sm font-bold">Anika R.</p>
-<p class="text-[10px] text-on-surface-variant uppercase">Verified Buyer</p>
-</div>
-</div>
-<div class="text-xs text-on-surface-variant">1 week ago</div>
-</div>
-<p class="text-on-surface-variant leading-relaxed">Weight is much heavier than I expected. Feels like a proper high-end keyboard. The hotswap sockets are tight and high quality. Shipping was fast!</p>
-</div>
-</div>
-</section>
-<!-- Related Products -->
-<section>
-<h2 class="text-2xl font-headline font-bold mb-8">Related Masterpieces</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-<!-- Related 1 -->
-<div class="group">
-<div class="aspect-square rounded-xl bg-surface-container-low overflow-hidden mb-4 relative">
-<img alt="Nebula 65%" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Compact 65 percent mechanical keyboard with translucent purple housing and colorful keycaps on a glowing gaming mat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxd1kQGCLUiuEblXLcfbsm4DI16nYgZg0ZxTuHyvBAtrqnT-nKtX-KjuWeiEuomIcI8xguMwVX6wEotYI90FFfePZRXskCY-jge-3EKq28SVxI15SvA7fHMDxZLA31m1tGS2EU5dkJFcPgWb0-wX33s2HiVaIhUBnqQ-iQqgc1Xm94cfqOAU2hHvjC2N7pyRLgLOgVq_hbU67i1NSZxoQVuVNHQgRKjcuIbE2Ldk6Nt3c0GxzR7r9SbHn5Ql83HdQNN0wRuBoJ6f4r"/>
-<div class="absolute bottom-4 left-4">
-<span class="bg-surface/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest">65% Layout</span>
-</div>
-</div>
-<h3 class="font-headline font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Nebula 65% Kit</h3>
-<p class="text-secondary font-semibold">৳28,500</p>
-</div>
-<!-- Related 2 -->
-<div class="group">
-<div class="aspect-square rounded-xl bg-surface-container-low overflow-hidden mb-4 relative">
-<img alt="Titan Fullsize" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Solid silver aluminum full size mechanical keyboard with white keycaps and minimal office aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfCwHbvONe8Xj7Bmx1kqdqJaJK3_8rBk5GXgJAPiCaE01fuK1laiSu2_1rrxmryKxUdEJeuOW7-8n6u8XTRIN8xD3gXDCYaIjXxrtRottBJ2dWskC0zzPcVlAttgnMnnWp99W89_y-A1MZrnVRL14lMixCpOQKO3ea524pERyNmvdmTYHsHe9TFnJ0ls7SnYHzqKhHEA8MpJrncT3FCLWyDXVlz5pIog-E2-KqNASG0gobZoj66YN92-OVosebnEaaH2OTv0QOGc_B"/>
-<div class="absolute bottom-4 left-4">
-<span class="bg-surface/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest">Full Size</span>
-</div>
-</div>
-<h3 class="font-headline font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Titan 100 Aluminum</h3>
-<p class="text-secondary font-semibold">৳45,000</p>
-</div>
-<!-- Related 3 -->
-<div class="group">
-<div class="aspect-square rounded-xl bg-surface-container-low overflow-hidden mb-4 relative">
-<img alt="Macro Pad" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Small 6-key custom macro pad with programmable dial and brushed steel finish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGdt0xgERsaUPb8xbUTk4Rsx1FU-px9RJY-gJI0XGbAs5cahj3l87TiZwccWpUtfG6o_Cup7JMAGeahNO_YHffywFhKSOmIAqvI9Txm172m9OEQDaX4x-k0dF0dL9_ropGMzB9-ShxzLu3bpvymjQqJLhzLkQ49J1tsyAe8jdLc8XM8F60y_csZP4fcvA0Wy073BztqLIQWk2qkxoM0xKB4PcIdA0RQjVOgnxtEa6NvpNsExxpRjNKpVQeEiZPecdyR_uVVTJd_PeZ"/>
-<div class="absolute bottom-4 left-4">
-<span class="bg-surface/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest">Macro Pad</span>
-</div>
-</div>
-<h3 class="font-headline font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">GeekDial Nano</h3>
-<p class="text-secondary font-semibold">৳8,500</p>
-</div>
-<!-- Related 4 -->
-<div class="group">
-<div class="aspect-square rounded-xl bg-surface-container-low overflow-hidden mb-4 relative">
-<img alt="Zero TKL" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Minimalist TKL mechanical keyboard with wood accents and retro beige keycaps on a felt mat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB0rPvcbr_f9au59x-UJLRt4HxIeQWwbjWr_oInYl5S-nuJ8hrqI8tnNuBYAp0kT5wkJmVd5J9vb8mFd_Hkv7xcH5q7-tMUke6VPoYSfBXS7C5YPM-R4xj-J0dvgmMcU_8aIufdqwt5jNoBihVEm-xd22Ab57YDo6-MS8Fodk2UdqnJ62oRnOOg2uf1QByPpoOHt_Fy-82yjsORKSepBO_Nez0armPCDmASCX5K1XGLthv1tF0PDVwy1z5seT5bZHo2lPyAd1g8wYM"/>
-<div class="absolute bottom-4 left-4">
-<span class="bg-surface/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest">TKL</span>
-</div>
-</div>
-<h3 class="font-headline font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Zero-TKL Edition</h3>
-<p class="text-secondary font-semibold">৳32,000</p>
-</div>
-</div>
-</section>
-</main>
-<!-- Footer -->
-<footer class="bg-[#0e0e0e] w-full py-12 px-8 border-t border-[#353535]/20">
-<div class="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 w-full font-['Inter'] text-sm uppercase tracking-widest">
-<div class="flex flex-col gap-4">
-<h4 class="text-[#ecb2ff] font-bold">Products</h4>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Keyboards &amp; Mouse</a>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Switches</a>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Keycaps</a>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Accessories</a>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Collectibles</a>
-</div>
-<div class="flex flex-col gap-4">
-<h4 class="text-[#ecb2ff] font-bold">Support</h4>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Order Status</a>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Returns &amp; Refunds</a>
-<a class="text-gray-500 hover:text-white transition-colors" href="#">Shipping Info</a>
-</div>
-<div class="flex flex-col justify-between">
-<div class="bg-[#1c1b1b] p-6 rounded-lg">
-<p class="text-xs text-gray-400 normal-case mb-4 tracking-normal">Join our newsletter for early access to limited kit drops.</p>
-<div class="flex gap-2">
-<input class="bg-[#0e0e0e] border-none text-white text-xs px-4 py-2 w-full rounded focus:ring-1 focus:ring-[#b9f1ff]" placeholder="Email" type="email"/>
-<button class="bg-[#ecb2ff] text-black px-4 py-2 rounded text-[10px] font-bold">JOIN</button>
-</div>
-</div>
-<p class="text-[10px] text-gray-600 mt-8">© 2024 The Geek Shop BD. Built for Enthusiasts.</p>
-</div>
-</div>
-</footer>
-</body></html>
+<body class="bg-background text-on-background font-body antialiased">
+  <!-- Navigation - Copy from index.html -->
+
+  <main class="pt-24 pb-16 px-4 md:px-8 max-w-[1440px] mx-auto">
+    <div id="product-section" class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+      <!-- Image Gallery -->
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-surface-container-low relative group">
+          <img id="main-image" class="w-full h-full object-cover" alt="">
+        </div>
+        <div class="grid grid-cols-3 gap-4" id="thumbnail-gallery"></div>
+      </div>
+
+      <!-- Purchase Details -->
+      <div class="lg:col-span-5 flex flex-col">
+        <h1 id="product-name" class="text-4xl md:text-5xl font-headline font-bold tracking-tighter text-on-surface mb-6"></h1>
+        <div id="product-price" class="flex items-baseline gap-2 mb-8 text-3xl font-headline font-semibold text-secondary"></div>
+        <p id="product-detailed-desc" class="text-on-surface-variant leading-relaxed mb-8"></p>
+
+        <div class="flex gap-4 mt-auto">
+          <button onclick="addToCartFromDetail()" class="flex-1 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-headline font-bold rounded-lg">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function loadProductDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) return alert("No product ID found");
+
+      const products = await loadProducts(); // from script.js
+      const p = products.find(x => x.id === id);
+      if (!p) return alert("Product not found");
+
+      document.getElementById('product-name').textContent = p.name;
+      document.getElementById('main-image').src = p.images?.[0] || '';
+      document.getElementById('product-detailed-desc').innerHTML = p.detailedDescription || p.description || 'No description available.';
+
+      const finalPrice = Number(p.discount) > 0 ? Number(p.price) - Number(p.discount) : Number(p.price);
+      document.getElementById('product-price').innerHTML = `৳${finalPrice} ${Number(p.discount)>0 ? `<span class="line-through text-sm text-on-surface-variant">৳${p.price}</span>` : ''}`;
+    }
+
+    function addToCartFromDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) addToCart(id);
+    }
+
+    window.onload = loadProductDetail;
+  </script>
+</body>
+</html>

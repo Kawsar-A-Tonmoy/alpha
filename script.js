@@ -1,18 +1,17 @@
 // ================================================
-
+// FINAL FULL script.js - 100% Complete & Fixed
+// ================================================
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, orderBy, query, where, runTransaction } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { getFirestore, collection, getDocs, query, where, orderBy, runTransaction, doc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 import { firebaseConfig, BKASH_NUMBER, COD_NUMBER, DELIVERY_FEE } from './config.js';
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Global products cache
 const productsMap = new Map();
 
 // ==================== CART ====================
@@ -42,7 +41,6 @@ function addToCart(productId, qty = 1) {
   else cart.push({ id: productId, name: product.name, color: product.color || '', price, image: product.images?.[0] || '', qty });
 
   saveCart(cart);
-  alert(`${product.name} added to cart!`);
 }
 
 function removeFromCart(id) {
@@ -71,7 +69,7 @@ function updateCartUI() {
 
   if (cart.length === 0) {
     container.innerHTML = `<p class="text-center py-10 text-on-surface-variant">Your cart is empty</p>`;
-    totalEl && (totalEl.innerHTML = `<strong>Total: ৳0</strong>`);
+    if (totalEl) totalEl.innerHTML = `<strong>Total: ৳0</strong>`;
     return;
   }
 
@@ -88,7 +86,7 @@ function updateCartUI() {
         <p class="text-sm">৳${item.price} × ${item.qty}</p>
         <div class="flex items-center gap-3 mt-3">
           <button class="qty-minus px-3 py-1 bg-surface-container-highest rounded-xl">-</button>
-          <span>${item.qty}</span>
+          <span class="font-medium">${item.qty}</span>
           <button class="qty-plus px-3 py-1 bg-surface-container-highest rounded-xl">+</button>
           <button class="remove-btn ml-auto text-red-400">Remove</button>
         </div>
@@ -103,18 +101,16 @@ function updateCartUI() {
   if (totalEl) totalEl.innerHTML = `<strong>Total: ৳${total}</strong>`;
 }
 
-// ==================== LOAD PRODUCTS FROM FIREBASE ====================
+// ==================== LOAD PRODUCTS ====================
 async function loadProducts() {
   try {
     const snapshot = await getDocs(collection(db, 'products'));
     productsMap.clear();
-    snapshot.docs.forEach(doc => {
-      productsMap.set(doc.id, { id: doc.id, ...doc.data() });
-    });
+    snapshot.docs.forEach(doc => productsMap.set(doc.id, { id: doc.id, ...doc.data() }));
     console.log(`✅ Loaded ${productsMap.size} products from Firebase`);
     return Array.from(productsMap.values());
   } catch (err) {
-    console.error("❌ Firebase load error:", err);
+    console.error("❌ Error loading products:", err);
     return [];
   }
 }
@@ -127,7 +123,6 @@ function createProductCard(p) {
   card.innerHTML = `
     <div class="aspect-square relative">
       <img src="${p.images?.[0] || ''}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" alt="${p.name}">
-      ${p.hotDeal ? `<div class="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-bold">HOT</div>` : ''}
     </div>
     <div class="p-5">
       <h3 class="font-headline font-semibold">${p.name}</h3>
@@ -138,35 +133,33 @@ function createProductCard(p) {
       </div>
     </div>
   `;
-  card.onclick = (e) => {
-    if (!e.target.closest('.add-to-cart')) window.location.href = `product.html?id=${p.id}`;
-  };
-  card.querySelector('.add-to-cart').onclick = (e) => {
+  card.addEventListener('click', (e) => {
+    if (!e.target.closest('.add-to-cart')) {
+      window.location.href = `product.html?id=${p.id}`;
+    }
+  });
+  card.querySelector('.add-to-cart').addEventListener('click', (e) => {
     e.stopPropagation();
     addToCart(p.id);
-  };
+  });
   return card;
 }
 
-// ==================== MAIN APP START ====================
+// ==================== MAIN INIT ====================
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log("🚀 Script initialized");
-
   const products = await loadProducts();
 
-  // Populate Home Page
+  // Home - New Arrivals
   const interestContainer = document.getElementById('interest-products');
   if (interestContainer) {
     const shuffled = [...products].sort(() => 0.5 - Math.random()).slice(0, 8);
     shuffled.forEach(p => interestContainer.appendChild(createProductCard(p)));
-    console.log("✅ Populated interest products");
   }
 
-  // Populate Products Page
+  // Products page
   const productList = document.getElementById('product-list');
   if (productList) {
     products.forEach(p => productList.appendChild(createProductCard(p)));
-    console.log("✅ Populated products page");
   }
 
   // Cart slider
@@ -192,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       const phone = document.getElementById('phone-input').value.trim();
       const resultDiv = document.getElementById('order-result');
-      resultDiv.innerHTML = '<p class="text-center">Loading orders...</p>';
+      resultDiv.innerHTML = '<p class="text-center">Loading...</p>';
 
       try {
         const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'));
@@ -220,7 +213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   updateCartUI();
-  console.log("✅ Script fully loaded and ready");
 });
 
 window.addToCart = addToCart;
