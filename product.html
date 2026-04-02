@@ -10,7 +10,8 @@
   <script type="module" src="script.js"></script>
 </head>
 <body class="bg-background text-on-background font-body antialiased">
-  <!-- Navigation - Copy from index.html -->
+
+  <!-- Navigation - Copy from index.html or your existing nav -->
 
   <main class="pt-24 pb-16 px-4 md:px-8 max-w-[1440px] mx-auto">
     <div id="product-section" class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
@@ -39,7 +40,7 @@
     async function loadProductDetail() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      if (!id) return alert("No product ID found");
+      if (!id) return alert("No product ID in URL");
 
       const products = await loadProducts(); // from script.js
       const p = products.find(x => x.id === id);
