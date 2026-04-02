@@ -1,176 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png"> 
-  <link rel="stylesheet" href="style.css">
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  <title>The Geek Shop | Build Your End-Game</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#00363f",
+            "primary-container": "#bd00ff",
+            "surface-bright": "#393939",
+            "tertiary": "#c4c5db",
+            "surface-dim": "#131313",
+            "inverse-on-surface": "#313030",
+            "surface-container-low": "#1c1b1b",
+            "background": "#131313",
+            "on-secondary-fixed-variant": "#004e5a",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-fixed": "#181a2b",
+            "surface-container-lowest": "#0e0e0e",
+            "on-tertiary-container": "#fffeff",
+            "on-secondary-fixed": "#001f25",
+            "tertiary-fixed-dim": "#c4c5db",
+            "tertiary-fixed": "#e1e1f7",
+            "error-container": "#93000a",
+            "primary": "#ecb2ff",
+            "surface-container": "#20201f",
+            "primary-fixed": "#f8d8ff",
+            "inverse-primary": "#9900cf",
+            "secondary-fixed": "#a5eeff",
+            "on-primary-fixed-variant": "#74009f",
+            "on-secondary-container": "#005f6d",
+            "on-background": "#e5e2e1",
+            "on-surface-variant": "#d4c0d7",
+            "primary-fixed-dim": "#ecb2ff",
+            "on-primary-fixed": "#320047",
+            "secondary": "#b9f1ff",
+            "outline-variant": "#514255",
+            "surface-container-high": "#2a2a2a",
+            "surface-container-highest": "#353535",
+            "inverse-surface": "#e5e2e1",
+            "surface-variant": "#353535",
+            "surface-tint": "#ecb2ff",
+            "secondary-fixed-dim": "#00daf8",
+            "secondary-container": "#00e0ff",
+            "on-surface": "#e5e2e1",
+            "on-primary-container": "#ffffff",
+            "on-tertiary-fixed-variant": "#444558",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "on-primary": "#520071",
+            "outline": "#9d8ba0",
+            "on-tertiary": "#2d2f40",
+            "surface": "#131313",
+            "tertiary-container": "#737488"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"}
+        }
+      }
+    }
   </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .glass-nav { background: rgba(19,19,19,0.6); backdrop-filter: blur(20px); }
+    .kinetic-gradient { background: linear-gradient(135deg, #ecb2ff 0%, #bd00ff 100%); }
+    .recessed-tray { background-color: #1c1b1b; }
+  </style>
   <script type="module" src="script.js"></script>
 </head>
-<body>
-  <header class="site-header">
-     <nav>
-      <a href="index.html" class="logo">
-        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
-      </a>
-      <div class="nav-links">
-        <a href="products.html">Products</a>
-        <a href="status.html">Order Status</a>
-        <a id="cart-link" style="cursor: pointer;">Cart (<span id="cart-count">0</span>)</a>
+<body class="bg-background text-on-background font-body antialiased">
+  <!-- Navigation -->
+  <nav class="fixed top-0 w-full z-50 glass-nav shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+    <div class="max-w-[1440px] mx-auto flex items-center justify-between px-8 py-4">
+      <a href="index.html" class="text-2xl font-bold tracking-tighter text-[#ecb2ff] font-headline">The Geek Shop</a>
+      <div class="hidden md:flex items-center gap-8 font-headline tracking-tight">
+        <a href="products.html" class="text-gray-400 hover:text-white transition-colors">Keyboards & Mouse</a>
+        <a href="products.html?category=Switches" class="text-gray-400 hover:text-white transition-colors">Switches</a>
+        <a href="products.html?category=Keycaps" class="text-[#ecb2ff] border-b-2 border-[#ecb2ff] pb-1">Keycaps</a>
+        <a href="products.html?category=Accessories and Collectables" class="text-gray-400 hover:text-white transition-colors">Accessories</a>
+        <a href="products.html?category=Accessories and Collectables" class="text-gray-400 hover:text-white transition-colors">Collectibles</a>
       </div>
-    </nav>
-  </header>
+      <div class="flex items-center gap-6">
+        <button id="cart-link" class="hover:text-[#b9f1ff] transition-colors">
+          <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+        </button>
+        <a href="status.html" class="hover:text-[#b9f1ff] transition-colors">
+          <span class="material-symbols-outlined text-3xl">receipt_long</span>
+        </a>
+      </div>
+    </div>
+  </nav>
 
- <main class="container">
-    <h1>Welcome to The Geek Shop</h1>
+  <main class="pt-20">
+    <!-- Hero -->
+    <section class="relative min-h-[921px] flex items-center overflow-hidden px-8 md:px-20 py-12">
+      <div class="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-6 z-10">
+          <span class="uppercase tracking-widest text-primary font-bold mb-4 block">Enthusiast Grade Hardware</span>
+          <h1 class="text-6xl md:text-8xl font-headline font-bold leading-[0.9] tracking-tighter mb-8">
+            Build Your <br><span class="text-transparent bg-clip-text kinetic-gradient">End-Game</span>
+          </h1>
+          <p class="text-on-surface-variant text-lg max-w-md mb-10 leading-relaxed">
+            Curated mechanical keyboards, bespoke switches, and artisan keycaps designed for the ultimate tactile experience. From Dhaka to your desk.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="products.html" class="kinetic-gradient text-white px-8 py-4 rounded-xl font-bold tracking-tight active:scale-95 transition-transform">Shop Collections</a>
+            <a href="products.html" class="bg-surface-variant/20 border border-outline-variant/15 px-8 py-4 rounded-xl font-bold text-on-surface hover:bg-surface-variant/30 transition-all">View Group Buys</a>
+          </div>
+        </div>
+        <div class="lg:col-span-6 relative h-[600px]">
+          <div class="absolute inset-0 bg-primary/10 blur-[120px] rounded-full"></div>
+          <img src="https://picsum.photos/id/1015/1200/800" class="w-full h-full object-cover rounded-3xl shadow-2xl relative z-10 scale-105 rotate-2 hover:rotate-0 transition-transform duration-700" alt="Premium custom mechanical keyboard">
+        </div>
+      </div>
+    </section>
 
-    <h2>May Interest You</h2>
-    <div id="interest-products" class="product-list new-hot-list"></div>
+    <!-- Categories -->
+    <section class="py-24 px-8 bg-surface-container-low">
+      <div class="max-w-[1440px] mx-auto">
+        <div class="flex items-end justify-between mb-12">
+          <h2 class="text-4xl font-headline font-bold tracking-tight">The Essentials</h2>
+        </div>
+        <div id="categories" class="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[600px]">
+          <!-- JS will populate -->
+        </div>
+      </div>
+    </section>
 
-    <h2>Categories</h2>
-    <div id="categories" class="product-list new-hot-list"></div>
+    <!-- New Arrivals -->
+    <section class="py-24 px-8 bg-background">
+      <div class="max-w-[1440px] mx-auto">
+        <div class="flex justify-between mb-12">
+          <div>
+            <h2 class="text-4xl font-headline font-bold tracking-tight">New Arrivals</h2>
+            <p class="text-on-surface-variant">The latest gear just landed.</p>
+          </div>
+          <a href="products.html" class="text-primary font-bold hover:underline self-end">View All</a>
+        </div>
+        <div id="interest-products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- JS will populate -->
+        </div>
+      </div>
+    </section>
   </main>
 
-  <div id="image-viewer" class="image-viewer">
-    <button id="close-viewer" class="close-viewer">&times;</button>
-    <img id="viewer-img" src="" alt="">
-  </div>
-
   <!-- Cart Slider -->
-  <div id="cart-slider" class="cart-slider">
-    <button id="close-cart" class="close-viewer">&times;</button>
-    <h2>Shopping Cart</h2>
-    <div id="cart-items" class="cart-items"></div>
-    <div id="cart-total" class="cart-total"><strong>Total: ৳0</strong></div>
-    <button id="checkout-cart" class="checkout-cart-btn">Checkout</button>
-    <div id="cart-empty" class="muted" style="text-align:center; padding:20px; display:none;">Your cart is empty</div>
+  <div id="cart-slider" class="fixed top-0 right-[-400px] w-96 h-full bg-surface-container shadow-2xl transition-all duration-300 z-[200] overflow-y-auto p-6">
+    <button id="close-cart" class="absolute top-4 right-4 text-4xl text-on-surface-variant hover:text-white">×</button>
+    <h2 class="text-2xl font-headline font-bold mb-6">Your Cart</h2>
+    <div id="cart-items" class="space-y-6"></div>
+    <div id="cart-total" class="text-2xl font-bold mt-8 border-t border-outline-variant/20 pt-6"></div>
+    <button id="checkout-cart" class="w-full kinetic-gradient text-white py-4 rounded-2xl font-bold mt-6">Checkout</button>
   </div>
 
+  <footer class="bg-[#0e0e0e] py-12 px-8 text-center text-gray-500 text-sm">
+    © 2026 The Geek Shop BD. All rights reserved.
+  </footer>
 
-  <!-- Cart Slider -->
-  <div id="cart-slider" class="cart-slider">
-    <button id="close-cart" class="close-viewer">&times;</button>
-    <h2>Shopping Cart</h2>
-    <div id="cart-items" class="cart-items"></div>
-    <div id="cart-total" class="cart-total"><strong>Total: ৳0</strong></div>
-    <button id="checkout-cart" class="checkout-cart-btn">Checkout</button>
-    <div id="cart-empty" class="muted" style="text-align:center; padding:20px; display:none;">Your cart is empty</div>
-  </div>
-
-  <!-- Cart Checkout Modal -->
-  <div id="cart-checkout-modal" class="modal">
-    <div class="card modal-content">
-      <div class="modal-header">
-        <h2>Checkout (Cart)</h2>
-        <button id="cart-close-modal-btn">Close</button>
-      </div>
-      <form id="cart-checkout-form" class="form">
-        <div id="cart-co-items"></div>
-        <div class="row">
-          <div><label>Delivery Fee</label><input id="cart-co-delivery" readonly></div>
-          <div><label>Total Amount</label><input id="cart-co-total" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Name</label><input id="cart-co-name" required></div>
-          <div><label>Phone</label><input id="cart-co-phone" type="tel" required></div>
-        </div>
-        <div><label>Address</label><textarea id="cart-co-address" required></textarea></div>
-        <div class="row">
-          <div><label>Payment Method</label>
-            <select id="cart-co-payment" required>
-              <option value="">Select</option>
-              <option value="Cash on Delivery">Cash on Delivery</option>
-              <option value="Bkash">Bkash</option>
-            </select>
-          </div>
-          <div><label>Pay to</label><input id="cart-co-payment-number" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Pay Now (tk)</label><input id="cart-co-pay-now" readonly></div>
-          <div><label>Due Amount (tk)</label><input id="cart-co-due-amount" readonly></div>
-        </div>
-        <div><label>Transaction ID</label><input id="cart-co-txn"></div>
-        <div><label><input type="checkbox" id="cart-co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
-          <p id="cart-co-note" class="muted"></p>
-        <button id="cart-place-order-btn" type="submit">Place Order</button>
-      </form>
-    </div>
-  
-  </div>
-<footer class="footer">
-  <div class="footer-container">
-    <!-- Top row: About Us + FAQs -->
-    <div class="footer-top">
-      <div class="footer-section about-us">
-        <h3>About Us</h3>
-        <p>The Geek Shop is a Bangladesh-based, community-driven store run by a small group of tech and mechanical keyboard enthusiasts. Our goal is simple: to make quality keyboards, keycaps, switches, and accessories more accessible to the local enthusiast community. We mainly operate through a pre-order system, which helps us bring in unique and premium products at fair prices. In some cases, we also offer limited ready-stock items based on demand. Everything we do is focused on authenticity, transparency, and building a strong geek community in Bangladesh.</p>
-      </div>
-
-      <div class="footer-section faqs">
-        <h3>FAQs</h3>
-        <div class="faq-item">
-          <button class="faq-question">What is the pre-order system?</button>
-          <div class="faq-answer">
-            <p>Our pre-order system allows you to reserve products before they arrive in stock. You pay a portion upfront (typically 25%), and the rest upon delivery. This helps us import premium items based on demand.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question">How long does delivery take?</button>
-          <div class="faq-answer">
-            <p>Delivery within Dhaka typically takes 2-3 days, while outside Dhaka may take 4-7 days. Pre-order items may take longer depending on import timelines.</p>
-          </div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-question">What payment methods are accepted?</button>
-          <div class="faq-answer">
-            <p>We accept Bkash for full or partial payments and Cash on Delivery (COD) with an advance delivery fee.</p>
-          </div>
-        </div>
-        <!-- You can add more FAQ items here -->
-      </div>
-    </div>
-
-    <!-- Bottom row: Payment Options + Contact Us -->
-    <div class="footer-bottom">
-      <div class="footer-section payment-options">
-        <h3>Payment Options</h3>
-        <div class="payment-methods">
-          <div class="payment-method">
-            <img src="bkash-logo.png" alt="bKash" class="payment-logo">
-            <span>bKash (Full or Partial)</span>
-          </div>
-          <div class="payment-method">
-            <img src="cod-icon.png" alt="Cash on Delivery" class="payment-logo">
-            <span>Cash on Delivery</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer-section contact-us">
-        <h3>Contact Us</h3>
-        <div class="social-links">
-          <a href="https://www.facebook.com/thegeek.shop0" target="_blank">
-            <img src="facebook.png" alt="Facebook" class="social-icon">
-          </a>
-          <a href="https://www.instagram.com/thegeek.shop0" target="_blank">
-            <img src="instagram.png" alt="Instagram" class="social-icon">
-          </a>
-          <a href="https://wa.me/01960902526" target="_blank">
-            <img src="whatsapp.png" alt="WhatsApp" class="social-icon">
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <p class="copyright">© All rights reserved by The Geek Shop</p>
-</footer>
+  <script type="module" src="script.js"></script>
 </body>
-
 </html>

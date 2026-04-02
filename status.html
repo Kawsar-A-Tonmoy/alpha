@@ -1,423 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Status</title>
-  <link rel="icon" type="image/x-icon" href="logo t.png">
-  <link rel="stylesheet" href="style.css">
+  <title>Order Status - The Geek Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <script type="module" src="script.js"></script>
-  <style>
-    .orders-grid {display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;}
-   
-    .order-status-card {
-      display:flex;
-      padding:16px;
-      border-radius:12px;
-      background:var(--card);
-      border:1px solid var(--glass-border);
-      box-shadow:0 2px 8px rgba(0,0,0,.05);
-      gap:16px;
-      align-items:flex-start;
-    }
-    /* ---------- LEFT: PRODUCT DETAILS ---------- */
-    .order-status-left {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 0.95rem;
-    }
-    .muted { color: var(--muted); }
-    .price-line { font-weight: 600; color: var(--accent); }
-    /* ---------- RIGHT: FULL STATUS TIMELINE ---------- */
-    .order-status-right {
-      flex: 0 0 160px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-start;
-    }
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      width: 100%;
-    }
-    .status-circle {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 0.75rem;
-      color: white;
-      flex-shrink: 0;
-    }
-    .status-green { background: #4caf50; }
-    .status-red { background: #d32f2f; }
-    .status-grey { background: #9ca3af; }
-
-    /* CANCELLED STATE: Only Cancelled = RED, others = GRAY */
-    .order-cancelled .status-item {
-      color: #9ca3af;
-    }
-    .order-cancelled .status-item.cancelled {
-      color: #ef4444 !important;
-    }
-    .order-cancelled .status-circle {
-      background: #9ca3af !important;
-    }
-    .order-cancelled .status-circle.cancelled {
-      background: #d32f2f !important;
-    }
-
-    @media (max-width: 768px) {
-      .order-status-card { flex-direction: column; }
-      .order-status-right { align-items: stretch; }
-    }
-  </style>
 </head>
-<body>
-<header class="site-header">
-     <nav>
-      <a href="index.html" class="logo">
-        <img src="logo.png" alt="The Geek Shop Logo" style="height: 40px;">
-      </a>
-      <div class="nav-links">
-        <a href="products.html">Products</a>
-        <a href="status.html">Order Status</a>
-        <a id="cart-link" style="cursor: pointer;">Cart (<span id="cart-count">0</span>)</a>
+<body class="bg-background text-on-background font-body antialiased">
+<nav class="fixed top-0 w-full z-50 glass-nav shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+    <div class="max-w-[1440px] mx-auto flex items-center justify-between px-8 py-4">
+      <a href="index.html" class="text-2xl font-bold tracking-tighter text-[#ecb2ff] font-headline">The Geek Shop</a>
+      <div class="hidden md:flex items-center gap-8 font-headline tracking-tight">
+        <a href="products.html" class="text-gray-400 hover:text-white transition-colors">Keyboards & Mouse</a>
+        <a href="products.html?category=Switches" class="text-gray-400 hover:text-white transition-colors">Switches</a>
+        <a href="products.html?category=Keycaps" class="text-[#ecb2ff] border-b-2 border-[#ecb2ff] pb-1">Keycaps</a>
+        <a href="products.html?category=Accessories and Collectables" class="text-gray-400 hover:text-white transition-colors">Accessories</a>
+        <a href="products.html?category=Accessories and Collectables" class="text-gray-400 hover:text-white transition-colors">Collectibles</a>
       </div>
-    </nav>
-</header>
-<div class="container">
-  <h1>Order Status</h1>
-  <form id="status-form" class="form">
-    <div>
-      <label>Phone Number</label>
-      <input id="phone-input" type="tel" placeholder="e.g. 01XXXXXXXXX" required>
-    </div>
-    <button type="submit">Check Orders</button>
-  </form>
-  <div id="order-result" class="order-result"></div>
-</div>
- <section class="notice-section" style="display: flex; gap: 20px; align-items: flex-start;">
-  <!-- Left card -->
-  <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>📢 Important Notice</h3>
-    <p class="muted">
-      Please ensure all order details are entered correctly before confirmation.  
-      Double-check your <b>address</b>, <b>contact number</b>, and <b>product selection</b> to avoid delays.  
-      Orders once confirmed are subject to our Return and Pre-Order Policies.
-    </p>
-  </div>
-
-  <!-- Middle full-length policy card -->
- <div class="notice-card card" style="flex: 2; text-align: left;">
-  <h2>📦 Shipping & 🔄 Return Policy</h2>
-  
-  <h3>1. Order Processing & Dispatch</h3>
-  <ul>
-    <li>All confirmed orders placed before <b>12:00 PM</b> are processed and dispatched on the <b>same business day</b>, unless delayed due to courier service issues.</li>
-    <li>Orders placed after <b>6:00 PM</b> will be dispatched on the <b>next business day</b>.</li>
-  </ul>
-
-  <h3>2. Delivery Timeline</h3>
-  <ul>
-    <li><b>Regular Orders:</b> 3–7 business days</li>
-    <li><b>Pre-Orders:</b> 20–40 business days</li>
-    <li>Delivery time may vary depending on location and courier efficiency.</li>
-    <li>Tracking details will be shared once the order has been dispatched.</li>
-  </ul>
-
-  <h3>3. Pre-Order Policy</h3>
-  <ul>
-    <li>A <b>25% advance payment</b> is required to confirm any pre-order.</li>
-    <li>Once confirmed, a pre-order <b>cannot be cancelled, refunded, or placed on hold</b>.</li>
-    <li>Pre-orders are eligible for return <b>only if defective on arrival</b>.</li>
-    <li>Customers must inspect and verify the product <b>in the presence of the courier</b> upon delivery.</li>
-  </ul>
-
-  <h3>4. Return Policy</h3>
-
-  <h4>4.1 Eligibility</h4>
-  <ul>
-    <li>Returns are accepted within <b>7 days from the date of delivery</b>.</li>
-    <li>Returns are accepted <b>only for products that are defective or damaged upon delivery</b>.</li>
-  </ul>
-
-  <h4>4.2 Proof Requirement</h4>
-  <ul>
-    <li>A clear <b>unboxing video recorded from the moment the package is opened</b> is mandatory for all return claims.</li>
-    <li>Returns may be declined if proper proof is not provided or if damage appears to have occurred after delivery.</li>
-  </ul>
-
-  <h4>4.3 Condition of Returned Items</h4>
-  <ul>
-    <li>Products must be <b>unused</b>, in <b>original condition</b>, and include <b>all packaging and accessories</b>.</li>
-    <li>Items not meeting these conditions may be rejected.</li>
-  </ul>
-
-  <h4>4.4 No Return / No Exchange Conditions</h4>
-  <ul>
-    <li>Change of mind or personal preference.</li>
-    <li><b>Slight color, shade, or finish variations</b> due to lighting, photography, screen/display settings, or manufacturing/processing methods.</li>
-    <li>Minor cosmetic differences that do not affect product functionality.</li>
-    <li>Damage caused after delivery.</li>
-    <li>Missing or insufficient unboxing video proof.</li>
-  </ul>
-
-  <h4>Color Disclaimer</h4>
-  <ul>
-    <li>Product images are for reference only. Minor color variations may occur due to lighting, screen calibration, or production processes. Such variations are normal and <b>are not considered defects</b>.</li>
-  </ul>
-   <p style="margin-top: 16px; font-size: 0.9em; color: #777;">
-  <em>Last updated: 29 January 2026</em>
-</p>
-</div>
-
-
-  <!-- Right card -->
-  <div class="notice-card card" style="flex: 1; text-align: left;">
-    <h3>💬 Support</h3>
-    <p class="muted">
-      For assistance, please reach us via:<br><br>
-      ▪ Facebook: <a href="https://www.facebook.com/thegeek.shop0/" target="_blank">The Geek Shop</a><br>
-      ▪ Instagram: <a href="https://www.instagram.com/thegeek.shop0/" target="_blank">@thegeekshop</a><br>
-      ▪ WhatsApp: <a href="https://wa.me/01960902526" target="_blank">WhatsApp</a>
-    </p>
-  </div>
-</section>
-
-
-  <!-- Cart Slider -->
-  <div id="cart-slider" class="cart-slider">
-    <button id="close-cart" class="close-viewer">&times;</button>
-    <h2>Shopping Cart</h2>
-    <div id="cart-items" class="cart-items"></div>
-    <div id="cart-total" class="cart-total"><strong>Total: ৳0</strong></div>
-    <button id="checkout-cart" class="checkout-cart-btn">Checkout</button>
-    <div id="cart-empty" class="muted" style="text-align:center; padding:20px; display:none;">Your cart is empty</div>
-  </div>
-
-  <!-- Cart Checkout Modal -->
-  <div id="cart-checkout-modal" class="modal">
-    <div class="card modal-content">
-      <div class="modal-header">
-        <h2>Checkout (Cart)</h2>
-        <button id="cart-close-modal-btn">Close</button>
+      <div class="flex items-center gap-6">
+        <button id="cart-link" class="hover:text-[#b9f1ff] transition-colors">
+          <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+        </button>
+        <a href="status.html" class="hover:text-[#b9f1ff] transition-colors">
+          <span class="material-symbols-outlined text-3xl">receipt_long</span>
+        </a>
       </div>
-      <form id="cart-checkout-form" class="form">
-        <div id="cart-co-items"></div>
-        <div class="row">
-          <div><label>Delivery Fee</label><input id="cart-co-delivery" readonly></div>
-          <div><label>Total Amount</label><input id="cart-co-total" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Name</label><input id="cart-co-name" required></div>
-          <div><label>Phone</label><input id="cart-co-phone" type="tel" required></div>
-        </div>
-        <div><label>Address</label><textarea id="cart-co-address" required></textarea></div>
-        <div class="row">
-          <div><label>Payment Method</label>
-            <select id="cart-co-payment" required>
-              <option value="">Select</option>
-              <option value="Cash on Delivery">Cash on Delivery</option>
-              <option value="Bkash">Bkash</option>
-            </select>
-          </div>
-          <div><label>Pay to</label><input id="cart-co-payment-number" readonly></div>
-        </div>
-        <div class="row">
-          <div><label>Pay Now (tk)</label><input id="cart-co-pay-now" readonly></div>
-          <div><label>Due Amount (tk)</label><input id="cart-co-due-amount" readonly></div>
-        </div>
-        <div><label>Transaction ID</label><input id="cart-co-txn"></div>
-        <div><label><input type="checkbox" id="cart-co-policy" required> I agree to the <a href="status.html">Order Policy</a></label></div>
-          <p id="cart-co-note" class="muted"></p>
-        <button id="cart-place-order-btn" type="submit">Place Order</button>
-      </form>
     </div>
-  
-  </div>
-<footer style="background-color: #e8e8ff; padding: 20px; text-align: center; height: 90px; color:  #000000; font-family: Arial, sans-serif;">
-  <div>
-    <a href="https://www.facebook.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="facebook.png" alt="Facebook" style="width: 30px; height: 30px;">
-    </a>
-    <a href="https://www.instagram.com/thegeek.shop0" target="_blank" style="margin: 0 10px;">
-      <img src="instagram.png" alt="Instagram" style="width: 30px; height: 30px;">
-    </a>
-        <a href="https://wa.me/01960902526" target="_blank" style="margin: 0 10px;">
-      <img src="whatsapp.png" alt="Instagram" style="width: 30px; height: 30px;">
-    </a>
-  </div>
- 
-  <p>&copy; All rights reserved by The Geek Shop</p>
-</footer>
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-  import { getFirestore, collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-  import { firebaseConfig } from './config.js';
+  </nav>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  <main class="pt-24 px-8 max-w-[1440px] mx-auto">
+    <h1 class="text-5xl font-headline font-bold tracking-tighter mb-8">Order Status</h1>
+    <form id="status-form" class="max-w-md">
+      <input id="phone-input" type="tel" placeholder="01XXXXXXXXX" 
+             class="w-full bg-surface-container-lowest rounded-2xl px-6 py-4 text-lg focus:ring-2 focus:ring-primary outline-none" required>
+      <button type="submit" class="kinetic-gradient w-full mt-6 py-4 rounded-2xl font-bold text-white text-lg">
+        Check Orders
+      </button>
+    </form>
+    <div id="order-result" class="mt-12"></div>
+  </main>
 
-  const statusOrder = ['Pending', 'Processing', 'Dispatched', 'Delivered', 'Cancelled'];
-
-  document.getElementById('status-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const phone = document.getElementById('phone-input').value.trim();
-    if (!phone) return;
-
-    const result = document.getElementById('order-result');
-    result.innerHTML = '<p style="text-align:center;color:var(--muted);">Loading...</p>';
-    result.classList.add('show');
-
-    try {
-      const q = query(collection(db, 'orders'), where('phone', '==', phone), orderBy('timeISO', 'desc'));
-      const snap = await getDocs(q);
-
-      result.innerHTML = '';
-      if (snap.empty) {
-        result.innerHTML = `<p style="text-align:center;color:var(--muted);">No orders found for ${phone}</p>`;
-        return;
-      }
-
-      // Load products to check current availability (only for display logic)
-      const prodSnap = await getDocs(collection(db, 'products'));
-      const prodMap = {};
-      prodSnap.docs.forEach(d => { prodMap[d.id] = d.data(); });
-
-      const grid = document.createElement('div');
-      grid.className = 'orders-grid';
-
-      snap.docs.forEach(doc => {
-        const order = doc.data();
-        const cancelled = order.status === 'Cancelled';
-        const curStat = order.status;
-        const curIdx = statusOrder.indexOf(curStat);
-        const isDelivered = curStat === 'Delivered';
-
-        // Determine items (single or multi)
-        const isMulti = order.items && Array.isArray(order.items) && order.items.length > 0;
-        const items = isMulti ? order.items : [{
-          productId: order.productId,
-          productName: order.productName || 'Unknown Product',
-          color: order.color || '',
-          quantity: order.quantity || 1,
-          wasPreOrder: order.wasPreOrder || false  // fallback if old order
-        }];
-
-        // Determine if ANY item was pre-order at time of purchase
-        const hasPreOrderItem = items.some(item => item.wasPreOrder === true);
-
-        // Final delivery estimate logic
-        let deliveryText = '';
-        if (isDelivered) {
-          const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('en-GB') : 'N/A';
-          deliveryText = `<strong style="color:#22c55e">Delivered on: ${deliveredDate}</strong>`;
-        } else {
-          const days = hasPreOrderItem ? '20–40 days' : '3–7 days';
-          deliveryText = `Est. Delivery: <strong>${days}</strong>`;
-        }
-
-        // Build product list HTML
-        let productHTML = '';
-        items.forEach((item, index) => {
-          const prod = prodMap[item.productId] || {};
-          const currentIsPreOrder = prod.availability === 'Pre Order';
-          const avail = item.wasPreOrder ? 'Pre-Order' : (currentIsPreOrder ? 'Pre-Order' : 'In Stock');
-
-          productHTML += `
-            <div style="margin-bottom: ${index < items.length - 1 ? '12px' : '0'}; padding-bottom: ${index < items.length - 1 ? '12px' : '0'}; ${index < items.length - 1 ? 'border-bottom: 1px dashed var(--glass-border);' : ''}">
-              <div><strong>${item.productName}</strong> ${item.color ? `(${item.color})` : ''}</div>
-              <div class="muted">Quantity: ${item.quantity}</div>
-              <div class="muted">${avail} • ${deliveryText}</div>
-            </div>
-          `;
-        });
-
-        // Build status timeline
-        let statusHTML = '';
-        statusOrder.forEach((st, i) => {
-          const isCurrent = i === curIdx;
-          const isCompleted = i < curIdx && !cancelled;
-          const isCancelled = st === 'Cancelled' && cancelled;
-
-          let icon = '';
-          let colorClass = 'status-grey';
-          let textColor = '#9ca3af';
-          let itemClass = '';
-
-          if (isCancelled) {
-            icon = '✗';
-            colorClass = 'status-red cancelled';
-            textColor = '#ef4444';
-            itemClass = 'cancelled';
-          } else if (isCompleted || (isCurrent && !cancelled)) {
-            icon = '✓';
-            colorClass = 'status-green';
-            textColor = '#22c55e';
-          }
-
-          // Special green highlight for Delivered
-          if (st === 'Delivered' && isDelivered) {
-            textColor = '#22c55e';
-            colorClass = 'status-green';
-            icon = '✓';
-          }
-
-          statusHTML += `
-            <div class="status-item ${itemClass}" style="color:${textColor};">
-              <div class="status-circle ${colorClass}">${icon}</div>
-              <span>${st}</span>
-            </div>`;
-        });
-
-        const card = document.createElement('div');
-        card.className = `card order-status-card ${cancelled ? 'order-cancelled' : ''}`;
-
-        card.innerHTML = `
-          <div class="order-status-left">
-            ${productHTML}
-            <div class="price-line" style="margin-top: 12px;">
-              Paid: ৳${order.paid}
-              ${order.due > 0 ? `<span style="color:#d32f2f"> (Due: ৳${order.due})</span>` : ''}
-            </div>
-            <div class="muted">Ordered on: ${new Date(order.timeISO).toLocaleDateString('en-GB')}</div>
-          </div>
-          <div class="order-status-right">
-            ${statusHTML}
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
-
-      result.appendChild(grid);
-    } catch (err) {
-      console.error(err);
-      result.innerHTML = `<p style="color:var(--danger);">Error: ${err.message}</p>`;
-    }
-  });
-</script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
