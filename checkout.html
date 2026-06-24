@@ -1,304 +1,184 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkout - The Geek Shop</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-  <script type="module" src="script.js"></script>
-  <script>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Dispatch Protocol | KINETIC LABS</title>
+  <link rel="icon" type="image/x-icon" href="logo t.png"> 
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
-          colors: {
-            "on-secondary": "#00363f",
-            "primary-container": "#bd00ff",
-            "surface-bright": "#393939",
-            "tertiary": "#c4c5db",
-            "surface-dim": "#131313",
-            "inverse-on-surface": "#313030",
-            "surface-container-low": "#1c1b1b",
-            "background": "#131313",
-            "on-secondary-fixed-variant": "#004e5a",
-            "on-error-container": "#ffdad6",
-            "on-tertiary-fixed": "#181a2b",
-            "surface-container-lowest": "#0e0e0e",
-            "on-tertiary-container": "#fffeff",
-            "on-secondary-fixed": "#001f25",
-            "tertiary-fixed-dim": "#c4c5db",
-            "tertiary-fixed": "#e1e1f7",
-            "error-container": "#93000a",
-            "primary": "#ecb2ff",
-            "surface-container": "#20201f",
-            "primary-fixed": "#f8d8ff",
-            "inverse-primary": "#9900cf",
-            "secondary-fixed": "#a5eeff",
-            "on-primary-fixed-variant": "#74009f",
-            "on-secondary-container": "#005f6d",
-            "on-background": "#e5e2e1",
-            "on-surface-variant": "#d4c0d7",
-            "primary-fixed-dim": "#ecb2ff",
-            "on-primary-fixed": "#320047",
-            "secondary": "#b9f1ff",
-            "outline-variant": "#514255",
-            "surface-container-high": "#2a2a2a",
-            "surface-container-highest": "#353535",
-            "inverse-surface": "#e5e2e1",
-            "surface-variant": "#353535",
-            "surface-tint": "#ecb2ff",
-            "secondary-fixed-dim": "#00daf8",
-            "secondary-container": "#00e0ff",
-            "on-surface": "#e5e2e1",
-            "on-primary-container": "#ffffff",
-            "on-tertiary-fixed-variant": "#444558",
-            "error": "#ffb4ab",
-            "on-error": "#690005",
-            "on-primary": "#520071",
-            "outline": "#9d8ba0",
-            "on-tertiary": "#2d2f40",
-            "surface": "#131313",
-            "tertiary-container": "#737488"
+          "colors": {
+            "primary": "#ecd7ff",
+            "primary-container": "#d8b4fe",
+            "on-primary-fixed": "#29074a",
+            "surface": "#0c1322",
+            "on-surface": "#dce2f7",
+            "surface-container-lowest": "#070e1d",
+            "surface-container-low": "#141b2b",
+            "surface-container": "#191f2f",
+            "surface-container-high": "#232a3a",
+            "outline": "#968e9a",
+            "outline-variant": "#4a454f"
           },
-          fontFamily: {
+          "fontFamily": {
             "headline": ["Space Grotesk"],
-            "body": ["Inter"],
-            "label": ["Inter"]
-          },
-          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"}
-        }
+            "body": ["Inter"]
+          }
+        },
       }
     }
   </script>
   <style>
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+    .signature-gradient { background: linear-gradient(135deg, #ecd7ff 0%, #d8b4fe 100%); }
+    .tech-grid-overlay {
+      background-image: linear-gradient(rgba(236, 215, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(236, 215, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
   </style>
-</head>
-<body class="bg-background text-on-background font-body antialiased">
 
-  <!-- Navigation -->
-  <nav class="fixed top-0 w-full z-50 bg-[#131313]/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-    <div class="max-w-[1440px] mx-auto flex items-center justify-between px-8 py-4">
-      <a href="index.html" class="text-2xl font-bold tracking-tighter text-[#ecb2ff] font-headline">The Geek Shop</a>
-      <div class="hidden md:flex items-center gap-8 font-headline tracking-tight">
-        <a href="products.html" class="text-gray-400 hover:text-white transition-colors">Keyboards & Mouse</a>
-        <a href="products.html?category=Switches" class="text-gray-400 hover:text-white transition-colors">Switches</a>
-        <a href="products.html?category=Keycaps" class="text-[#ecb2ff] border-b-2 border-[#ecb2ff] pb-1">Keycaps</a>
-        <a href="products.html?category=Accessories and Collectables" class="text-gray-400 hover:text-white transition-colors">Accessories</a>
-        <a href="products.html?category=Accessories and Collectables" class="text-gray-400 hover:text-white transition-colors">Collectibles</a>
-      </div>
-      <div class="flex items-center gap-6">
-        <button id="cart-link" class="hover:text-[#b9f1ff] transition-colors">
-          <span class="material-symbols-outlined text-3xl">shopping_cart</span>
-        </button>
-      </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  </script>
+  <script type="module" src="script.js"></script>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen relative flex flex-col">
+  <div class="absolute inset-0 tech-grid-overlay pointer-events-none z-0"></div>
+
+  <nav class="relative z-50 bg-surface/80 backdrop-blur-xl border-b border-white/5">
+    <div class="flex justify-between items-center px-8 py-4 w-full max-w-7xl mx-auto">
+      <a href="index.html" class="text-2xl font-bold tracking-tighter text-primary font-headline">THE GEEK SHOP</a>
+      <a href="index.html" class="text-sm font-bold uppercase tracking-widest text-outline hover:text-primary transition-colors flex items-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span> Cancel Dispatch
+      </a>
     </div>
   </nav>
 
-  <main class="pt-28 pb-20 px-4 md:px-8 max-w-[1200px] mx-auto min-h-screen">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      <!-- Left Column: Forms -->
-      <div class="lg:col-span-7 space-y-8">
-        <!-- Shipping Information -->
-        <section class="bg-surface-container-low p-8 rounded-xl">
-          <div class="flex items-center gap-3 mb-8">
-            <span class="material-symbols-outlined text-2xl text-primary">local_shipping</span>
-            <h2 class="text-xl font-headline font-bold tracking-tight">Shipping Information</h2>
-          </div>
+  <main class="relative z-10 max-w-6xl mx-auto px-6 py-12 md:py-20 w-full flex-grow">
+    <div class="mb-12">
+      <h1 class="font-headline text-4xl md:text-5xl font-bold tracking-tighter uppercase">Dispatch Protocol</h1>
+      <p class="text-outline mt-2 tracking-widest uppercase text-xs">Secure Checkout Terminal</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div class="lg:col-span-7 space-y-10">
+        
+        <section class="space-y-6">
+          <h2 class="font-headline text-xl font-bold border-b border-white/10 pb-2 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">person</span> Operative Details
+          </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="md:col-span-2">
-              <label class="block text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">Full Name</label>
-              <input id="co-name" type="text" class="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary rounded-2xl px-6 py-4 text-on-surface" placeholder="Your full name" required>
+            <div class="space-y-2">
+              <label class="block text-[10px] text-outline uppercase tracking-widest">Full Name</label>
+              <input id="co-name" class="w-full bg-surface-container-low border border-white/5 focus:border-primary/50 rounded-xl px-4 py-3 text-on-surface outline-none transition-all" type="text" placeholder="John Doe">
             </div>
-            <div class="md:col-span-2">
-              <label class="block text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">Phone Number</label>
-              <input id="co-phone" type="tel" class="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary rounded-2xl px-6 py-4 text-on-surface" placeholder="01XXXXXXXXX" required>
+            <div class="space-y-2">
+              <label class="block text-[10px] text-outline uppercase tracking-widest">Phone Number</label>
+              <input id="co-phone" class="w-full bg-surface-container-low border border-white/5 focus:border-primary/50 rounded-xl px-4 py-3 text-on-surface outline-none transition-all" type="tel" placeholder="01XXXXXXXXX">
             </div>
-            <div class="md:col-span-2">
-              <label class="block text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">Full Address</label>
-              <textarea id="co-address" rows="3" class="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary rounded-2xl px-6 py-4 text-on-surface" placeholder="House, Road, Area, City" required></textarea>
-            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-[10px] text-outline uppercase tracking-widest">Shipping Destination</label>
+            <textarea id="co-address" class="w-full bg-surface-container-low border border-white/5 focus:border-primary/50 rounded-xl px-4 py-3 text-on-surface outline-none transition-all resize-none" rows="3" placeholder="Full Delivery Address"></textarea>
           </div>
         </section>
 
-        <!-- Payment Method -->
-        <section class="bg-surface-container-low p-8 rounded-xl">
-          <div class="flex items-center gap-3 mb-8">
-            <span class="material-symbols-outlined text-2xl text-primary">payments</span>
-            <h2 class="text-xl font-headline font-bold tracking-tight">Payment Method</h2>
+        <section class="space-y-6">
+          <h2 class="font-headline text-xl font-bold border-b border-white/10 pb-2 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">account_balance_wallet</span> Settlement Protocol
+          </h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <label class="relative cursor-pointer group">
+              <input type="radio" name="payment_method" value="Bkash" class="peer sr-only" id="pay-bkash">
+              <div class="p-5 bg-surface-container-lowest border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 rounded-xl transition-all h-full">
+                <span class="material-symbols-outlined text-primary mb-2">send_money</span>
+                <p class="text-sm font-bold">bKash</p>
+                <p class="text-[10px] text-outline mt-1">Instant Digital Transfer</p>
+              </div>
+            </label>
+            
+            <label class="relative cursor-pointer group">
+              <input type="radio" name="payment_method" value="Cash on Delivery" class="peer sr-only" id="pay-cod">
+              <div class="p-5 bg-surface-container-lowest border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 rounded-xl transition-all h-full">
+                <span class="material-symbols-outlined text-outline mb-2 group-hover:text-primary transition-colors">local_shipping</span>
+                <p class="text-sm font-bold">Cash on Delivery</p>
+                <p class="text-[10px] text-outline mt-1">Pay upon arrival</p>
+              </div>
+            </label>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button onclick="selectPayment('Bkash')" class="payment-btn flex flex-col items-center gap-3 p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 hover:border-primary transition-all">
-              <span class="text-4xl">💸</span>
-              <span class="text-sm font-medium">bKash</span>
-            </button>
-            <button onclick="selectPayment('Cash on Delivery')" class="payment-btn flex flex-col items-center gap-3 p-6 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 hover:border-primary transition-all">
-              <span class="text-4xl">💵</span>
-              <span class="text-sm font-medium">Cash on Delivery</span>
-            </button>
-          </div>
-          <div id="payment-details" class="mt-6 hidden">
-            <p id="payment-note" class="text-sm text-on-surface-variant"></p>
-            <input id="co-txn" type="text" placeholder="Transaction ID (if applicable)" class="mt-4 w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary rounded-2xl px-6 py-4">
+
+          <div id="payment-details-box" class="bg-surface-container-low p-6 rounded-xl border border-white/5 hidden space-y-4">
+            <div class="flex justify-between items-center bg-surface-container-lowest p-3 rounded-lg border border-white/5">
+              <span class="text-xs text-outline uppercase tracking-widest">Merchant Number:</span>
+              <span id="co-merchant-number" class="font-mono text-primary font-bold tracking-wider"></span>
+            </div>
+            
+            <div id="txn-container" class="space-y-2 hidden">
+              <label class="block text-[10px] text-primary uppercase tracking-widest font-bold">Transaction ID (Required)</label>
+              <input id="co-txn" class="w-full bg-surface-container-lowest border border-primary/30 focus:border-primary rounded-xl px-4 py-3 text-on-surface outline-none transition-all font-mono uppercase" type="text" placeholder="Enter bKash TXN ID">
+            </div>
+
+            <p id="co-payment-note" class="text-xs text-outline-variant italic"></p>
           </div>
         </section>
       </div>
 
-      <!-- Right Column: Order Summary -->
-      <aside class="lg:col-span-5 sticky top-28">
-        <div class="bg-surface-container-low rounded-3xl p-8 border border-outline-variant/10">
-          <h2 class="text-xl font-headline font-bold mb-8">Order Summary</h2>
+      <div class="lg:col-span-5">
+        <div class="bg-surface-container p-8 rounded-2xl border border-white/5 sticky top-24">
+          <h3 class="font-headline text-2xl font-bold mb-6">Manifest</h3>
           
-          <div id="cart-co-items" class="space-y-6 mb-8 max-h-[400px] overflow-y-auto pr-2"></div>
+          <div id="co-items-list" class="space-y-4 mb-6 max-h-64 overflow-y-auto pr-2 custom-scrollbar"></div>
+          
+          <div class="space-y-3 pt-6 border-t border-white/10">
+            <div class="flex justify-between text-sm">
+              <span class="text-outline">Subtotal</span>
+              <span id="co-subtotal-display" class="font-mono text-on-surface">৳0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-outline">Delivery Charge</span>
+              <span id="co-delivery-display" class="font-mono text-on-surface">৳0.00</span>
+            </div>
+            
+            <div id="preorder-split-display" class="hidden pt-3 mt-3 border-t border-dashed border-white/10 space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-primary font-bold text-xs uppercase tracking-widest">Advance Required (25%)</span>
+                <span id="co-advance-display" class="font-mono text-primary font-bold">৳0.00</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-outline text-xs uppercase tracking-widest">Due on Delivery</span>
+                <span id="co-due-display" class="font-mono text-outline">৳0.00</span>
+              </div>
+            </div>
 
-          <div class="space-y-4 pt-8 border-t border-outline-variant/20">
-            <div class="flex justify-between text-sm">
-              <span class="text-on-surface-variant">Subtotal</span>
-              <span id="subtotal" class="font-medium">৳0</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-on-surface-variant">Delivery Fee</span>
-              <span id="delivery-fee" class="font-medium">৳70</span>
-            </div>
-            <div class="flex justify-between pt-4 border-t border-outline-variant/30 text-lg font-bold">
-              <span>Total</span>
-              <span id="cart-co-total" class="text-primary">৳0</span>
+            <div class="flex justify-between items-center pt-6 mt-4 border-t border-white/10">
+              <span class="font-headline text-lg font-bold">Grand Total</span>
+              <span id="co-total-display" class="font-headline text-3xl font-bold text-primary tracking-tighter">৳0.00</span>
             </div>
           </div>
 
-          <button onclick="placeOrder()" 
-                  class="w-full mt-10 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-headline font-bold rounded-2xl text-lg active:scale-95 transition-all">
-            Place Order
-          </button>
+          <div class="mt-8 space-y-4">
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" id="co-policy" class="mt-1 rounded bg-surface-container-lowest border-white/10 text-primary focus:ring-primary">
+              <span class="text-xs text-outline leading-relaxed">I accept the <a href="termsandconditions.html" class="text-primary hover:underline">Shipping & Return Policies</a> and confirm my details are correct.</span>
+            </label>
+            
+            <button id="final-checkout-btn" class="w-full signature-gradient text-on-primary-fixed font-headline font-bold py-5 rounded-xl tracking-widest uppercase shadow-lg shadow-purple-500/20 hover:brightness-110 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+              <span class="material-symbols-outlined">rocket_launch</span> Authorize Deployment
+            </button>
+          </div>
         </div>
-      </aside>
+      </div>
     </div>
   </main>
-
-  <footer class="bg-[#0e0e0e] py-12 px-8 text-center text-gray-500 text-sm">
-    © 2026 The Geek Shop BD. All rights reserved.
-  </footer>
-
-  <script>
-    function renderCartInCheckout() {
-      const container = document.getElementById('cart-co-items');
-      const cart = getCart(); // from script.js
-      if (cart.length === 0) {
-        container.innerHTML = `<p class="text-center py-8 text-on-surface-variant">Your cart is empty</p>`;
-        return;
-      }
-
-      let html = '';
-      let subtotal = 0;
-
-      cart.forEach(item => {
-        const itemTotal = item.price * item.qty;
-        subtotal += itemTotal;
-        html += `
-          <div class="flex justify-between items-center py-3 border-b border-outline-variant/10 last:border-none">
-            <div>
-              <p class="font-medium">${item.name}</p>
-              <p class="text-xs text-on-surface-variant">${item.color || ''} × ${item.qty}</p>
-            </div>
-            <p class="font-medium">৳${itemTotal}</p>
-          </div>`;
-      });
-
-      container.innerHTML = html;
-
-      const delivery = DELIVERY_FEE;
-      const total = subtotal + delivery;
-
-      document.getElementById('subtotal').textContent = `৳${subtotal}`;
-      document.getElementById('delivery-fee').textContent = `৳${delivery}`;
-      document.getElementById('cart-co-total').textContent = `৳${total}`;
-    }
-
-    async function placeOrder() {
-      const name = document.getElementById('co-name').value.trim();
-      const phone = document.getElementById('co-phone').value.trim();
-      const address = document.getElementById('co-address').value.trim();
-
-      if (!name || !phone || !address) {
-        alert("Please fill all required fields");
-        return;
-      }
-
-      const cart = getCart();
-      if (cart.length === 0) return alert("Cart is empty");
-
-      const products = await loadProducts(); // from script.js
-      let subtotal = 0;
-      let hasPreOrder = false;
-
-      const items = cart.map(item => {
-        const p = products.find(pr => pr.id === item.id);
-        const unitPrice = Number(p.price) - Number(p.discount || 0);
-        subtotal += unitPrice * item.qty;
-        if (p.availability === 'Pre Order') hasPreOrder = true;
-        return {
-          productId: item.id,
-          productName: item.name,
-          color: item.color || '',
-          unitPrice: unitPrice,
-          quantity: item.qty,
-          wasPreOrder: p.availability === 'Pre Order'
-        };
-      });
-
-      const deliveryFee = DELIVERY_FEE;
-      const total = subtotal + deliveryFee;
-      const paid = hasPreOrder ? Math.round(subtotal * 0.25) : total;
-      const due = total - paid;
-
-      const orderData = {
-        timeISO: new Date().toISOString(),
-        items: items,
-        deliveryFee: deliveryFee,
-        total: total,
-        paid: paid,
-        due: due,
-        customerName: name,
-        phone: phone,
-        address: address,
-        paymentMethod: "Bkash", // you can make this dynamic later
-        status: 'Pending'
-      };
-
-      try {
-        await runTransaction(db, async (transaction) => {
-          const productRefs = items.map(item => doc(db, 'products', item.productId));
-          const snaps = await Promise.all(productRefs.map(ref => transaction.get(ref)));
-
-          for (let i = 0; i < items.length; i++) {
-            const snap = snaps[i];
-            const data = snap.data();
-            const currentStock = Number(data.stock);
-            if (currentStock !== -1 && data.availability !== 'Pre Order' && currentStock < items[i].quantity) {
-              throw new Error(`Not enough stock for ${items[i].productName}`);
-            }
-            if (currentStock !== -1 && data.availability !== 'Pre Order') {
-              transaction.update(productRefs[i], { stock: currentStock - items[i].quantity });
-            }
-          }
-
-          const newOrderRef = doc(collection(db, 'orders'));
-          transaction.set(newOrderRef, orderData);
-        });
-
-        alert("Order placed successfully!");
-        localStorage.removeItem('cart');
-        window.location.href = 'status.html';
-      } catch (err) {
-        console.error(err);
-        alert("Error placing order: " + err.message);
-      }
-    }
-
-    // Run when page loads
-    window.onload = renderCartInCheckout;
-  </script>
 </body>
 </html>
